@@ -1,6 +1,3 @@
-import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import AboutUsPage from './pages/AboutUsPage'
 import EventsPage from './pages/EventsPage'
 import Navbar from './pages/Navbar'
@@ -9,6 +6,7 @@ import FormsPage from './pages/FormsPage'
 import ServicesPage from './pages/ServicesPage'
 import FAQPage from './pages/FAQPage'
 import Footer from './pages/Footer'
+
 
 function App() {
 

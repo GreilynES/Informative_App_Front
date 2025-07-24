@@ -11,6 +11,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
+    "class-variance-authority": "^0.7.1",
+    "gsap": "^3.13.0",
+    "lucide-react": "^0.525.0",
+    "motion": "^12.23.9",
+    "next": "^15.4.1",
+    "radix-ui": "^1.4.2",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
