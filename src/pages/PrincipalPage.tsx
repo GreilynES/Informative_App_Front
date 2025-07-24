@@ -1,5 +1,6 @@
 import { MessageCircleQuestionIcon} from "lucide-react"
 import { events } from "../models/EventType"
+import { RippleButton } from "../animations/Buttons"
 
 export default function PrincipalPage() {
   const subastaEvent = events.find((event) => event.title.toLowerCase().includes("subasta"))
@@ -22,9 +23,9 @@ export default function PrincipalPage() {
               "Lorem ipsum dolor sit amet consectetur adipiscing elit tellus mauris, risus quis torquent integer erat eget fermentum tortor. Inceptos pellentesque scelerisque pulvinar curae."
             }
           </p>
-          <button className="mt-6 px-8 py-3 text-lg self-center lg:self-start bg-black text-white rounded-xl shadow-lg hover:bg-gray-800 transition-colors duration-200">
-            <a href="#">Contactanos</a>
-          </button>
+          <RippleButton className="mt-6 px-8 py-3 text-lg self-center lg:self-start bg-black text-white rounded-xl shadow-lg hover:bg-gray-800 transition-colors duration-200">
+            <a href="#Footer">Contactanos</a>
+          </RippleButton>
         </div>
 
         {/* Right Section - Event Card */}
