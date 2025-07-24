@@ -1,6 +1,7 @@
 import { MessageCircleQuestionIcon} from "lucide-react"
 import { events } from "../models/EventType"
 import { RippleButton } from "../animations/Buttons"
+import { principalType } from "../models/PrincipalType"
 
 export default function PrincipalPage() {
   const subastaEvent = events.find((event) => event.title.toLowerCase().includes("subasta"))
@@ -16,12 +17,10 @@ export default function PrincipalPage() {
         {/* Left Section - Hero Content */}
         <div className="flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center text-center lg:text-left space-y-6">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Asociación Cámara de Ganaderos Hojancha
+            {principalType.title}
           </h1>
           <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-xl mx-auto lg:mx-0">
-            {
-              "Lorem ipsum dolor sit amet consectetur adipiscing elit tellus mauris, risus quis torquent integer erat eget fermentum tortor. Inceptos pellentesque scelerisque pulvinar curae."
-            }
+            {principalType.description}
           </p>
           <RippleButton className="mt-6 px-8 py-3 text-lg self-center lg:self-start bg-black text-white rounded-xl shadow-lg hover:bg-gray-800 transition-colors duration-200">
             <a href="#Footer">Contactanos</a>
