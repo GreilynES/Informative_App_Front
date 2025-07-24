@@ -14,17 +14,17 @@ export default function FormsPage() {
         {/* ASOCIADOS */}
         <div className="bg-white rounded-xl shadow-lg p-8 flex-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-100 text-blue-600 p-4 rounded-full">
+            <div className="bg-amber-200 text-lime-700 p-4 rounded-full">
               <Building2 size={40} />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-blue-800 uppercase mb-2">Asociados</h2>
+          <h2 className="text-2xl font-bold text-lime-800 uppercase mb-2">Asociados</h2>
           <p className="text-gray-600 mb-6 text-base">Membresía oficial con derechos y beneficios</p>
-          <div className="bg-blue-50 text-blue-900 p-4 rounded-lg text-lg mb-6">
+          <div className="bg-amber-100 text-lime-900 p-4 rounded-lg text-lg mb-6">
             Como asociado tendrás acceso completo a todos nuestros servicios, derecho a voto en asambleas,
             participación en la toma de decisiones y acceso a beneficios exclusivos para miembros.
           </div>
-          <button className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-md text-lg font-medium flex items-center justify-center gap-2 mx-auto">
+          <button className="bg-lime-800 hover:bg-lime-900 text-white px-6 py-2 rounded-md text-lg font-medium flex items-center justify-center gap-2 mx-auto">
             Formulario
             <span>→</span>
           </button>
