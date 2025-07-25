@@ -27,9 +27,9 @@ const Navbar = () => {
 
         <div className="flex items-center space-x-8 ml-auto">
           <ul className="flex space-x-6 text-lg font-medium ml-auto">
-            <li><a href="#" className="hover:underline">Sobre Nosotros</a></li>
-            <li><a href="#" className="hover:underline">Eventos</a></li>
-            <li><a href="#" className="hover:underline">Servicios</a></li>
+            <li><a href="#about" className="hover:underline">Sobre Nosotros</a></li>
+            <li><a href="#events" className="hover:underline">Eventos</a></li>
+            <li><a href="#services" className="hover:underline">Servicios</a></li>
             <li className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(prev => !prev)}
@@ -41,12 +41,12 @@ const Navbar = () => {
               {isDropdownOpen && (
                 <ul className="absolute right-0 mt-2 w-40 bg-white text-black shadow-lg rounded z-10">
                   <li>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-200">
+                    <a href="#volunteers" className="block px-4 py-2 hover:bg-gray-200">
                       Voluntarios
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="block px-4 py-2 hover:bg-gray-200">
+                    <a href="#asociados" className="block px-4 py-2 hover:bg-gray-200">
                       Asociados
                     </a>
                   </li>
@@ -55,7 +55,7 @@ const Navbar = () => {
             </li>
           </ul>
           <button className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300">
-            <a href="#" className="text-lg font-semibold"><ShieldUser /></a>
+            <a href="#perfil" className="text-lg font-semibold"><ShieldUser /></a>
           </button>
         </div>
       </div>
