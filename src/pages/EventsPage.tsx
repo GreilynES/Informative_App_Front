@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { events } from "../models/EventType"
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
-import { button } from "motion/react-client"
 
 export default function EventsPage() {
   const [currentEvent, setCurrentEvent] = useState(0)
@@ -19,9 +18,9 @@ export default function EventsPage() {
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Próximos Eventos</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Próximos Eventos</h2>
           <div className="w-24 h-1 bg-gradient-to-r from-green-400 to-emerald-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Navega entre nuestros eventos y encuentra el perfecto para ti</p>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Navega entre nuestros eventos y encuentra el perfecto para ti</p>
         </div>
 
         {/* Event Card */}
