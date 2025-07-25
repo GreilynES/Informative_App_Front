@@ -40,7 +40,7 @@ export default function PrincipalPage() {
                <a href="#AboutUsPage">
                 <RippleButton
                 variant="outline"
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-transparent transition-colors duration-200 bg-gray-50 flex items-center"
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-yellow-100 transition-colors duration-200 bg-gray-50 flex items-center"
               >
                Conocer más <ChevronRight className="w-4 h-4 ml-1" />
               </RippleButton>
@@ -53,16 +53,16 @@ export default function PrincipalPage() {
             {subastaEvent ? (
               <div className=" relative">
                 {/* Pin Design - Thumbtack - moved to corner */}
-                <div className="absolute -top-4 left-2 z-20">
+                <div className="absolute -top-4 left-2 z-30">
                   <div className="relative">
                     {/* Pin body - cylindrical look */}
-                    <div className="w-4 h-8 bg-gradient-to-b from-green-400 to-green-600 rounded-full shadow-lg relative">
+                    <div className="w-4 h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full shadow-lg relative">
                       {/* Pin head - flat circular top */}
-                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-green-300 to-green-500 rounded-full shadow-md border-2 border-green-600">
-                        <div className="absolute top-1 left-1 w-2 h-2 bg-green-200 rounded-full opacity-70"></div>
+                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-yellow-500 to-yellow-600  rounded-full shadow-md border-1 border-yellow-600">
+                        <div className="absolute top-1 left-1 w-2 h-2 bg-yellow-200 rounded-full opacity-70"></div>
                       </div>
                       {/* Pin tip */}
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-gray-400 rounded-b-full"></div>
+                      <div className="absolute z-0 -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-gray-400 rounded-b-full"></div>
                     </div>
                   </div>
                 </div>
@@ -81,18 +81,18 @@ export default function PrincipalPage() {
                         subastaEvent.illustration || "/placeholder.svg?height=180&width=350&query=cattle auction event"
                       }
                       alt="Subasta de ganado"
-                      className="w-full h-64 object-cover rounded-lg"
+                      className="w-full h-60 object-cover rounded-lg"
                     />
                   </div>
 
                   {/* Event information at the bottom */}
                   <div className="px-4 pb-4">
-                    <div className="flex items-center space-x-2 text-green-600 text-m font-medium mb-2">
-                      <Calendar className="w-6 h-6" />
+                    <div className="flex items-center space-x-2 text-green-600 text-xg font-medium mb-2">
+                      <Calendar className="w-5 h-" />
                       <span>{subastaEvent.date}</span>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{subastaEvent.title}</h3>
-                    <p className="text-xg text-gray-600">{subastaEvent.description}</p>
+                    <h3 className="text-xg font-bold text-gray-900 mb-1">{subastaEvent.title}</h3>
+                    <p className="text-xs text-gray-600">{subastaEvent.description}</p>
                   </div>
                 </div>
               </div>
