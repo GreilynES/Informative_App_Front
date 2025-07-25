@@ -9,32 +9,45 @@ export default function FAQPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-16 px-4">
-      <div className="w-full max-w-3xl">
-        <h2 className="text-3xl sm:text-4xl font-semibold text-center text-green-800 mb-24">
-          Preguntas frecuentes
+    <div className="min-h-screen bg-white py-24 px-4 flex justify-center items-start">
+      <div className="w-full max-w-3xl px-4 sm:px-8 lg:px-0">
+        <h2 className="text-4xl font-bold text-center text-neutral-900 mb-4">
+          Preguntas Frecuentes
         </h2>
+        <p className="text-center text-gray-500 mb-12 text-lg">
+          Encuentra respuestas a las preguntas más comunes sobre nuestra organización
+        </p>
 
-        <div className="space-y-10">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              onClick={() => toggleFAQ(index)}
-              className="bg-white border border-green-800 rounded-xl shadow-md p-6 cursor-pointer transition-all duration-300 hover:shadow-lg"
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900">{faq.question}</h3>
-                <span className="text-2xl text-green-800">
-                  {openIndex === index ? '' : '+'}
-                </span>
-              </div>
-              {openIndex === index && (
-                <p className="mt-3 text-gray-700 text-base leading-relaxed">
+        <div className="space-y-6 divide-y divide-neutral-200">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index
+            return (
+              <div
+                key={index}
+                className={`border border-neutral-200 rounded-xl overflow-hidden shadow-sm transition-all duration-300 ${
+                  isOpen ? 'bg-green-50' : 'bg-white hover:bg-green-50'
+                }`}
+              >
+                <button
+                  onClick={() => toggleFAQ(index)}
+                  className={`w-full text-left px-6 py-5 transition-all duration-300 flex justify-between items-center ${
+                    isOpen ? 'text-green-600 font-semibold' : 'text-neutral-900 hover:text-green-600'
+                  }`}
+                >
+                  <span className="text-base font-medium">{faq.question}</span>
+                  <span className="text-xl font-bold">{isOpen ? '−' : '+'}</span>
+                </button>
+
+                <div
+                  className={`px-6 text-gray-700 text-sm leading-relaxed overflow-hidden transition-all duration-300 ${
+                    isOpen ? 'max-h-40 py-4' : 'max-h-0 py-0'
+                  }`}
+                >
                   {faq.answer}
-                </p>
-              )}
-            </div>
-          ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
