@@ -68,7 +68,7 @@ export default function FormsPage() {
             </div>
 
             {/* Botón */}
-            <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-800 hover:to-yellow-700 text-white font-semibold py-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center">
+            <button className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white font-semibold py-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center">
               Formulario
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
             </button>
