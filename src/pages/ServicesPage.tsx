@@ -31,7 +31,7 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen px-6 py-20 bg-[#f9f9f6] text-gray-800">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 text-center mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 text-center mb-6">
           Nuestros Servicios
         </h1>
         <p className="text-center text-lg text-neutral-600 mb-12">

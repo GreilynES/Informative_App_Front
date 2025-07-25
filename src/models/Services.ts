@@ -31,5 +31,23 @@ export const services: Service[] = [
     modalDescription: "Apoyamos la implementación de soluciones tecnológicas como cercas eléctricas, sistemas de captación de agua, monitoreo satelital y aplicaciones móviles para el manejo eficiente de la producción.",
     image: "https://scontent.fsjo10-1.fna.fbcdn.net/v/t39.30808-6/480681953_559776447111818_994803168973652271_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=2C0C-HD-yqIQ7kNvwGVGsMm&_nc_oc=AdmW3WOYC7xD2T-swz9HyDq4oSyt7_hd2TRm5rg6xZhVkO_U-lXDTc-Jo8Qv-m3jG9E&_nc_zt=23&_nc_ht=scontent.fsjo10-1.fna&_nc_gid=m0INk5YFw5Lmtfxc8ujENw&oh=00_AfQhn5mcIhv5dHQ6mJl29bl9qtm8HAJdvclfzXOwEhS8dw&oe=687F4222",
   },
-  // Agrega más si lo necesitás
+  {
+    title: "Innovación rural",
+    cardDescription: "Lorem ipsum dolor sit amet consectetur adipiscing elit habitasse nibh, facilisi ullamcorper magnis justo metus maecenas fermentum erat tortor, in facilisis taciti scelerisque pretium malesuada a purus.",
+    modalDescription: "Apoyamos la implementación de soluciones tecnológicas como cercas eléctricas, sistemas de captación de agua, monitoreo satelital y aplicaciones móviles para el manejo eficiente de la producción.",
+    image: "https://scontent.fsjo10-1.fna.fbcdn.net/v/t39.30808-6/480681953_559776447111818_994803168973652271_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=2C0C-HD-yqIQ7kNvwGVGsMm&_nc_oc=AdmW3WOYC7xD2T-swz9HyDq4oSyt7_hd2TRm5rg6xZhVkO_U-lXDTc-Jo8Qv-m3jG9E&_nc_zt=23&_nc_ht=scontent.fsjo10-1.fna&_nc_gid=m0INk5YFw5Lmtfxc8ujENw&oh=00_AfQhn5mcIhv5dHQ6mJl29bl9qtm8HAJdvclfzXOwEhS8dw&oe=687F4222",
+  },
+  {
+    title: "Innovación rural",
+    cardDescription: "Lorem ipsum dolor sit amet consectetur adipiscing elit habitasse nibh, facilisi ullamcorper magnis justo metus maecenas fermentum erat tortor, in facilisis taciti scelerisque pretium malesuada a purus.",
+    modalDescription: "Apoyamos la implementación de soluciones tecnológicas como cercas eléctricas, sistemas de captación de agua, monitoreo satelital y aplicaciones móviles para el manejo eficiente de la producción.",
+    image: "https://scontent.fsjo10-1.fna.fbcdn.net/v/t39.30808-6/480681953_559776447111818_994803168973652271_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=2C0C-HD-yqIQ7kNvwGVGsMm&_nc_oc=AdmW3WOYC7xD2T-swz9HyDq4oSyt7_hd2TRm5rg6xZhVkO_U-lXDTc-Jo8Qv-m3jG9E&_nc_zt=23&_nc_ht=scontent.fsjo10-1.fna&_nc_gid=m0INk5YFw5Lmtfxc8ujENw&oh=00_AfQhn5mcIhv5dHQ6mJl29bl9qtm8HAJdvclfzXOwEhS8dw&oe=687F4222",
+  },
+  {
+    title: "Innovación rural",
+    cardDescription: "Lorem ipsum dolor sit amet consectetur adipiscing elit habitasse nibh, facilisi ullamcorper magnis justo metus maecenas fermentum erat tortor, in facilisis taciti scelerisque pretium malesuada a purus.",
+    modalDescription: "Apoyamos la implementación de soluciones tecnológicas como cercas eléctricas, sistemas de captación de agua, monitoreo satelital y aplicaciones móviles para el manejo eficiente de la producción.",
+    image: "https://scontent.fsjo10-1.fna.fbcdn.net/v/t39.30808-6/480681953_559776447111818_994803168973652271_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=833d8c&_nc_ohc=2C0C-HD-yqIQ7kNvwGVGsMm&_nc_oc=AdmW3WOYC7xD2T-swz9HyDq4oSyt7_hd2TRm5rg6xZhVkO_U-lXDTc-Jo8Qv-m3jG9E&_nc_zt=23&_nc_ht=scontent.fsjo10-1.fna&_nc_gid=m0INk5YFw5Lmtfxc8ujENw&oh=00_AfQhn5mcIhv5dHQ6mJl29bl9qtm8HAJdvclfzXOwEhS8dw&oe=687F4222",
+  },
+  
 ]
