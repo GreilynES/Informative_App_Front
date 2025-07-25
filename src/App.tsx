@@ -13,12 +13,24 @@ function App() {
   return (
     <>
       <Navbar/>
-      <PrincipalPage/>
-      <AboutUsPage/>
-      <EventsPage/>
-      <ServicesPage/>
-      <FormsPage/>
-      <FAQPage/>
+       <div id="PrincipalPage">
+        <PrincipalPage />
+      </div>
+       <div id="AboutUsPage">
+        <AboutUsPage />
+      </div>
+      <div id="EventsPage">
+        <EventsPage />
+      </div>
+      <div id="ServicesPage">
+        <ServicesPage />
+      </div>
+      <div id="FormsPage">
+        <FormsPage />
+      </div>
+      <div id="FAQPage">
+        <FAQPage />
+      </div>
       <Footer/>
     </>
   )

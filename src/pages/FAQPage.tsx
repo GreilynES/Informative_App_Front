@@ -1,25 +1,9 @@
 import React, { useState } from 'react'
-
-const faqs = [
-  {
-    question: '¿Quiénes pueden ser voluntarios?',
-    answer:
-      'Cualquier persona mayor de edad interesada en temas ganaderos, ambientales o comunitarios. También se aceptan estudiantes con respaldo de una institución.',
-  },
-  {
-    question: '¿Necesito experiencia previa?',
-    answer:
-      'No es necesaria experiencia previa. Brindamos orientación básica antes de iniciar.',
-  },
-  {
-    question: '¿Qué tipo de actividades realizan los voluntarios?',
-    answer:
-      'Apoyo en actividades ganaderas, jornadas ambientales, trabajo comunitario y eventos educativos.',
-  },
-]
+import { faqs } from '../models/FAQType'
 
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index)
   }
@@ -41,7 +25,7 @@ export default function FAQPage() {
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium text-gray-900">{faq.question}</h3>
                 <span className="text-2xl text-green-800">
-                  {openIndex === index ? '−' : '+'}
+                  {openIndex === index ? '' : '+'}
                 </span>
               </div>
               {openIndex === index && (
