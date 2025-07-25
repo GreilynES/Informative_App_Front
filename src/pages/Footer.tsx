@@ -37,10 +37,15 @@ export default function FooterPage() {
             <p className="text-sm font-semibold mb-4 border-b border-gray-600 pb-1">
               Redes sociales
             </p>
-            <div className="flex items-center gap-2 mt-2">
+            <a
+              href="https://www.facebook.com/Cámara Ganaderos Hojancha"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 mt-2 hover:underline"
+            >
               <Facebook className="w-5 h-5 text-white" />
               <span className="text-sm">Cámara de Ganaderos de Hojancha</span>
-            </div>
+              </a>
           </div>
         </div>
 
@@ -50,11 +55,10 @@ export default function FooterPage() {
             Enlaces Rápidos
           </h3>
           <ul className="text-sm space-y-2">
-            <li><a href="#" className="hover:underline">Sobre Nosotros</a></li>
-            <li><a href="#" className="hover:underline">Eventos</a></li>
-            <li><a href="#" className="hover:underline">Servicios</a></li>
-            <li><a href="#" className="hover:underline">Proyectos</a></li>
-            <li><a href="#" className="hover:underline">Formularios</a></li>
+            <li><a href="#AboutUsPage" className="hover:underline">Sobre Nosotros</a></li>
+            <li><a href="#EventsPage" className="hover:underline">Eventos</a></li>
+            <li><a href="#ServicesPage" className="hover:underline">Servicios</a></li>
+            <li><a href="#FormsPage" className="hover:underline">Formularios</a></li>
           </ul>
         </div>
 
