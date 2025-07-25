@@ -19,4 +19,9 @@ export const faqs: FAQ[] = [
     answer:
       'Apoyo en actividades ganaderas, jornadas ambientales, trabajo comunitario y eventos educativos.',
   },
+  {
+  question: '¿Qué beneficios obtengo al ser asociado?',
+  answer:
+    'Como asociado tendrás acceso completo a todos nuestros servicios, derecho a voto en asambleas, participación en la toma de decisiones y beneficios exclusivos para miembros activos.',
+  }
 ]
