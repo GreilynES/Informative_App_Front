@@ -1,59 +1,83 @@
-import { Eye, Target } from "lucide-react"
-import { aboutUs } from "../models/AboutUsType"
+import { Users, Target, Eye } from "lucide-react";
 
 export default function AboutUsPage() {
   return (
-    <div className="relative min-h-screen bg-neutral-100 py-20 px-6 text-gray-800 overflow-hidden">
+    <section className="min-h-screen relative overflow-hidden text-white">
+      {/* Fondo de imagen */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat brightness-100"
+        style={{
+          backgroundImage:
+            "url('https://res.cloudinary.com/dqaseydi6/image/upload/v1753402786/WhatsApp_Image_2025-07-24_at_18.19.27_dd624d07_ve0ior.jpg')",
+        }}
+      />
+      {/* Overlay oscuro para contraste */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#3d2e00]/80 via-[#5a4500]/70 to-[#f5ecd9]/30" />
 
-      {/* Imagen de fondo con Tailwind */}
-      <div className="absolute inset-0 bg-[url('https://res.cloudinary.com/dqaseydi6/image/upload/v1753402786/WhatsApp_Image_2025-07-24_at_18.19.27_dd624d07_ve0ior.jpg')] bg-cover bg-center opacity-50 blur-[2px]" />
+      {/* Elementos decorativos animados */}
+      <div className="absolute inset-0">
+        <div className="absolute top-24 left-12 w-72 h-72 bg-[#fcd34d]/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#facc15]/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#f5ecd9]/10 rounded-full blur-3xl animate-pulse delay-500" />
+      </div>
 
-      {/* Contenido */}
-      <div className="relative z-10">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-lime-800 mb-4">Sobre Nosotros</h1>
+      {/* Contenido principal */}
+      <div className="relative z-10 max-w-6xl mx-auto space-y-12 pt-20 px-4">
+        {/* Título y descripción */}
+        <div className="text-center">
+          <h2 className="text-5xl font-bold text-[#fefae0]">Sobre Nosotros</h2>
+          <p className="text-lg text-[#fefae0]/80 mt-4 max-w-3xl mx-auto">
+            Asociación Cámara de Ganaderos de Hojancha: compromiso con el bienestar animal,
+            el desarrollo rural y la innovación sostenible en el sector pecuario.
+          </p>
         </div>
 
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10 items-stretch justify-center">
-          {/* Historia */}
-          <div className="bg-white/50 backdrop-blur-md backdrop-saturate-150 border border-white/20 rounded-2xl shadow-lg p-10 flex flex-col items-center justify-between text-center max-w-[600px] w-full">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-semibold text-lime-800 mb-4">
-                {aboutUs[0].title}
-              </h2>
-              <p className="text-gray-700 text-lg leading-relaxed max-w-md">
-                {aboutUs[0].description}
-              </p>
+        {/* Nuestra Historia */}
+        <div className="bg-gradient-to-br from-[#f9efdc] to-[#f5e8ce] p-10 rounded-2xl shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-lg border-l-4 border-yellow-500">
+          <div className="flex items-center mb-4">
+            <div className="p-3 bg-yellow-400 rounded-xl mr-4">
+              <Users className="w-6 h-6 text-white" />
             </div>
-            <div className="mt-6 w-20 h-1 bg-lime-600 rounded-full" />
+            <h3 className="text-3xl font-bold text-gray-900">Nuestra Historia</h3>
+          </div>
+          <p className="text-gray-700 leading-relaxed text-lg">
+            La Cámara de Ganaderos es una organización que representa los intereses del sector pecuario,
+            promoviendo el desarrollo sostenible, la innovación y la colaboración entre productores,
+            profesionales y comunidades rurales.
+          </p>
+        </div>
+
+        {/* Misión y Visión */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Misión */}
+          <div className="bg-gradient-to-br from-[#fcf4de] to-[#fdf7e5] rounded-xl p-8 shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-lg">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-yellow-400 rounded-xl mr-4">
+                <Target className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Nuestra Misión</h3>
+            </div>
+            <p className="text-gray-800 leading-relaxed">
+              Impulsar el bienestar animal, la productividad ganadera y el desarrollo rural mediante acciones
+              técnicas, educativas y de representación gremial.
+            </p>
           </div>
 
-          {/* Misión y Visión */}
-          <div className="flex flex-col gap-8 flex-1 w-full justify-between">
-            {/* Misión */}
-            <div className="rounded-2xl shadow-lg p-8 bg-gradient-to-r from-lime-600 to-green-500 text-white flex flex-col justify-between h-full">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="bg-white bg-opacity-20 p-3 rounded-full">
-                  <Target className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold">{aboutUs[1].title}</h3>
+          {/* Visión */}
+          <div className="bg-gradient-to-br from-[#fcf4de] to-[#fdf7e5] rounded-xl p-8 shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-lg">
+            <div className="flex items-center mb-3">
+              <div className="p-2 bg-yellow-400 rounded-xl mr-4">
+                <Eye className="w-5 h-5 text-white" />
               </div>
-              <p className="text-white text-lg leading-relaxed">{aboutUs[1].description}</p>
+              <h3 className="text-xl font-bold text-gray-900">Nuestra Visión</h3>
             </div>
-
-            {/* Visión */}
-            <div className="rounded-2xl shadow-lg p-8 bg-gradient-to-r from-green-500 to-lime-600 text-white flex flex-col justify-between h-full">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="bg-white bg-opacity-20 p-3 rounded-full">
-                  <Eye className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold">{aboutUs[2].title}</h3>
-              </div>
-              <p className="text-white text-lg leading-relaxed">{aboutUs[2].description}</p>
-            </div>
+            <p className="text-gray-800 leading-relaxed">
+              Ser la entidad líder en apoyo al sector ganadero nacional, reconocida por su compromiso,
+              innovación y contribución al desarrollo sostenible.
+            </p>
           </div>
         </div>
       </div>
-    </div>
-  )
+    </section>
+  );
 }
