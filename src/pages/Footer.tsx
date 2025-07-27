@@ -7,7 +7,8 @@ export default function FooterPage() {
       <div className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-4 gap-10">
 
         {/* LOGO + NOMBRE */}
-        <div className="flex flex-col items-center md:items-start space-y-3">
+        <div className="flex flex-col items-ce
+        nter md:items-start space-y-3">
           <img
             src="/logo-camara.png"
             alt="Logo Cámara"
