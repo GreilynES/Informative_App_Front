@@ -16,37 +16,39 @@ const Navbar = () => {
   }, [])
 
   return (
-    <nav className="sticky top-0 w-full z-50 bg-white text-black px-6 py-4 shadow-md">
+    <nav className="sticky top-0 w-full z-50 bg-white/80 backdrop-blur-md text-black px-16 py-4 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <a href="/">
           <img
-            src="https://scontent.fsjo10-1.fna.fbcdn.net/v/t39.30808-6/344308804_248819884498419_3417268054519992459_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=DXCASBOuGL0Q7kNvwEIMeFk&_nc_oc=AdlO3psBNz83VN2OLUAnjOTGcLdRnRiyeiKBpXXqZBDlr8ziB1nVc3ExlzviMcbmM7U&_nc_zt=23&_nc_ht=scontent.fsjo10-1.fna&_nc_gid=j1fEJI4JgSKGA73_nFmAHQ&oh=00_AfQw-l5l-HUNN6s3nj6uZvyCiANbt8zXl1i59zRn7kbW1A&oe=687E45D2"
-            alt="Logo"
-            className="h-12 w-12 rounded-full object-cover"
+            src="/logo-camara.png"
+            alt="Logo Cámara"
+            className="w-16 mb-2"
           />
         </a>
 
         <div className="flex items-center space-x-8 ml-auto">
-          <ul className="flex space-x-6 text-lg font-medium ml-auto">
+          <ul className="flex space-x-6 text-base font-medium ml-auto text-gray-800">
             <li>
-              <a href="#AboutUsPage" className="hover:underline">
+              <a href="#AboutUsPage" className="hover:text-[#6D8B37] transition-colors">
                 Sobre Nosotros
               </a>
             </li>
             <li>
-              <a href="#EventsPage" className="hover:underline">
+              <a href="#EventsPage" className="hover:text-[#6D8B37] transition-colors">
                 Eventos
               </a>
             </li>
             <li>
-              <a href="#ServicesPage" className="hover:underline">
+              <a href="#ServicesPage" className="hover:text-[#6D8B37] transition-colors">
                 Servicios
               </a>
             </li>
+
+            {/* Dropdown */}
             <li className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="hover:underline focus:outline-none flex items-center gap-1"
+                className="hover:text-[#6D8B37] transition-colors focus:outline-none flex items-center gap-1"
               >
                 Formularios
                 <ChevronDown
@@ -57,11 +59,11 @@ const Navbar = () => {
               </button>
 
               {isDropdownOpen && (
-                <ul className="absolute right-0 mt-2 w-40 bg-white text-black shadow-lg rounded z-10">
+                <ul className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-md border border-neutral-200 z-50">
                   <li>
                     <a
                       href="/forms/volunteers"
-                      className="block px-4 py-2 hover:bg-gray-200"
+                      className="block px-4 py-2 hover:bg-[#F3F4EC] text-sm text-gray-800"
                     >
                       Voluntarios
                     </a>
@@ -69,7 +71,7 @@ const Navbar = () => {
                   <li>
                     <a
                       href="/forms/asociados"
-                      className="block px-4 py-2 hover:bg-gray-200"
+                      className="block px-4 py-2 hover:bg-[#F3F4EC] text-sm text-gray-800"
                     >
                       Asociados
                     </a>
@@ -78,11 +80,15 @@ const Navbar = () => {
               )}
             </li>
           </ul>
-          <button className="text-black px-4 py-2 rounded hover:bg-gray-800 transition duration-300">
-            <a href="/login" className="text-lg font-semibold">
-              <ShieldUser />
-            </a>
-          </button>
+
+          {/* Icono login */}
+          <a
+            href="/login"
+            className="text-gray-800 hover:text-[#D8B769] transition-colors p-2 rounded-full border border-transparent hover:border-[#D8B769]"
+            title="Área Privada"
+          >
+            <ShieldUser className="w-6 h-6" />
+          </a>
         </div>
       </div>
     </nav>

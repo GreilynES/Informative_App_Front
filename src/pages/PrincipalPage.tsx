@@ -1,98 +1,90 @@
-import { Calendar, ChevronRight} from "lucide-react"
+import { Calendar, ChevronRight } from "lucide-react"
 import { events } from "../models/EventType"
 import { RippleButton } from "../animations/Buttons"
 import { principalType } from "../models/PrincipalType"
 
 export default function PrincipalPage() {
-  const subastaEvent = events.find((event) => event.title.toLowerCase().includes("subasta"))
+  const subastaEvent = events.find((event) =>
+    event.title.toLowerCase().includes("subasta")
+  )
 
   return (
-    <div className="min-h-screen bg-green-50 flex justify-between items-center">
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
+      <main className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16 py-12">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Left Section - Hero Content */}
+          {/* IZQUIERDA */}
           <div className="space-y-8">
-            {/* Organization Badge */}
-      
-            {/* Main Title - With Ganaderos in green */}
-           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold text-[#2E321B] mb-6">
               Asociación Cámara
               <br />
-              de <span className="text-green-600">Ganaderos</span>
+              de <span className="text-[#6F8C1F]">Ganaderos</span>
               <br />
               Hojancha
             </h1>
 
-            {/* Description */}
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                {principalType.description}
+            <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
+              {principalType.description}
             </p>
 
-            {/* Action Buttons */}
             <div className="flex flex-row gap-8">
               <a href="#FooterPage">
-                <RippleButton className="px-6 py-2 bg-green-600 hover:bg-green-600 text-white rounded-md font-medium transition-all duration-200">
-                Contáctanos
+                <RippleButton className="px-6 py-2 bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium transition-all duration-200">
+                  Contáctanos
                 </RippleButton>
               </a>
-               <a href="#AboutUsPage">
+              <a href="#AboutUsPage">
                 <RippleButton
-                variant="outline"
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-yellow-100 transition-colors duration-200 bg-gray-50 flex items-center"
-              >
-               Conocer más <ChevronRight className="w-4 h-4 ml-1" />
-              </RippleButton>
+                  variant="outline"
+                  className="px-6 py-2 border border-[#CDD577] text-[#2E321B] rounded-md font-medium hover:bg-[#F5F7EC] transition-colors duration-200 bg-white flex items-center"
+                >
+                  Conocer más
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </RippleButton>
               </a>
             </div>
           </div>
 
-          {/* Right Section - Tilted Event Card */}
-           <div className=" flex justify-center items-center">
+          {/* DERECHA */}
+          <div className="flex justify-center items-center">
             {subastaEvent ? (
-              <div className=" relative">
-                {/* Pin Design - Thumbtack - moved to corner */}
+              <div className="relative">
+                {/* Pin */}
                 <div className="absolute -top-4 left-2 z-30">
                   <div className="relative">
-                    {/* Pin body - cylindrical look */}
-                    <div className="w-4 h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full shadow-lg relative">
-                      {/* Pin head - flat circular top */}
-                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-yellow-500 to-yellow-600  rounded-full shadow-md border-1 border-yellow-600">
-                        <div className="absolute top-1 left-1 w-2 h-2 bg-yellow-200 rounded-full opacity-70"></div>
+                    <div className="w-4 h-8 bg-gradient-to-br from-[#475C1D] to-[#6F8C1F] rounded-full shadow-lg relative">
+                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-[#475C1D] to-[#6F8C1F] rounded-full shadow-md border border-[#6F8C1F]">
+                        <div className="absolute top-1 left-1 w-2 h-2 bg-[#F5F7EC] rounded-full opacity-70"></div>
                       </div>
-                      {/* Pin tip */}
-                      <div className="absolute z-0 -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-gray-400 rounded-b-full"></div>
+                      <div className="absolute z-0 -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-[#99997f] rounded-b-full"></div>
                     </div>
                   </div>
                 </div>
 
-                {/* Single Card Container - no border */}
+                {/* Card */}
                 <div
                   className="w-[430px] h-[360px] bg-white shadow-2xl transform rounded-lg rotate-3 hover:rotate-0 transition-transform duration-500 ease-in-out relative"
-                  style={{
-                    transformOrigin: "top left",
-                  }}
+                  style={{ transformOrigin: "top left" }}
                 >
-                  {/* Event photo */}
                   <div className="p-4">
                     <img
                       src={
-                        subastaEvent.illustration || "/placeholder.svg?height=180&width=350&query=cattle auction event"
+                        subastaEvent.illustration ||
+                        "/placeholder.svg?height=180&width=350&query=cattle auction event"
                       }
                       alt="Subasta de ganado"
                       className="w-full h-60 object-cover rounded-lg"
                     />
                   </div>
 
-                  {/* Event information at the bottom */}
                   <div className="px-4 pb-4">
-                    <div className="flex items-center space-x-2 text-green-600 text-xg font-medium mb-2">
-                      <Calendar className="w-5 h-" />
+                    <div className="flex items-center space-x-2 text-[#6F8C1F] text-base font-medium mb-2">
+                      <Calendar className="w-5 h-5" />
                       <span>{subastaEvent.date}</span>
                     </div>
-                    <h3 className="text-xg font-bold text-gray-900 mb-1">{subastaEvent.title}</h3>
-                    <p className="text-xs text-gray-600">{subastaEvent.description}</p>
+                    <h3 className="text-base font-bold text-[#2E321B] mb-1">
+                      {subastaEvent.title}
+                    </h3>
+                    <p className="text-xs text-[#475C1D]">{subastaEvent.description}</p>
                   </div>
                 </div>
               </div>
@@ -103,7 +95,7 @@ export default function PrincipalPage() {
             )}
           </div>
         </div>
-      </main>    
+      </main>
     </div>
   )
 }
