@@ -1,5 +1,7 @@
-import React from 'react'
+
 import { Phone, Mail, Facebook, Clock4 } from 'lucide-react'
+import { contact, quickLinks, schedule } from '../components/Footer/FooterCard'
+
 
 export default function FooterPage() {
   return (
@@ -8,11 +10,7 @@ export default function FooterPage() {
 
         {/* LOGO + NOMBRE */}
         <div className="flex flex-col items-center md:items-start space-y-3">
-          <img
-            src="/logo-camara.png"
-            alt="Logo Cámara"
-            className="w-16 mb-2"
-          />
+          <img src="/logo-camara.png" alt="Logo Cámara" className="w-16 mb-2" />
           <p className="text-sm font-semibold text-gray-200 text-center md:text-left leading-tight">
             Cámara de Ganaderos<br />Hojancha
           </p>
@@ -23,63 +21,56 @@ export default function FooterPage() {
 
         {/* CONTACTO */}
         <div className="space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold text-[#D8B769]">Contacto</h3>
-            <div className="h-px w-24 bg-[#333] mt-1"></div>
-          </div>
+          <h3 className="text-sm font-semibold text-[#D8B769]">Contacto</h3>
+          <div className="h-px w-24 bg-[#333] mt-1"></div>
+
           <div className="flex items-center gap-2 text-sm text-gray-300">
             <Phone className="w-4 h-4 text-[#6D8B37]" />
-            <span>83770589</span>
+            <span>{contact.phone}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-300">
             <Mail className="w-4 h-4 text-[#6D8B37]" />
-            <span>camaradeganaderos@gmail.com</span>
+            <span>{contact.email}</span>
           </div>
           <a
-            href="https://www.facebook.com/Cámara Ganaderos Hojancha"
+            href={contact.facebook.url}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-gray-300 hover:text-[#D8B769] transition-colors"
           >
             <Facebook className="w-5 h-5 text-[#6D8B37]" />
-            <span>Cámara de Ganaderos de Hojancha</span>
+            <span>{contact.facebook.name}</span>
           </a>
         </div>
 
         {/* ENLACES RÁPIDOS */}
         <div className="space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold text-[#D8B769]">Enlaces Rápidos</h3>
-            <div className="h-px w-24 bg-[#333] mt-1"></div>
-          </div>
+          <h3 className="text-sm font-semibold text-[#D8B769]">Enlaces Rápidos</h3>
+          <div className="h-px w-24 bg-[#333] mt-1"></div>
           <ul className="text-sm space-y-2 text-gray-300">
-            <li>
-              <a href="#AboutUsPage" className="hover:underline hover:text-[#6D8B37] transition-colors">Sobre Nosotros</a>
-            </li>
-            <li>
-              <a href="#EventsPage" className="hover:underline hover:text-[#6D8B37] transition-colors">Eventos</a>
-            </li>
-            <li>
-              <a href="#ServicesPage" className="hover:underline hover:text-[#6D8B37] transition-colors">Servicios</a>
-            </li>
-            <li>
-              <a href="#FormsPage" className="hover:underline hover:text-[#6D8B37] transition-colors">Formularios</a>
-            </li>
+            {quickLinks.map((link) => (
+              <li key={link.name}>
+                <a
+                  href={link.href}
+                  className="hover:underline hover:text-[#6D8B37] transition-colors"
+                >
+                  {link.name}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 
         {/* HORARIO */}
         <div className="space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold text-[#D8B769]">Horario</h3>
-            <div className="h-px w-24 bg-[#333] mt-1"></div>
-          </div>
+          <h3 className="text-sm font-semibold text-[#D8B769]">Horario</h3>
+          <div className="h-px w-24 bg-[#333] mt-1"></div>
           <div className="flex items-start gap-2 text-sm text-gray-300 leading-relaxed">
             <Clock4 className="w-4 h-4 mt-1 text-[#6D8B37]" />
             <div>
-              <p className="font-semibold">Administrativo</p>
-              <p>Hojancha: Lunes a Sábado</p>
-              <p>7:00 am - 5:00 pm</p>
+              <p className="font-semibold">{schedule.title}</p>
+              <p>{schedule.location}</p>
+              <p>{schedule.days}</p>
             </div>
           </div>
         </div>
