@@ -1,7 +1,7 @@
 import type React from "react"
 import { useState } from "react"
 import { Award, CheckCircle, FileText, Heart, Upload, Users } from "lucide-react"
-import { initialAssociatesFormData, type AssociatesFormData } from "../models/AssociatesForm"
+import { initialAssociatesFormData, type AssociatesFormData } from "../models/AssociatesType"
 
 export default function AssociatesForm() {
   const [formData, setFormData] = useState<AssociatesFormData>(initialAssociatesFormData)
@@ -121,7 +121,7 @@ export default function AssociatesForm() {
               </p>
               <div className="flex justify-center">
                 <a
-                  href="/docs/Diagnóstico_de_Finca.docx"
+                  href="/Docs/Diagnóstico_de_Finca.docx"
                   download
                   className="inline-block bg-[#708C3E] hover:bg-[#5d7334] text-white px-6 py-2 rounded-md text-sm font-medium transition"
                 >
