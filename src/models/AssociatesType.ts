@@ -1,9 +1,9 @@
 export interface AssociatesFormData {
   // Información Personal
+  cedula: string
   nombre: string
   apellidos: string
-  cedula: string
-  edad: string
+  fechaNacimiento: string
 
   // Información de Contacto
   telefono: string
@@ -28,10 +28,10 @@ export interface AssociatesFormData {
 
 export const initialAssociatesFormData: AssociatesFormData = {
   // Información Personal
-  nombre: "",
-  apellidos: "",
-  cedula: "",
-  edad: "",
+    cedula: "",
+    nombre: "",
+    apellidos: "",
+    fechaNacimiento: "",
 
   // Información de Contacto
   telefono: "",

@@ -2,14 +2,17 @@ import type React from "react"
 import { useState } from "react"
 import { Award, CheckCircle, FileText, Heart, Upload, Users } from "lucide-react"
 import { initialAssociatesFormData, type AssociatesFormData } from "../models/AssociatesType"
+import { useCedulaLookup } from "../hooks/IdApiHook"
 
 export default function AssociatesForm() {
   const [formData, setFormData] = useState<AssociatesFormData>(initialAssociatesFormData)
   const [] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const { lookup, isLoading, error } = useCedulaLookup()
+
 
   const handleInputChange = (field: keyof AssociatesFormData, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -144,21 +147,51 @@ export default function AssociatesForm() {
                 <div className="p-6 space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="nombre" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                        Nombre *
-                      </label>
-                      <input
-                        id="nombre"
-                        type="text"
-                        placeholder="Tu nombre"
-                        value={formData.nombre}
-                        onChange={(e) => handleInputChange("nombre", e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
-                      />
+                      <label htmlFor="cedula" className="block text-sm font-medium text-gray-700 mb-1">
+                          Cédula *
+                        </label>
+                        <input
+                          id="cedula"
+                          type="text"
+                          placeholder="Número de cédula"
+                          value={formData.cedula}
+                         onChange={async (e) => {
+                            const value = e.target.value
+                            handleInputChange("cedula", value)
+
+                            if (value.length >= 9) {
+                              const result = await lookup(value)
+                              if (result) {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  nombre: result.firstname1 || result.firstname || "",
+                                  apellidos: `${result.lastname1 || ""} ${result.lastname2 || ""}`.trim(),
+                                  fechaNacimiento: "" // Esta API no lo trae
+                                }))
+                              }
+                            }
+                          }}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        />
                     </div>
                     <div>
-                      <label htmlFor="apellidos" className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                          Nombre *
+                        </label>
+                        <input
+                          id="nombre"
+                          type="text"
+                          placeholder="Tu nombre"
+                          value={formData.nombre}
+                          readOnly
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700 mb-1">
                         Apellidos *
                       </label>
                       <input
@@ -166,38 +199,21 @@ export default function AssociatesForm() {
                         type="text"
                         placeholder="Tus apellidos"
                         value={formData.apellidos}
-                        onChange={(e) => handleInputChange("apellidos", e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="cedula" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                        Cédula *
-                      </label>
-                      <input
-                        id="cedula"
-                        type="text"
-                        placeholder="Número de cédula"
-                        value={formData.cedula}
-                        onChange={(e) => handleInputChange("cedula", e.target.value)}
-                        required
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                        readOnly
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                     <div>
-                      <label htmlFor="edad" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                        Edad
+                       <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de Nacimiento *
                       </label>
                       <input
-                        id="edad"
-                        type="number"
-                        placeholder="Tu edad"
-                        value={formData.edad}
-                        onChange={(e) => handleInputChange("edad", e.target.value)}
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                        id="fechaNacimiento"
+                        type="date"
+                        value={formData.fechaNacimiento}
+                        onChange={(e) => handleInputChange("fechaNacimiento", e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
                   </div>

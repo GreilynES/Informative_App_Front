@@ -1,8 +1,9 @@
 export type VolunteerFormData = {
+   cedula: string
   nombre: string
   apellidos: string
-  cedula: string
-  edad: string
+  fechaNacimiento: string
+
   telefono: string
   email: string
   direccion: string
@@ -16,10 +17,11 @@ export type VolunteerFormData = {
 }
 
 export const initialVolunteerFormData: VolunteerFormData = {
-  nombre: "",
-  apellidos: "",
   cedula: "",
-  edad: "",
+    nombre: "",
+    apellidos: "",
+    fechaNacimiento: "",
+    
   telefono: "",
   email: "",
   direccion: "",
