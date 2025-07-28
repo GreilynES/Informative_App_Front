@@ -1,59 +1,59 @@
-import { Eye, Target } from "lucide-react"
-import { aboutUs } from "../models/AboutUsType"
+import { Users, Target, Eye } from "lucide-react"
+import { useAboutUs } from "../hooks/useAboutUs"
+import { AboutUsCard } from "../components/AboutUs/AboutUsCard"
+import AboutUsBackground from "../components/AboutUs/AboutUsBackground"
 
 export default function AboutUsPage() {
+  const { data: aboutUs = [], isLoading } = useAboutUs()
+
+  if (isLoading) return <p className="text-center text-white">Cargando...</p>
+
+  const historia = aboutUs.find((item) => item.title.includes("Historia"))
+  const mision = aboutUs.find((item) => item.title.includes("Misión"))
+  const vision = aboutUs.find((item) => item.title.includes("Visión"))
+
   return (
-    <div className="relative min-h-screen bg-neutral-100 py-20 px-6 text-gray-800 overflow-hidden">
+    <section className="min-h-screen relative overflow-hidden">
+      {/* Background */}
+      <AboutUsBackground />
 
-      {/* Imagen de fondo con Tailwind */}
-      <div className="absolute inset-0 bg-[url('https://res.cloudinary.com/dqaseydi6/image/upload/v1753402786/WhatsApp_Image_2025-07-24_at_18.19.27_dd624d07_ve0ior.jpg')] bg-cover bg-center opacity-50 blur-[2px]" />
-
-      {/* Contenido */}
-      <div className="relative z-10">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-lime-800 mb-4">Sobre Nosotros</h1>
+      {/* Main Content */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-2 py-20 space-y-12">
+        <div className="text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Sobre Nosotros</h2>
+          <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+            Asociación Cámara de Ganaderos de Hojancha: compromiso con el bienestar animal, el desarrollo rural y la
+            innovación sostenible en el sector pecuario.
+          </p>
         </div>
 
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-10 items-stretch justify-center">
-          {/* Historia */}
-          <div className="bg-white/50 backdrop-blur-md backdrop-saturate-150 border border-white/20 rounded-2xl shadow-lg p-10 flex flex-col items-center justify-between text-center max-w-[600px] w-full">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-semibold text-lime-800 mb-4">
-                {aboutUs[0].title}
-              </h2>
-              <p className="text-gray-700 text-lg leading-relaxed max-w-md">
-                {aboutUs[0].description}
-              </p>
-            </div>
-            <div className="mt-6 w-20 h-1 bg-lime-600 rounded-full" />
-          </div>
+        {/* Historia */}
+        {historia && (
+          <AboutUsCard
+            icon={<Users className="w-6 h-6 text-white" />}
+            title={historia.title}
+            description={historia.description}
+          />
+        )}
 
-          {/* Misión y Visión */}
-          <div className="flex flex-col gap-8 flex-1 w-full justify-between">
-            {/* Misión */}
-            <div className="rounded-2xl shadow-lg p-8 bg-gradient-to-r from-lime-600 to-green-500 text-white flex flex-col justify-between h-full">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="bg-white bg-opacity-20 p-3 rounded-full">
-                  <Target className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold">{aboutUs[1].title}</h3>
-              </div>
-              <p className="text-white text-lg leading-relaxed">{aboutUs[1].description}</p>
-            </div>
-
-            {/* Visión */}
-            <div className="rounded-2xl shadow-lg p-8 bg-gradient-to-r from-green-500 to-lime-600 text-white flex flex-col justify-between h-full">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="bg-white bg-opacity-20 p-3 rounded-full">
-                  <Eye className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold">{aboutUs[2].title}</h3>
-              </div>
-              <p className="text-white text-lg leading-relaxed">{aboutUs[2].description}</p>
-            </div>
-          </div>
+        {/* Misión y Visión */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {mision && (
+            <AboutUsCard
+              icon={<Target className="w-5 h-5 text-white" />}
+              title={mision.title}
+              description={mision.description}
+            />
+          )}
+          {vision && (
+            <AboutUsCard
+              icon={<Eye className="w-5 h-5 text-white" />}
+              title={vision.title}
+              description={vision.description}
+            />
+          )}
         </div>
       </div>
-    </div>
+    </section>
   )
 }

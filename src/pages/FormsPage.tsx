@@ -1,54 +1,75 @@
-import { Building2, Heart } from 'lucide-react' // Asegúrate de tener instalada lucide-react
+import { ArrowRight, FileText, Heart } from "lucide-react"
+import { useRouter } from '@tanstack/react-router'
 
 export default function FormsPage() {
+  const router = useRouter()
+
   return (
-    <div className="min-h-screen bg-neutral-100 text-gray-800 py-16 px-6">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl font-bold text-lime-800 mb-4">Únete a Nuestra Comunidad</h1>
-        <p className="text-xl text-gray-600">
-          Elige el tipo de participación que mejor se adapte a tus objetivos y disponibilidad.
+    <section className="min-h-screen bg-[#FAFDF4] py-20 px-16">
+      <div className="text-center">
+        <h2 className="text-4xl md:text-5xl font-bold text-[#2E321B] mb-6">
+          Forma parte de la Cámara de Ganaderos
+        </h2>
+        <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
+          Elige el tipo de participación que mejor se adapte a tus objetivos y disponibilidad. Juntos construimos el
+          futuro del sector ganadero.
         </p>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-center gap-10 max-w-6xl mx-auto">
-        {/* ASOCIADOS */}
-        <div className="bg-white rounded-xl shadow-lg p-8 flex-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-amber-200 text-lime-700 p-4 rounded-full">
-              <Building2 size={40} />
+      <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-16">
+        {/* ASOCIADOS CARD */}
+        <div className="group relative overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 rounded-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#A9C86E]/20 to-[#475C1D]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+          <div className="p-8 relative z-10">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#7A944B] to-[#475C1D] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <FileText className="w-8 h-8 text-white" />
             </div>
+            <h3 className="text-2xl font-bold text-[#2E321B] mb-4">ASOCIADOS</h3>
+            <p className="text-[#475C1D] mb-6 leading-relaxed">
+              Membresía oficial con derechos y beneficios exclusivos
+            </p>
+            <div className="bg-gradient-to-r from-[#F9F6EA] to-[#FAF4DA] rounded-xl p-6 mb-6 border border-[#D8B769]/50">
+              <p className="text-[#2E321B] leading-relaxed">
+                Como asociado tendrás acceso completo a todos nuestros servicios, derecho a voto en asambleas,
+                participación en la toma de decisiones y acceso a beneficios exclusivos para miembros.
+              </p>
+            </div>
+            <button
+              onClick={() => router.navigate({ to: '/associates' })}
+              className="w-full bg-gradient-to-r from-[#7A944B] to-[#475C1D] hover:from-[#6A853E] hover:to-[#3A4D17] text-white font-semibold py-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+            >
+              Formulario
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+            </button>
           </div>
-          <h2 className="text-2xl font-bold text-lime-800 uppercase mb-2">Asociados</h2>
-          <p className="text-gray-600 mb-6 text-base">Membresía oficial con derechos y beneficios</p>
-          <div className="bg-amber-100 text-lime-900 p-4 rounded-lg text-lg mb-6">
-            Como asociado tendrás acceso completo a todos nuestros servicios, derecho a voto en asambleas,
-            participación en la toma de decisiones y acceso a beneficios exclusivos para miembros.
-          </div>
-          <button className="bg-lime-800 hover:bg-lime-900 text-white px-6 py-2 rounded-md text-lg font-medium flex items-center justify-center gap-2 mx-auto">
-            Formulario
-            <span>→</span>
-          </button>
         </div>
 
-        {/* VOLUNTARIOS */}
-        <div className="bg-white rounded-xl shadow-lg p-8 flex-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-green-100 text-green-600 p-4 rounded-full">
-              <Heart size={40} />
+        {/* VOLUNTARIOS CARD */}
+        <div className="group relative overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 rounded-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#E7C56D]/20 to-[#C1A548]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+          <div className="p-8 relative z-10">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#E7C56D] to-[#C1A548] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <Heart className="w-8 h-8 text-white" />
             </div>
+            <h3 className="text-2xl font-bold text-[#2E321B] mb-4">VOLUNTARIOS</h3>
+            <p className="text-[#475C1D] mb-6 leading-relaxed">
+              Colaboración flexible en proyectos específicos
+            </p>
+            <div className="bg-gradient-to-br from-[#FDF7E6] to-[#FCF3D6] rounded-xl p-6 mb-6 border border-[#E7C56D]/50">
+              <p className="text-[#2E321B] leading-relaxed">
+                Como voluntario podrás colaborar en nuestros proyectos sociales, participar en actividades comunitarias y contribuir con tu tiempo y habilidades según tu disponibilidad.
+              </p>
+            </div>
+            <button
+              onClick={() => router.navigate({ to: '/volunteers' })}
+              className="w-full bg-gradient-to-r from-[#E7C56D] to-[#C1A548] hover:from-[#DAB45B] hover:to-[#A9882A] text-white font-semibold py-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+            >
+              Formulario
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+            </button>
           </div>
-          <h2 className="text-2xl font-bold text-green-800 uppercase mb-2">Voluntarios</h2>
-          <p className="text-gray-600 mb-6 text-base">Colaboración flexible en proyectos específicos</p>
-          <div className="bg-green-50 text-green-900 p-4 rounded-lg text-lg mb-6">
-            Como voluntario podrás colaborar en nuestros proyectos sociales, participar en actividades comunitarias
-            y contribuir con tu tiempo y habilidades según tu disponibilidad.
-          </div>
-          <button className="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-md text-lg font-medium flex items-center justify-center gap-2 mx-auto">
-            Formulario
-            <span>→</span>
-          </button>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

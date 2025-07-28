@@ -1,39 +1,15 @@
-import AboutUsPage from './pages/AboutUsPage'
-import EventsPage from './pages/EventsPage'
+import { Outlet } from '@tanstack/react-router'
 import Navbar from './pages/Navbar'
-import PrincipalPage from './pages/PrincipalPage'
-import FormsPage from './pages/FormsPage'
-import ServicesPage from './pages/ServicesPage'
-import FAQPage from './pages/FAQPage'
 import Footer from './pages/Footer'
+import FloatingWhatsapp from './components/FloatingWhatsapp'
 
-
-function App() {
-
+export default function App() {
   return (
     <>
-      <Navbar/>
-       <div id="PrincipalPage">
-        <PrincipalPage />
-      </div>
-       <div id="AboutUsPage">
-        <AboutUsPage />
-      </div>
-      <div id="EventsPage">
-        <EventsPage />
-      </div>
-      <div id="ServicesPage">
-        <ServicesPage />
-      </div>
-      <div id="FormsPage">
-        <FormsPage />
-      </div>
-      <div id="FAQPage">
-        <FAQPage />
-      </div>
-      <Footer/>
+      <Navbar />
+      <Outlet />
+      <FloatingWhatsapp />
+      <Footer />
     </>
   )
 }
-
-export default App

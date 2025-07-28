@@ -25,32 +25,51 @@ export default function FAQPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-16 px-4">
-      <div className="w-full max-w-3xl">
-        <h2 className="text-3xl sm:text-4xl font-semibold text-center text-green-800 mb-24">
-          Preguntas frecuentes
+    <div className="min-h-screen py-24 px-4 flex justify-center items-start bg-gradient-to-b from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
+      <div className="w-full max-w-3xl px-4 sm:px-8 lg:px-0">
+        {/* Título */}
+        <h2 className="text-4xl md:text-5xl font-bold text-center text-[#2E321B] mb-6">
+          Preguntas Frecuentes
         </h2>
 
-        <div className="space-y-10">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              onClick={() => toggleFAQ(index)}
-              className="bg-white border border-green-800 rounded-xl shadow-md p-6 cursor-pointer transition-all duration-300 hover:shadow-lg"
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium text-gray-900">{faq.question}</h3>
-                <span className="text-2xl text-green-800">
-                  {openIndex === index ? '−' : '+'}
-                </span>
-              </div>
-              {openIndex === index && (
-                <p className="mt-3 text-gray-700 text-base leading-relaxed">
-                  {faq.answer}
-                </p>
-              )}
-            </div>
-          ))}
+        {/* Subtítulo */}
+        <p className="text-xl text-[#495F1F] max-w-2xl mx-auto mb-12 text-center">
+          Encuentra respuestas a las preguntas más comunes sobre nuestra organización
+        </p>
+
+        {/* Lista de FAQs */}
+        <div className="space-y-6">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index
+            return (
+              <div
+  key={index}
+  className={`rounded-2xl overflow-hidden border shadow-md transition-all duration-300 ${
+    isOpen ? 'bg-[#FDF9EB] border-[#d8b769]' : 'bg-[#FAF7EC] hover:bg-[#FDF9EB] border-[#e4d8ae]'
+  }`}
+>
+  <button
+    onClick={() => toggleFAQ(index)}
+    className={`w-full text-left px-6 py-5 flex justify-between items-center transition-all duration-300 ${
+      isOpen
+        ? 'text-[#6D8B37] font-semibold'
+        : 'text-[#2E321B] hover:text-[#6D8B37]'
+    }`}
+  >
+    <span className="text-lg font-medium">{faq.question}</span>
+    <span className="text-2xl font-bold">{isOpen ? '−' : '+'}</span>
+  </button>
+
+  <div
+    className={`px-6 text-base text-[#3B4D21] leading-relaxed overflow-hidden transition-all duration-300 ${
+      isOpen ? 'max-h-40 py-4' : 'max-h-0 py-0'
+    }`}
+  >
+    {faq.answer}
+  </div>
+</div>
+            )
+          })}
         </div>
       </div>
     </div>

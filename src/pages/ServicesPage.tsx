@@ -1,40 +1,40 @@
-import React, { useState } from "react";
-import { services, type ModalContent } from "../models/Services";
+import React, { useState } from "react"
+import { services, type ModalContent } from "../models/Services"
 
 export default function ServicesPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalContent, setModalContent] = useState<ModalContent>({
     title: "",
     description: "",
     image: ""
-  });
+  })
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const cardsPerSlide = 3;
-  const totalSlides = Math.ceil(services.length / cardsPerSlide);
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const cardsPerSlide = 3
+  const totalSlides = Math.ceil(services.length / cardsPerSlide)
 
   const goToPrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1));
-  };
+    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))
+  }
 
   const goToNext = () => {
-    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1));
-  };
+    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
+  }
 
   const openModal = (title: string, description: string, image: string) => {
-    setModalContent({ title, description, image });
-    setIsModalOpen(true);
-  };
+    setModalContent({ title, description, image })
+    setIsModalOpen(true)
+  }
 
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => setIsModalOpen(false)
 
   return (
-    <div className="min-h-screen px-6 py-20 bg-[#f9f9f6] text-gray-800">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 text-center mb-6">
+    <div className="min-h-screen bg-[#F5F7EC]  text-[#2E321B] py-20">
+      <div className="container mx-auto px-20">
+        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">
           Nuestros Servicios
         </h1>
-        <p className="text-center text-lg text-neutral-600 mb-12">
+        <p className="text-center text-lg text-[#475C1D] mb-12">
           Desde capacitación técnica hasta innovación rural: apoyamos a nuestros asociados en cada paso.
         </p>
 
@@ -44,7 +44,7 @@ export default function ServicesPage() {
             onClick={goToPrev}
             className="absolute left-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center"
           >
-            <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-[#2E321B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
@@ -56,35 +56,41 @@ export default function ServicesPage() {
               .map((service, idx) => (
                 <div
                   key={idx}
-                  className="bg-white border-t-4 border-[#d8b769] rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col min-h-[320px] max-h-[320px] px-6 py-8"
+                  className="rounded-2xl shadow-sm hover:shadow-md hover:shadow-[#e7c78d]/40 transition-all duration-300 overflow-hidden"
                 >
-                  <h3 className="text-xl font-semibold text-neutral-800 mb-3">
-                    {service.title}
-                  </h3>
-                  <p className="text-neutral-600 text-sm mb-4 flex-grow">
-                    {service.cardDescription}
-                  </p>
-                  <button
-                    onClick={() =>
-                      openModal(service.title, service.modalDescription, service.image)
-                    }
-                    className="text-[#007f5f] font-medium text-sm hover:underline flex items-center gap-1 mt-auto"
-                  >
-                    Más información
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
+                  {/* Degradado superior */}
+                  <div className="h-2 bg-gradient-to-r from-[#E7C78D] via-[#D8B769] to-[#A7C957]" />
+
+                  {/* Cuerpo del card */}
+                  <div className="bg-white rounded-b-2xl flex flex-col min-h-[318px] max-h-[318px] px-6 py-8">
+                    <h3 className="text-xl font-semibold text-[#2E321B] mb-3">
+                      {service.title}
+                    </h3>
+                    <p className="text-[#475C1D] text-sm mb-4 flex-grow">
+                      {service.cardDescription}
+                    </p>
+                    <button
+                      onClick={() =>
+                        openModal(service.title, service.modalDescription, service.image)
+                      }
+                      className="text-[#007f5f] font-medium text-sm hover:underline flex items-center gap-1 mt-auto"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
+                      Más información
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))}
           </div>
@@ -94,7 +100,7 @@ export default function ServicesPage() {
             onClick={goToNext}
             className="absolute right-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center"
           >
-            <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-[#2E321B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -107,7 +113,7 @@ export default function ServicesPage() {
               key={idx}
               onClick={() => setCurrentSlide(idx)}
               className={`w-3 h-3 rounded-full ${
-                idx === currentSlide ? "bg-[#007f5f]" : "bg-gray-300"
+                idx === currentSlide ? "bg-[#d8b769]" : "bg-gray-300"
               }`}
             />
           ))}
@@ -129,16 +135,16 @@ export default function ServicesPage() {
               alt={modalContent.title}
               className="w-full h-48 object-cover rounded-lg mb-6"
             />
-            <h3 className="text-2xl font-bold mb-4 text-neutral-900">
+            <h3 className="text-2xl font-bold mb-4 text-[#2E321B]">
               {modalContent.title}
             </h3>
-            <p className="text-neutral-700 mb-6 leading-relaxed whitespace-pre-line">
+            <p className="text-[#475C1D] mb-6 leading-relaxed whitespace-pre-line">
               {modalContent.description}
             </p>
             <div className="text-right">
               <button
                 onClick={closeModal}
-                className="bg-gradient-to-r from-[#e7c78d] to-[#d8b769] text-neutral-900 font-semibold px-6 py-2 rounded-lg shadow hover:brightness-110 transition"
+                className="bg-gradient-to-r from-[#e7c78d] to-[#d8b769] text-[#2E321B] font-semibold px-6 py-2 rounded-lg shadow hover:brightness-110 transition"
               >
                 Cerrar
               </button>
@@ -147,5 +153,5 @@ export default function ServicesPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

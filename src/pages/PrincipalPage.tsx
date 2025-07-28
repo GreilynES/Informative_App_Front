@@ -1,75 +1,101 @@
-import { MessageCircleQuestionIcon} from "lucide-react"
+import { Calendar, ChevronRight } from "lucide-react"
 import { events } from "../models/EventType"
 import { RippleButton } from "../animations/Buttons"
 import { principalType } from "../models/PrincipalType"
 
 export default function PrincipalPage() {
-  const subastaEvent = events.find((event) => event.title.toLowerCase().includes("subasta"))
-
-    const whatsappNumber = "50685011152" 
-    const newWhatsappMessage = "¡Hola! Me gustaría obtener más información sobre la Asociación Cámara de Ganaderos Hojancha."
-    const encodedWhatsappMessage = encodeURIComponent(newWhatsappMessage)
-    const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodedWhatsappMessage}`
+  const subastaEvent = events.find((event) =>
+    event.title.toLowerCase().includes("subasta")
+  )
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-      <main className="w-full max-w-7xl bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col lg:flex-row items-center lg:items-stretch">
-        {/* Left Section - Hero Content */}
-        <div className="flex-1 p-8 md:p-12 lg:p-16 flex flex-col justify-center text-center lg:text-left space-y-6">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            {principalType.title}
-          </h1>
-          <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-xl mx-auto lg:mx-0">
-            {principalType.description}
-          </p>
-          <RippleButton className="mt-6 px-8 py-3 text-lg self-center lg:self-start bg-black text-white rounded-xl shadow-lg hover:bg-gray-800 transition-colors duration-200">
-            <a href="#Footer">Contactanos</a>
-          </RippleButton>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
+      <main className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16 py-12">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* IZQUIERDA */}
+          <div className="space-y-8">
+            <h1 className="text-5xl md:text-6xl font-bold text-[#2E321B] mb-6">
+              Asociación Cámara
+              <br />
+              de <span className="text-[#6F8C1F]">Ganaderos</span>
+              <br />
+              Hojancha
+            </h1>
 
-        {/* Right Section - Event Card */}
-        <div className="flex-1 flex justify-center items-center p-8 md:p-12 lg:p-16 bg-gray-100">
-          {subastaEvent ? (
-            <div className="w-full max-w-md shadow-xl rounded-lg overflow-hidden border border-gray-200 bg-white">
-              <div className="p-0">
-                <div className="relative w-full h-64 bg-gray-200 overflow-hidden">
-                   <img
-                        src={subastaEvent.illustration || "/placeholder.svg"}
-                        alt={subastaEvent.title}
-                        width={384} // Ancho de la imagen
-                        height={256} // Alto de la imagen
-                        className="object-cover w-full h-full"
-                      />
+            <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
+              {principalType.description}
+            </p>
+
+            <div className="flex flex-row gap-8">
+              <a href="#FooterPage">
+                <RippleButton className="px-6 py-2 bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium transition-all duration-200">
+                  Contáctanos
+                </RippleButton>
+              </a>
+              <a href="#AboutUsPage">
+                <RippleButton
+                  variant="outline"
+                  className="px-6 py-2 border border-[#CDD577] text-[#2E321B] rounded-md font-medium hover:bg-[#F5F7EC] transition-colors duration-200 bg-white flex items-center"
+                >
+                  Conocer más
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </RippleButton>
+              </a>
+            </div>
+          </div>
+
+          {/* DERECHA */}
+          <div className="flex justify-center items-center">
+            {subastaEvent ? (
+              <div className="relative">
+                {/* Pin */}
+                <div className="absolute -top-4 left-2 z-30">
+                  <div className="relative">
+                    <div className="w-4 h-8 bg-gradient-to-br from-[#475C1D] to-[#6F8C1F] rounded-full shadow-lg relative">
+                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-[#475C1D] to-[#6F8C1F] rounded-full shadow-md border border-[#6F8C1F]">
+                        <div className="absolute top-1 left-1 w-2 h-2 bg-[#F5F7EC] rounded-full opacity-70"></div>
+                      </div>
+                      <div className="absolute z-0 -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-[#99997f] rounded-b-full"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card */}
+                <div
+                  className="w-[430px] h-[360px] bg-white shadow-2xl transform rounded-lg rotate-3 hover:rotate-0 transition-transform duration-500 ease-in-out relative"
+                  style={{ transformOrigin: "top left" }}
+                >
+                  <div className="p-4">
+                    <img
+                      src={
+                        subastaEvent.illustration ||
+                        "/placeholder.svg?height=180&width=350&query=cattle auction event"
+                      }
+                      alt="Subasta de ganado"
+                      className="w-full h-60 object-cover rounded-lg"
+                    />
+                  </div>
+
+                  <div className="px-4 pb-4">
+                    <div className="flex items-center space-x-2 text-[#6F8C1F] text-base font-medium mb-2">
+                      <Calendar className="w-5 h-5" />
+                      <span>{subastaEvent.date}</span>
+                    </div>
+                    <h3 className="text-base font-bold text-[#2E321B] mb-1">
+                      {subastaEvent.title}
+                    </h3>
+                    <p className="text-xs text-[#475C1D]">{subastaEvent.description}</p>
+                  </div>
                 </div>
               </div>
-              <div className="p-6 text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{subastaEvent.title}</h2>
-                <p className="text-lg font-medium text-gray-600 mb-3">{subastaEvent.date}</p>
-                <p className="text-base text-gray-700 leading-relaxed">{subastaEvent.description}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full max-w-md shadow-lg rounded-lg bg-white border border-gray-200">
-              <div className="p-6 text-center text-gray-500">
+            ) : (
+              <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">
                 <p>No se encontró el evento de la subasta.</p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </main>
-
-      {/* Floating "Como puedo ayudarte?" bubble */}
-      <div className="fixed bottom-6 right-6 bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded-full shadow-md flex items-center space-x-2 text-sm cursor-pointer hover:bg-green-200 transition-colors duration-200">
-               <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="fixed bottom-6 right-6 bg-green-100 border border-green-300 text-green-800 px-4 py-2 rounded-full shadow-md flex items-center space-x-2 text-sm cursor-pointer hover:bg-green-200 transition-colors duration-200"
-              >
-              <MessageCircleQuestionIcon className="w-4 h-4" />
-              <span>¿Como puedo ayudarte?</span>
-              </a>
-      </div> 
     </div>
   )
 }
