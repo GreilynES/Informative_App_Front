@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState, useEffect } from "react"
 import { services, type ModalContent } from "../models/Services"
 
 export default function ServicesPage() {
@@ -6,20 +6,54 @@ export default function ServicesPage() {
   const [modalContent, setModalContent] = useState<ModalContent>({
     title: "",
     description: "",
-    image: ""
+    image: "",
   })
-
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+
   const cardsPerSlide = 3
-  const totalSlides = Math.ceil(services.length / cardsPerSlide)
+
+  // Crear array infinito: servicios originales + copia al final + copia al inicio
+  const infiniteServices = [...services, ...services, ...services]
+  const originalLength = services.length
+  const startIndex = originalLength // Empezamos en el medio
+
+  // Inicializar en el medio del array infinito
+  useEffect(() => {
+    setCurrentSlide(startIndex)
+  }, [startIndex])
 
   const goToPrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentSlide((prev) => prev - 1)
   }
 
   const goToNext = () => {
-    setCurrentSlide((prev) => (prev === totalSlides - 1 ? 0 : prev + 1))
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentSlide((prev) => prev + 1)
   }
+
+  // Manejar el loop infinito
+  useEffect(() => {
+    if (isTransitioning) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(false)
+
+        // Si llegamos al final, saltar al inicio sin transición
+        if (currentSlide >= originalLength * 2) {
+          setCurrentSlide(originalLength)
+        }
+        // Si llegamos antes del inicio, saltar al final sin transición
+        else if (currentSlide < 0) {
+          setCurrentSlide(originalLength - 1)
+        }
+      }, 300)
+
+      return () => clearTimeout(timer)
+    }
+  }, [currentSlide, isTransitioning, originalLength])
 
   const openModal = (title: string, description: string, image: string) => {
     setModalContent({ title, description, image })
@@ -28,79 +62,92 @@ export default function ServicesPage() {
 
   const closeModal = () => setIsModalOpen(false)
 
+  // Obtener índice real para paginación
+  const getRealSlideIndex = () => {
+    if (currentSlide >= originalLength) {
+      return currentSlide - originalLength
+    }
+    return currentSlide
+  }
+
+  // Obtener servicios visibles (3 cards)
+  const getVisibleServices = () => {
+    const visibleServices = []
+    for (let i = 0; i < cardsPerSlide; i++) {
+      const index = (currentSlide + i) % infiniteServices.length
+      visibleServices.push({
+        ...infiniteServices[index],
+        key: `${infiniteServices[index].title}-${currentSlide}-${i}`,
+      })
+    }
+    return visibleServices
+  }
+
   return (
-    <div className="min-h-screen bg-[#F5F7EC]  text-[#2E321B] py-20">
+    <div className="min-h-screen bg-[#F5F7EC] text-[#2E321B] py-20">
       <div className="container mx-auto px-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">
-          Nuestros Servicios
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">Nuestros Servicios</h1>
         <p className="text-center text-lg text-[#475C1D] mb-12">
           Desde capacitación técnica hasta innovación rural: apoyamos a nuestros asociados en cada paso.
         </p>
-
         <div className="relative">
           {/* Botón izquierdo */}
           <button
             onClick={goToPrev}
-            className="absolute left-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center"
+            disabled={isTransitioning}
+            className="absolute left-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center disabled:opacity-50"
           >
-            <svg className="w-5 h-5 text-[#2E321B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 text-[#2E321B]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
-          {/* Tarjetas */}
+          {/* Tarjetas - mantiene exactamente el mismo diseño */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {services
-              .slice(currentSlide * cardsPerSlide, currentSlide * cardsPerSlide + cardsPerSlide)
-              .map((service, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-2xl shadow-sm hover:shadow-md hover:shadow-[#e7c78d]/40 transition-all duration-300 overflow-hidden"
-                >
-                  {/* Degradado superior */}
-                  <div className="h-2 bg-gradient-to-r from-[#E7C78D] via-[#D8B769] to-[#A7C957]" />
-
-                  {/* Cuerpo del card */}
-                  <div className="bg-white rounded-b-2xl flex flex-col min-h-[318px] max-h-[318px] px-6 py-8">
-                    <h3 className="text-xl font-semibold text-[#2E321B] mb-3">
-                      {service.title}
-                    </h3>
-                    <p className="text-[#475C1D] text-sm mb-4 flex-grow">
-                      {service.cardDescription}
-                    </p>
-                    <button
-                      onClick={() =>
-                        openModal(service.title, service.modalDescription, service.image)
-                      }
-                      className="text-[#007f5f] font-medium text-sm hover:underline flex items-center gap-1 mt-auto"
-                    >
-                      Más información
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+            {getVisibleServices().map((service) => (
+              <div
+                key={service.key}
+                className="rounded-2xl shadow-sm hover:shadow-md hover:shadow-[#e7c78d]/40 transition-all duration-300 overflow-hidden"
+              >
+                {/* Degradado superior */}
+                <div className="h-2 bg-gradient-to-r from-[#E7C78D] via-[#D8B769] to-[#A7C957]" />
+                {/* Cuerpo del card */}
+                <div className="bg-white rounded-b-2xl flex flex-col min-h-[318px] max-h-[318px] px-6 py-8">
+                  <h3 className="text-xl font-semibold text-[#2E321B] mb-3">{service.title}</h3>
+                  <p className="text-[#475C1D] text-sm mb-4 flex-grow">{service.cardDescription}</p>
+                  <button
+                    onClick={() => openModal(service.title, service.modalDescription, service.image)}
+                    className="text-[#007f5f] font-medium text-sm hover:underline flex items-center gap-1 mt-auto"
+                  >
+                    Más información
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
 
           {/* Botón derecho */}
           <button
             onClick={goToNext}
-            className="absolute right-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center"
+            disabled={isTransitioning}
+            className="absolute right-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center disabled:opacity-50"
           >
-            <svg className="w-5 h-5 text-[#2E321B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5 text-[#2E321B]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -108,13 +155,15 @@ export default function ServicesPage() {
 
         {/* Paginación */}
         <div className="flex justify-center mt-10 space-x-2">
-          {Array.from({ length: totalSlides }).map((_, idx) => (
+          {Array.from({ length: originalLength }).map((_, idx) => (
             <button
               key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={`w-3 h-3 rounded-full ${
-                idx === currentSlide ? "bg-[#d8b769]" : "bg-gray-300"
-              }`}
+              onClick={() => {
+                if (!isTransitioning) {
+                  setCurrentSlide(originalLength + idx)
+                }
+              }}
+              className={`w-3 h-3 rounded-full ${idx === getRealSlideIndex() ? "bg-[#d8b769]" : "bg-gray-300"}`}
             />
           ))}
         </div>
@@ -131,16 +180,12 @@ export default function ServicesPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={modalContent.image}
+              src={modalContent.image || "/placeholder.svg"}
               alt={modalContent.title}
               className="w-full h-48 object-cover rounded-lg mb-6"
             />
-            <h3 className="text-2xl font-bold mb-4 text-[#2E321B]">
-              {modalContent.title}
-            </h3>
-            <p className="text-[#475C1D] mb-6 leading-relaxed whitespace-pre-line">
-              {modalContent.description}
-            </p>
+            <h3 className="text-2xl font-bold mb-4 text-[#2E321B]">{modalContent.title}</h3>
+            <p className="text-[#475C1D] mb-6 leading-relaxed whitespace-pre-line">{modalContent.description}</p>
             <div className="text-right">
               <button
                 onClick={closeModal}
