@@ -1,5 +1,6 @@
-import { ShieldUser, ChevronDown } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
+import { ShieldIcon as ShieldUser, ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -18,32 +19,30 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 w-full z-50 bg-white/80 backdrop-blur-md text-black px-16 py-4 shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <a href="/">
+        <Link to="/">
           <img
             src="/logo-camara.png"
             alt="Logo Cámara"
             className="w-16 mb-2"
           />
-        </a>
-
+        </Link>
         <div className="flex items-center space-x-8 ml-auto">
           <ul className="flex space-x-6 text-base font-medium ml-auto text-gray-800">
             <li>
-              <a href="#AboutUsPage" className="hover:text-[#6D8B37] transition-colors">
+              <Link to="/" hash="AboutUsPage" className="hover:text-[#6D8B37] transition-colors">
                 Sobre Nosotros
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#EventsPage" className="hover:text-[#6D8B37] transition-colors">
+              <Link to="/" hash="EventsPage" className="hover:text-[#6D8B37] transition-colors">
                 Eventos
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#ServicesPage" className="hover:text-[#6D8B37] transition-colors">
+              <Link to="/" hash="ServicesPage" className="hover:text-[#6D8B37] transition-colors">
                 Servicios
-              </a>
+              </Link>
             </li>
-
             {/* Dropdown */}
             <li className="relative" ref={dropdownRef}>
               <button
@@ -57,30 +56,28 @@ const Navbar = () => {
                   }`}
                 />
               </button>
-
               {isDropdownOpen && (
                 <ul className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-md border border-neutral-200 z-50">
                   <li>
-                    <a
-                      href="/forms/volunteers"
+                    <Link
+                      to="/volunteers"
                       className="block px-4 py-2 hover:bg-[#F3F4EC] text-sm text-gray-800"
                     >
                       Voluntarios
-                    </a>
+                    </Link>
                   </li>
                   <li>
-                    <a
-                      href="/forms/asociados"
+                    <Link
+                      to="/associates"
                       className="block px-4 py-2 hover:bg-[#F3F4EC] text-sm text-gray-800"
                     >
                       Asociados
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               )}
             </li>
           </ul>
-
           {/* Icono login */}
           <a
             href="/login"

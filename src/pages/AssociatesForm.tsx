@@ -8,7 +8,7 @@ export default function AssociatesForm() {
   const [formData, setFormData] = useState<AssociatesFormData>(initialAssociatesFormData)
   const [] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const { lookup, isLoading, error } = useCedulaLookup()
+  const { lookup } = useCedulaLookup()
 
 
   const handleInputChange = (field: keyof AssociatesFormData, value: string | boolean) => {
