@@ -1,8 +1,9 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from '../App'
 import HomePage from './HomePage'
-import { AssociatesForm } from '../pages/AssociatesForm'
+
 import VolunteersForm from '../pages/VolunteersForm'
+import AssociatesForm from '../pages/AssociatesForm'
 
 
 
