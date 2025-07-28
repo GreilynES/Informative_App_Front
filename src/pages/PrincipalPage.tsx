@@ -1,7 +1,9 @@
-import { Calendar, ChevronRight } from "lucide-react"
+// pages/PrincipalPage.tsx
+import { ChevronRight } from "lucide-react"
 import { events } from "../models/EventType"
-import { RippleButton } from "../animations/Buttons"
 import { principalType } from "../models/PrincipalType"
+import { RippleButton } from "../animations/Buttons"
+import { PrincipalCard } from "../components/PrincipalCard"
 
 export default function PrincipalPage() {
   const subastaEvent = events.find((event) =>
@@ -37,8 +39,7 @@ export default function PrincipalPage() {
                   variant="outline"
                   className="px-6 py-2 border border-[#CDD577] text-[#2E321B] rounded-md font-medium hover:bg-[#F5F7EC] transition-colors duration-200 bg-white flex items-center"
                 >
-                  Conocer más
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  Conocer más <ChevronRight className="w-4 h-4 ml-1" />
                 </RippleButton>
               </a>
             </div>
@@ -47,47 +48,7 @@ export default function PrincipalPage() {
           {/* DERECHA */}
           <div className="flex justify-center items-center">
             {subastaEvent ? (
-              <div className="relative">
-                {/* Pin */}
-                <div className="absolute -top-4 left-2 z-30">
-                  <div className="relative">
-                    <div className="w-4 h-8 bg-gradient-to-br from-[#475C1D] to-[#6F8C1F] rounded-full shadow-lg relative">
-                      <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-[#475C1D] to-[#6F8C1F] rounded-full shadow-md border border-[#6F8C1F]">
-                        <div className="absolute top-1 left-1 w-2 h-2 bg-[#F5F7EC] rounded-full opacity-70"></div>
-                      </div>
-                      <div className="absolute z-0 -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-2 bg-[#99997f] rounded-b-full"></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card */}
-                <div
-                  className="w-[430px] h-[360px] bg-white shadow-2xl transform rounded-lg rotate-3 hover:rotate-0 transition-transform duration-500 ease-in-out relative"
-                  style={{ transformOrigin: "top left" }}
-                >
-                  <div className="p-4">
-                    <img
-                      src={
-                        subastaEvent.illustration ||
-                        "/placeholder.svg?height=180&width=350&query=cattle auction event"
-                      }
-                      alt="Subasta de ganado"
-                      className="w-full h-60 object-cover rounded-lg"
-                    />
-                  </div>
-
-                  <div className="px-4 pb-4">
-                    <div className="flex items-center space-x-2 text-[#6F8C1F] text-base font-medium mb-2">
-                      <Calendar className="w-5 h-5" />
-                      <span>{subastaEvent.date}</span>
-                    </div>
-                    <h3 className="text-base font-bold text-[#2E321B] mb-1">
-                      {subastaEvent.title}
-                    </h3>
-                    <p className="text-xs text-[#475C1D]">{subastaEvent.description}</p>
-                  </div>
-                </div>
-              </div>
+              <PrincipalCard event={subastaEvent} />
             ) : (
               <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">
                 <p>No se encontró el evento de la subasta.</p>
