@@ -1,6 +1,4 @@
 export type PrincipalType = {
-  date: ReactNode
-  illustration: string
   title: string
   description: string
 }
