@@ -2,15 +2,12 @@ import { useState } from "react"
 import { useServicesCarousel } from "../hooks/useServicesCarousel"
 import { ServicesCard } from "../components/Services/serviceCard"
 import { ServicesModal } from "../components/Services/serviceModal"
-
+import { initialStateService, type Service } from "../models/ServicesType"
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalContent, setModalContent] = useState({
-    title: "",
-    description: "",
-    image: "",
-  })
+  const [modalContent, setModalContent] = useState<Service>(initialStateService)
+
 
   const {
     isTransitioning,
@@ -22,8 +19,13 @@ export default function ServicesPage() {
     originalLength,
   } = useServicesCarousel(3)
 
-  const openModal = (title: string, description: string, image: string) => {
-    setModalContent({ title, description, image })
+  const openModal = (title: string, modalDescription: string, image: string) => {
+    setModalContent({
+      title,
+      cardDescription: "", 
+      modalDescription,
+      image,
+    })
     setIsModalOpen(true)
   }
 
@@ -49,8 +51,12 @@ export default function ServicesPage() {
           </button>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {getVisibleServices().map((service) => (
-              <ServicesCard key={service.key} service={service} openModal={openModal} />
+            {getVisibleServices().map((service, index) => (
+              <ServicesCard
+                key={index}
+                service={service}
+                openModal={openModal}
+              />
             ))}
           </div>
 
