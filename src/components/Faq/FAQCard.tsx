@@ -1,6 +1,5 @@
 import type { FAQ } from "../../models/FAQType"
 
-
 interface FaqItemProps {
   faqs: FAQ
   index: number
@@ -19,8 +18,8 @@ export function FaqItem({ faqs, index, isOpen, onToggle }: FaqItemProps) {
         onClick={() => onToggle(index)}
         className={`w-full text-left px-6 py-5 flex justify-between items-center transition-all duration-300 ${
           isOpen
-            ? 'text-[#6D8B37] font-semibold'
-            : 'text-[#2E321B] hover:text-[#6D8B37]'
+            ? 'text-[#5B7D1F] font-semibold'
+            : 'text-[#2E321B] hover:text-[#5B7D1F]'
         }`}
       >
         <span className="text-lg font-medium">{faqs.question}</span>
@@ -28,7 +27,7 @@ export function FaqItem({ faqs, index, isOpen, onToggle }: FaqItemProps) {
       </button>
 
       <div
-        className={`px-6 text-base text-[#3B4D21] leading-relaxed overflow-hidden transition-all duration-300 ${
+        className={`px-6 text-lg text-[#2D2D2D] leading-relaxed overflow-hidden transition-all duration-300 ${
           isOpen ? 'max-h-40 py-4' : 'max-h-0 py-0'
         }`}
       >

@@ -21,7 +21,7 @@ export default function FooterPage() {
 
         {/* CONTACTO */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-[#D8B769]">Contacto</h3>
+          <h3 className="text-sm font-bold text-gray-200">Contacto</h3>
           <div className="h-px w-24 bg-[#333] mt-1"></div>
 
           <div className="flex items-center gap-2 text-sm text-gray-300">
@@ -36,7 +36,7 @@ export default function FooterPage() {
             href={contact.facebook.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-gray-300 hover:text-[#D8B769] transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-300 hover:text-[#6D8B37] transition-colors"
           >
             <Facebook className="w-5 h-5 text-[#6D8B37]" />
             <span>{contact.facebook.name}</span>
@@ -45,7 +45,7 @@ export default function FooterPage() {
 
         {/* ENLACES RÁPIDOS */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-[#D8B769]">Enlaces Rápidos</h3>
+          <h3 className="text-sm font-bold text-gray-200">Enlaces Rápidos</h3>
           <div className="h-px w-24 bg-[#333] mt-1"></div>
           <ul className="text-sm space-y-2 text-gray-300">
             {quickLinks.map((link) => (
@@ -63,7 +63,7 @@ export default function FooterPage() {
 
         {/* HORARIO */}
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-[#D8B769]">Horario</h3>
+          <h3 className="text-sm font-bold text-gray-200">Horario</h3>
           <div className="h-px w-24 bg-[#333] mt-1"></div>
           <div className="flex items-start gap-2 text-sm text-gray-300 leading-relaxed">
             <Clock4 className="w-4 h-4 mt-1 text-[#6D8B37]" />
@@ -78,7 +78,7 @@ export default function FooterPage() {
 
       {/* COPYRIGHT */}
       <div className="border-t border-[#333] text-center py-5 text-xs text-gray-500">
-        © {new Date().getFullYear()} <span className="text-[#D8B769] font-semibold">Sistema CGH</span> – Todos los derechos reservados.
+        © {new Date().getFullYear()} <span className="text-[#D8B769] font-semibold">Sistema CGH</span>  Todos los derechos reservados.
       </div>
     </footer>
   )
