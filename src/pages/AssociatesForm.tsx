@@ -1,6 +1,6 @@
-import type React from "react"
+import React from "react"
 import { useState } from "react"
-import { Award, CheckCircle, FileText, Heart, Upload, Users } from "lucide-react"
+import { Award, CheckCircle, Download, FileText, Heart, Upload, Users } from "lucide-react"
 import { initialAssociatesFormData, type AssociatesFormData } from "../models/AssociatesType"
 import { useCedulaLookup } from "../hooks/IdApiHook"
 
@@ -11,6 +11,7 @@ export default function AssociatesForm() {
   const { lookup } = useCedulaLookup()
 
   const [step, setStep] = useState(1)
+
 
   const isStepValid = () => {
     if (step === 1) {
@@ -48,10 +49,10 @@ export default function AssociatesForm() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
       {/* Header Section */}
-      <div className="bg-[#F5F7EC] py-16 px-4">
+      <div className="bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-[#708C3E] mb-6">¿Por qué ser asociado en la Cámara de Ganaderos?</h1>
-          <p className="text-lg text-[#7A7A6A] max-w-3xl mx-auto">
+          <h1 className="text-4xl font-bold text-[#475C1D]/80 mb-6">¿Por qué ser asociado en la Cámara de Ganaderos?</h1>
+          <p className="text-lg text-[#2E321B] max-w-3xl mx-auto">
             Ser asociado te permite impulsar el crecimiento del sector ganadero local, fortalecer el desarrollo
             sostenible de la comunidad y formar parte activa de iniciativas que promueven el bienestar del agro y el
             medio ambiente.
@@ -66,7 +67,7 @@ export default function AssociatesForm() {
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {[
               {
-                icon: <Users className="w-8 h-8 text-[#708C3E]" />,
+                icon: <Users className="w-8 h-8 text-[#A3853D]" />,
                 title: "Red de Contactos",
                 desc: "Forma parte de una comunidad ganadera sólida que promueve la cooperación y el crecimiento conjunto.",
               },
@@ -82,11 +83,11 @@ export default function AssociatesForm() {
               },
             ].map((item, i) => (
               <div className="text-center" key={i}>
-                <div className="w-16 h-16 bg-[#EEF4D8] rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <div className="w-16 h-16 bg-[#E7EDC8]/80 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                   {item.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-[#708C3E] mb-3">{item.title}</h3>
-                <p className="text-[#7A7A6A]">{item.desc}</p>
+                <p className="text-[#475C1D]/90">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -115,7 +116,7 @@ export default function AssociatesForm() {
             <div className="text-center mt-10">
               <button
                 onClick={() => setShowForm(true)}
-                className="bg-[#708C3E] hover:bg-[#5d7334] text-white px-6 py-3 rounded-md text-lg font-medium transition"
+                className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
               >
                 Desplegar formulario
               </button>
@@ -124,39 +125,80 @@ export default function AssociatesForm() {
         </div>
       </div>
 
+
       {/* Form */}
       {showForm && (
-        <div className="py-16 px-4 bg-[#F5F7EC]">
+        <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <div className="w-16 h-16 bg-[#708C3E] rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
                 <Users className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-[#708C3E] mb-4">¡Únete como asociado!</h2>
-              <p className="text-[#6B705C]">
+              <h2 className="text-3xl font-bold text-[#475C1D]/80 mb-4">¡Únete como asociado!</h2>
+              <p className="text-[#2E321B]">
                 Completa este formulario y forma parte activa de nuestra comunidad ganadera.
               </p>
             </div>
 
             {/* Documento para descargar */}
             <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8 text-center">
-              <div className="flex items-center justify-center space-x-3 mb-2">
-                <FileText className="w-6 h-6 text-[#708C3E]" />
-                <h4 className="text-lg font-semibold text-[#708C3E]">Formulario Diagnóstico de Finca</h4>
-              </div>
-              <p className="text-[#7A7A6A] text-sm mb-4 max-w-xl mx-auto">
-                Descarga el formulario oficial, complétalo y súbelo firmado en la sección de documentos.
-              </p>
-              <div className="flex justify-center">
-                <a
-                  href="/Docs/Diagnóstico_de_Finca.docx"
-                  download
-                  className="inline-block bg-[#708C3E] hover:bg-[#5d7334] text-white px-6 py-2 rounded-md text-sm font-medium transition"
-                >
-                  Descargar Formulario Diagnóstico de Finca
-                </a>
-              </div>
+            <div className="flex items-center justify-center space-x-3 mb-2">
+              <h2 className="text-xl font-semibold text-[#708C3E]">
+                Formulario Diagnóstico de Finca
+              </h2>
             </div>
+
+            <p className="text-[#2E321B] text-md mb-4 mx-auto">
+              Descarga el formulario oficial, complétalo y súbelo firmado en la sección de documentos.
+            </p>
+
+            <div className="flex justify-center">
+              <a
+                href="/Docs/Diagnóstico_de_Finca.docx"
+                download
+                className="inline-flex items-center gap-2 bg-[#708C3E] hover:bg-[#5d7334] text-white px-6 py-2 rounded-md text-md font-semibold transition"
+              >
+                <Download className="w-4 h-4" />
+                Descargar 
+              </a>
+            </div>
+          </div>
+{/* Stepper visual superior */}
+<div className="flex justify-center items-center gap-4 mb-10">
+  {[1, 2, 3, 4, 5].map((s, index) => (
+    < >
+      <div className="flex flex-col items-center">
+        <div
+          className={`w-8 h-8 rounded-full border-2 text-sm font-bold flex items-center justify-center transition duration-200 ${
+            step === s
+              ? "bg-[#708C3E] text-white border-[#708C3E]"
+              : step > s
+              ? "bg-[#A3853D] text-white border-[#A3853D]"
+              : "bg-white text-[#708C3E] border-[#DCD6C9]"
+          }`}
+        >
+          {s}
+        </div>
+        <span
+          className={`text-xs mt-1 ${
+            step === s
+              ? "text-[#708C3E] font-medium"
+              : step > s
+              ? "text-[#A3853D]"
+              : "text-gray-400"
+          }`}
+        >
+          Paso {s}
+        </span>
+      </div>
+
+      {/* Línea entre pasos */}
+      {index < 4 && (
+        <div className="w-8 h-px bg-[#DCD6C9]"></div>
+      )}
+    </>
+  ))}
+</div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Información Personal */}
@@ -199,7 +241,8 @@ export default function AssociatesForm() {
                             }
                           }}
                           required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none 
+                          focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                         />
                     </div>
                     <div>
@@ -212,7 +255,7 @@ export default function AssociatesForm() {
                           placeholder="Tu nombre"
                           value={formData.name}
                           required
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                         />
                     </div>
                   </div>
@@ -225,7 +268,7 @@ export default function AssociatesForm() {
                         placeholder="Tu primer apellido"
                         value={formData.lastName1}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"/>
                     </div>
 
                     <div>
@@ -236,7 +279,7 @@ export default function AssociatesForm() {
                         placeholder="Tu segundo apellido"
                         value={formData.lastName2}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                       />
                     </div>
                     
@@ -251,13 +294,14 @@ export default function AssociatesForm() {
                         value={formData.birthDate}
                         onChange={(e) => handleInputChange("birthDate", e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                       />
                     </div>
                 </div>
 
                 
               </div>
+              
               <div className="text-right">
                 <button
                   type="button"
@@ -297,7 +341,8 @@ export default function AssociatesForm() {
                         value={formData.phone}
                         onChange={(e) => handleInputChange("phone", e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none 
+                        focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                       />
                     </div>
                     <div>
@@ -311,7 +356,7 @@ export default function AssociatesForm() {
                         value={formData.email}
                         onChange={(e) => handleInputChange("email", e.target.value)}
                         required
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                       />
                     </div>
                   </div>
@@ -325,7 +370,7 @@ export default function AssociatesForm() {
                       placeholder="Tu dirección completa"
                       value={formData.address}
                       onChange={(e) => handleInputChange("address", e.target.value)}
-                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                     />
                   </div>
                   <div>
@@ -339,7 +384,7 @@ export default function AssociatesForm() {
                       value={formData.community}
                       onChange={(e) => handleInputChange("community", e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                     />
                   </div>
                 </div>
@@ -391,7 +436,7 @@ export default function AssociatesForm() {
                       value={formData.needs}
                       onChange={(e) => handleInputChange("needs", e.target.value)}
                       rows={4}
-                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                     />
                   </div>
                 </div>
@@ -567,33 +612,41 @@ export default function AssociatesForm() {
                       Deseo recibir información sobre eventos, capacitaciones y oportunidades.
                     </label>
                   </div >
-              
-                  
+              <div className="flex flex-col items-center gap-4 pt-6">
+          {/* Contenedor horizontal para los botones */}
+          <div className="flex flex-col md:flex-row gap-5">
+            {/* Botón Volver */}
+            <button
+              type="button"
+            onClick={prevStep}
+            className="bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-3 rounded-lg shadow transition-all duration-200 w-full md:w-auto"
+          >
+            ← Volver al formulario
+          </button>
+
+          {/* Botón Enviar */}
+          <button
+            type="submit"
+            disabled={!formData.acceptTerms}
+            className={`w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white text-lg shadow transition-colors duration-200
+              ${
+                formData.acceptTerms
+                  ? "bg-[#708C3E] hover:bg-[#5d7334]"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+          >
+            <Users className="w-5 h-5" />
+            Enviar Solicitud de Asociado
+          </button>
+        </div>
+
+        {/* Texto debajo */}
+        <p className="text-sm text-gray-500 mt-2 text-center">
+          Nos pondremos en contacto contigo en un plazo de 3-5 días hábiles
+        </p>
+      </div>
                 </div>
                   </div> 
-                <div className="flex justify-between pt-6">
-                   <button
-                    type="button"
-                    onClick={prevStep}
-                    className="bg-red-600 text-white px-6 py-2 rounded-md"
-                  >
-                    Volver al formulario
-                  </button>
-                  <div>
-                  <button
-                    type="submit"
-                    disabled={!formData.acceptTerms}
-                    className="w-full bg-[#708C3E] hover:bg-[#5d7334] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-4 rounded-md text-lg font-medium transition-colors flex items-center justify-center"
-                  >
-                    <Users className="w-5 h-5 mr-2" />
-                    Enviar Solicitud de Asociado
-                  </button>
-                  
-                  <p className="text-center text-sm text-gray-500">
-                    Nos pondremos en contacto contigo en un plazo de 3-5 días hábiles
-                  </p>
-                  </div>
-                  </div>
               </>
             )}
             </form>

@@ -34,11 +34,13 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-[#F5F7EC] text-[#2E321B] py-20">
       <div className="container mx-auto px-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">
-          Nuestros Servicios
-        </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] mx-auto mb-4" />
-
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#2E321B] mb-6">Nuestros Servicios</h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] mx-auto mb-4" />
+          <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
+            Navega entre nuestros servicios y encuentra el perfecto para ti
+          </p>
+        </div>
         <div className="relative">
           <button
             onClick={goToPrev}

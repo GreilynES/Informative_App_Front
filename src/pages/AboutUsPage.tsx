@@ -20,8 +20,10 @@ export default function AboutUsPage() {
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-6xl mx-auto px-2 py-20 space-y-12">
         <div className="text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Sobre Nosotros</h2>
-          <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+          <h2 className="text-4xl md:text-5xl font-bold text-[#FAFDF4] mb-6 filter drop-shadow-[2px_3px_6px_rgba(20,20,20,1)]">
+            Sobre Nosotros
+          </h2>
+          <p className="text-xl font-semibold text-[#FAFDF4] max-w-3xl mx-auto leading-relaxed filter drop-shadow-[1px_2px_4px_rgba(30,30,30,0.9)]">
             Asociación Cámara de Ganaderos de Hojancha: compromiso con el bienestar animal, el desarrollo rural y la
             innovación sostenible en el sector pecuario.
           </p>
