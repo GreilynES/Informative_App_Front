@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { useServicesCarousel } from "../hooks/useServicesCarousel"
 import { ServicesCard } from "../components/Services/serviceCard"
 import { ServicesModal } from "../components/Services/serviceModal"
@@ -7,7 +8,6 @@ import { initialStateService, type Service } from "../models/ServicesType"
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalContent, setModalContent] = useState<Service>(initialStateService)
-
 
   const {
     isTransitioning,
@@ -22,7 +22,7 @@ export default function ServicesPage() {
   const openModal = (title: string, modalDescription: string, image: string) => {
     setModalContent({
       title,
-      cardDescription: "", 
+      cardDescription: "",
       modalDescription,
       image,
     })
@@ -34,10 +34,10 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-[#F5F7EC] text-[#2E321B] py-20">
       <div className="container mx-auto px-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">Nuestros Servicios</h1>
-        <p className="text-center text-lg text-[#475C1D] mb-12">
-          Desde capacitación técnica hasta innovación rural: apoyamos a nuestros asociados en cada paso.
-        </p>
+        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">
+          Nuestros Servicios
+        </h1>
+        <div className="w-24 h-1 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] mx-auto mb-4" />
 
         <div className="relative">
           <button
@@ -52,11 +52,7 @@ export default function ServicesPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {getVisibleServices().map((service, index) => (
-              <ServicesCard
-                key={index}
-                service={service}
-                openModal={openModal}
-              />
+              <ServicesCard key={index} service={service} openModal={openModal} />
             ))}
           </div>
 
@@ -71,15 +67,33 @@ export default function ServicesPage() {
           </button>
         </div>
 
-        <div className="flex justify-center mt-10 space-x-2">
+        {/* PUNTOS DE NAVEGACIÓN ANIMADOS */}
+        <motion.div
+          className="flex justify-center gap-3 mt-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.001 }}
+        >
           {Array.from({ length: originalLength }).map((_, idx) => (
-            <button
+            <motion.button
               key={idx}
               onClick={() => !isTransitioning && setCurrentSlide(originalLength + idx)}
-              className={`w-3 h-3 rounded-full ${idx === getRealSlideIndex() ? "bg-[#d8b769]" : "bg-gray-300"}`}
+              className={`h-3 rounded-full transition-all duration-300 ${
+                idx === getRealSlideIndex()
+                  ? "bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] w-8"
+                  : "bg-gray-300 hover:bg-gray-400 w-3"
+              }`}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+              animate={{
+                scale: idx === getRealSlideIndex() ? [1, 1.1, 1] : 1,
+              }}
+              transition={{
+                scale: idx === getRealSlideIndex() ? { duration: 0.3 } : { duration: 0.2 },
+              }}
             />
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {isModalOpen && <ServicesModal content={modalContent} onClose={closeModal} />}
