@@ -6,14 +6,11 @@ export default function FormsPage() {
 
   return (
     <section className="min-h-screen bg-[#FAFDF4] py-20 px-16">
-      <div className="text-center">
+      <div className="text-center mb-16">
         <h2 className="text-4xl md:text-5xl font-bold text-[#2E321B] mb-6">
-          Forma parte de la Cámara de Ganaderos
+          Forma parte de la Cámara de Ganaderos de <br />Hojancha
         </h2>
-        <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
-          Elige el tipo de participación que mejor se adapte a tus objetivos y disponibilidad. Juntos construimos el
-          futuro del sector ganadero.
-        </p>
+        <div className="w-24 h-1.25 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] mx-auto mb-4" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-16">
@@ -25,18 +22,18 @@ export default function FormsPage() {
               <FileText className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-[#2E321B] mb-4">ASOCIADOS</h3>
-            <p className="text-[#475C1D] mb-6 leading-relaxed">
+            <p className="text-[#2E321B] mb-6 leading-relaxed">
               Membresía oficial con derechos y beneficios exclusivos
             </p>
-            <div className="bg-gradient-to-r from-[#F9F6EA] to-[#FAF4DA] rounded-xl p-6 mb-6 border border-[#D8B769]/50">
-              <p className="text-[#2E321B] leading-relaxed">
+            <div className="bg-gradient-to-r from-[#7A944B]/15 to-[#475C1D]/20 rounded-xl p-6 mb-6 border border-[#D8B769]/50">
+              <p className="text-[#2E321B] font-semibold leading-relaxed">
                 Como asociado tendrás acceso completo a todos nuestros servicios, derecho a voto en asambleas,
                 participación en la toma de decisiones y acceso a beneficios exclusivos para miembros.
               </p>
             </div>
             <button
               onClick={() => router.navigate({ to: '/associates' })}
-              className="w-full bg-gradient-to-r from-[#7A944B] to-[#475C1D] hover:from-[#6A853E] hover:to-[#3A4D17] text-white font-semibold py-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+              className="w-full bg-gradient-to-r from-[#7A944B] to-[#475C1D] hover:from-[#6A853E] hover:to-[#3A4D17] text-white font-bold py-3 rounded-xl shadow-xl group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
             >
               Formulario
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
@@ -52,17 +49,17 @@ export default function FormsPage() {
               <Heart className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-[#2E321B] mb-4">VOLUNTARIOS</h3>
-            <p className="text-[#475C1D] mb-6 leading-relaxed">
+            <p className="text-[#2E321B] mb-6 leading-relaxed">
               Colaboración flexible en proyectos específicos
             </p>
             <div className="bg-gradient-to-br from-[#FDF7E6] to-[#FCF3D6] rounded-xl p-6 mb-6 border border-[#E7C56D]/50">
-              <p className="text-[#2E321B] leading-relaxed">
+              <p className="text-[#2E321B]/90 font-semibold leading-relaxed">
                 Como voluntario podrás colaborar en nuestros proyectos sociales, participar en actividades comunitarias y contribuir con tu tiempo y habilidades según tu disponibilidad.
               </p>
             </div>
             <button
               onClick={() => router.navigate({ to: '/volunteers' })}
-              className="w-full bg-gradient-to-r from-[#E7C56D] to-[#C1A548] hover:from-[#DAB45B] hover:to-[#A9882A] text-white font-semibold py-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+              className="w-full bg-gradient-to-r from-[#E7C56D] to-[#C1A548] hover:from-[#DAB45B] hover:to-[#A9882A] text-white font-bold py-3 rounded-xl shadow-xl group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
             >
               Formulario
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />

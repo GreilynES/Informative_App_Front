@@ -11,7 +11,7 @@ export function AboutUsCard({ icon, title, description }: Props) {
         <div className="p-3 bg-[#6F8C1F] rounded-xl mr-4 shadow-lg">{icon}</div>
         <h3 className="text-xl font-bold text-[#2E321B]">{title}</h3>
       </div>
-      <p className="text-[#475C1D] leading-relaxed">{description}</p>
+      <p className="text-md text-[#475C1D] font-semibold leading-relaxed">{description}</p>
     </div>
   )
 }
