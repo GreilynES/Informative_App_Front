@@ -1,55 +1,57 @@
 export interface AssociatesFormData {
-  // Información Personal
-  cedula: string
-  nombre: string
-  apellidos: string
-  fechaNacimiento: string
+   // Personal Information
+  idNumber: string
+  name: string
+  lastName1: string
+  lastName2: string
+  birthDate: string
 
-  // Información de Contacto
-  telefono: string
+  // Contact Information
+  phone: string
   email: string
-  direccion: string
-  comunidad: string
+  address: string
+  community: string
 
-  // Información de Asociado
-  necesidades: string
+  // Associate Information
+  needs: string
 
-  // Documentos
-  copiaCedula: File | null
-  diagnosticoFinca: File | null
-  comprobantePago: File | null
-  planoFinca: File | null
-  otrosDocumentos: File | null
+  // Documents
+  idCopy: File | null
+  farmDiagnosis: File | null
+  paymentProof: File | null
+  farmMap: File | null
+  otherDocuments: File | null
 
-  // Términos
+  // Terms
   acceptTerms: boolean
   receiveInfo: boolean
 }
 
 export const initialAssociatesFormData: AssociatesFormData = {
-  // Información Personal
-    cedula: "",
-    nombre: "",
-    apellidos: "",
-    fechaNacimiento: "",
+  // Personal Information
+  idNumber: "",
+  name: "",
+  lastName1: "",
+  lastName2: "",
+  birthDate: "",
 
-  // Información de Contacto
-  telefono: "",
+  // Contact Information
+  phone: "",
   email: "",
-  direccion: "",
-  comunidad: "",
+  address: "",
+  community: "",
 
-  // Información de Asociado
-  necesidades: "",
+  // Associate Information
+  needs: "",
 
-  // Documentos
-  copiaCedula: null,
-  diagnosticoFinca: null,
-  comprobantePago: null,
-  planoFinca: null,
-  otrosDocumentos: null,
+  // Documents
+  idCopy: null,
+  farmDiagnosis: null,
+  paymentProof: null,
+  farmMap: null,
+  otherDocuments: null,
 
-  // Términos
+  // Terms
   acceptTerms: false,
   receiveInfo: false,
 }

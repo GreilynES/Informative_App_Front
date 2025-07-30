@@ -1,4 +1,3 @@
-// pages/PrincipalPage.tsx
 import { ChevronRight } from "lucide-react"
 import { events } from "../models/EventType"
 import { principalType } from "../models/PrincipalType"
@@ -12,7 +11,7 @@ export default function PrincipalPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
-      <main className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-16 py-12">
+      <main className="max-w-7xl mx-auto my-0 px-6 sm:px-6 lg:px-16 py-0">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* IZQUIERDA */}
           <div className="space-y-8">

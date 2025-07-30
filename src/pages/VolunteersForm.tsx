@@ -19,6 +19,30 @@ export default function VolunteerForm() {
   const [showForm, setShowForm] = useState(false)
    const { lookup, isLoading, error } = useCedulaLookup()
 
+   const [step, setStep] = useState(1)
+   
+     const isStepValid = () => {
+       if (step === 1) {
+         return (
+           formData.idNumber.trim() !== "" &&
+           formData.name.trim() !== "" &&
+           formData.lastName1.trim() !== "" &&
+           formData.lastName1.trim() !== "" &&
+           formData.birthDate.trim() !== ""
+         )
+       }
+       if (step === 2) {
+         return (
+           formData.phone.trim() !== "" &&
+           formData.email.trim() !== "" &&
+           formData.community.trim() !== ""
+         )
+       }
+       return true // El paso 3 y 4 no son obligatorios para avanzar
+     }
+   
+     const nextStep = () => setStep((prev) => prev + 1)
+     const prevStep = () => setStep((prev) => Math.max(1, prev - 1))
 
 const handleInputChange = (field: keyof VolunteerFormData, value: string | boolean) => {
   setFormData(prev => ({ ...prev, [field]: value }))
@@ -157,6 +181,7 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
 
       {/* Formulario */}
       {showForm && (
+        
       <div className="py-16 px-4 bg-[#F5F7EC]">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
@@ -172,6 +197,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
         <form onSubmit={handleSubmit} className="space-y-8">
   
   {/* Información Personal */}
+  {step === 1 && (
+    <>
       <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
         <div className="px-6 py-4 border-b border-[#DCD6C9]">
           <div className="flex items-center space-x-2">
@@ -189,19 +216,19 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
                           id="cedula"
                           type="text"
                           placeholder="Número de cédula"
-                          value={formData.cedula}
+                          value={formData.idNumber}
                          onChange={async (e) => {
                             const value = e.target.value
-                            handleInputChange("cedula", value)
+                            handleInputChange("idNumber", value)
 
                             if (value.length >= 9) {
                               const result = await lookup(value)
                               if (result) {
                                 setFormData(prev => ({
                                   ...prev,
-                                  nombre: result.firstname1 || result.firstname || "",
-                                  apellidos: `${result.lastname1 || ""} ${result.lastname2 || ""}`.trim(),
-                                  fechaNacimiento: "" // Esta API no lo trae
+                                  name: result.firstname || "",
+                                  lastName1: result.lastname1 || "",
+                                  lastName2: result.lastname2 || "",
                                 }))
                               }
                             }
@@ -210,53 +237,76 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
                           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         />
             </div>
-            <div>
-              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+          <div>
+                      <label htmlFor="nameId" className="block text-sm font-medium text-gray-700 mb-1">
                           Nombre *
                         </label>
                         <input
-                          id="nombre"
+                          id="nameId"
                           type="text"
                           placeholder="Tu nombre"
-                          value={formData.nombre}
-                          readOnly
+                          value={formData.name}
+                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         />
-            </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700 mb-1">
-                        Apellidos *
-                      </label>
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
                       <input
-                        id="apellidos"
+                        id="lastname1id"
                         type="text"
-                        placeholder="Tus apellidos"
-                        value={formData.apellidos}
-                        readOnly
+                        placeholder="Tu primer apellido"
+                        value={formData.lastName1}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
+                      <input
+                        id="lastname2id"
+                        type="text"
+                        placeholder="Tu segundo apellido"
+                        value={formData.lastName2}
+                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
-            </div>
-            <div>
-               <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
+                    </div>
+                    
+                  </div>
+                  <div>
+                       <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
                         Fecha de Nacimiento *
                       </label>
                       <input
-                        id="fechaNacimiento"
+                        id="birdthdateid"
                         type="date"
-                        value={formData.fechaNacimiento}
-                        onChange={(e) => handleInputChange("fechaNacimiento", e.target.value)}
+                        value={formData.birthDate}
+                        onChange={(e) => handleInputChange("birthDate", e.target.value)}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
-            </div>
-          </div>
-        </div>
+                    </div>
+                </div>
       </div>
-
+      <div className="text-right">
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+      </>
+  )}
 
   {/* Información de Contacto */}
+    {step === 2 && (
+                <>
       <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
   <div className="px-6 py-4 border-b border-[#DCD6C9]">
     <div className="flex items-center space-x-2">
@@ -272,8 +322,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
           id="telefono"
           type="tel"
           placeholder="Número de teléfono"
-          value={formData.telefono}
-          onChange={(e) => handleInputChange("telefono", e.target.value)}
+          value={formData.phone}
+          onChange={(e) => handleInputChange("phone", e.target.value)}
           required
           className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
         />
@@ -297,8 +347,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
         id="direccion"
         type="text"
         placeholder="Tu dirección completa"
-        value={formData.direccion}
-        onChange={(e) => handleInputChange("direccion", e.target.value)}
+        value={formData.address}
+        onChange={(e) => handleInputChange("address", e.target.value)}
         className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
       />
     </div>
@@ -308,17 +358,38 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
         id="comunidad"
         type="text"
         placeholder="Tu comunidad"
-        value={formData.comunidad}
-        onChange={(e) => handleInputChange("comunidad", e.target.value)}
+        value={formData.community}
+        onChange={(e) => handleInputChange("community", e.target.value)}
         required
         className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
       />
     </div>
   </div>
 </div>
+<div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                   className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                    disabled={!isStepValid()}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+</>
+)}
 
 
   {/* Información de Voluntariado */}
+  {step === 3 && (
+    <>
 <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
   <div className="px-6 py-4 border-b border-[#DCD6C9]">
     <div className="flex items-center space-x-2">
@@ -330,8 +401,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
     <div>
       <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Tipo de Voluntariado *</label>
       <SelectField
-        value={formData.tipoVoluntariado}
-        onChange={(value) => handleInputChange("tipoVoluntariado", value)}
+        value={formData.volunteeringType}
+        onChange={(value) => handleInputChange("volunteeringType", value)}
         placeholder="Selecciona el tipo de voluntariado que te interesa"
         name="tipoVoluntariado"
         options={[
@@ -346,8 +417,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
     <div>
       <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Disponibilidad de Tiempo</label>
       <SelectField
-        value={formData.disponibilidad}
-        onChange={(value) => handleInputChange("disponibilidad", value)}
+        value={formData.availability}
+        onChange={(value) => handleInputChange("availability", value)}
         placeholder="¿Cuánto tiempo puedes dedicar?"
         name="disponibilidad"
         options={[
@@ -364,8 +435,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
       <textarea
         id="experienciaPrevia"
         placeholder="Cuéntanos sobre tu experiencia previa..."
-        value={formData.experienciaPrevia}
-        onChange={(e) => handleInputChange("experienciaPrevia", e.target.value)}
+        value={formData.previousExperience}
+        onChange={(e) => handleInputChange("previousExperience", e.target.value)}
         rows={4}
         className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
       />
@@ -375,8 +446,8 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
       <textarea
         id="motivacion"
         placeholder="¿Por qué quieres ser voluntario?"
-        value={formData.motivacion}
-        onChange={(e) => handleInputChange("motivacion", e.target.value)}
+        value={formData.motivation}
+        onChange={(e) => handleInputChange("motivation", e.target.value)}
         required
         rows={4}
         className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
@@ -384,9 +455,30 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
     </div>
   </div>
 </div>
+<div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                   className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                    disabled={!isStepValid()}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+</>
+  )}
 
 
   {/* Documentos */}
+   {step === 4 && (
+                <>
 <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
   <div className="px-6 py-4 border-b border-[#DCD6C9]">
     <div className="flex items-center space-x-2">
@@ -425,50 +517,125 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
     </div>
   </div>
 </div>
+<div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                   className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                    disabled={!isStepValid()}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+</>
+  )}
 
 
 
  {/* Términos y botón */}
-<div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-  <div className="p-6 space-y-4">
-    <div className="flex items-start space-x-2">
-      <input
-        type="checkbox"
-        id="terms"
-        checked={formData.acceptTerms}
-        onChange={(e) => handleInputChange("acceptTerms", e.target.checked)}
-        className="mt-1 h-4 w-4 text-[#708C3E] border-gray-300 rounded focus:ring-[#A3853D]"
-      />
-      <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
-        Acepto los <a href="#" className="text-[#A3853D] underline">términos y condiciones</a> y autorizo el tratamiento de mis datos.
-      </label>
-    </div>
-    <div className="flex items-start space-x-2">
-      <input
-        type="checkbox"
-        id="info"
-        checked={formData.receiveInfo}
-        onChange={(e) => handleInputChange("receiveInfo", e.target.checked)}
-        className="mt-1 h-4 w-4 text-[#708C3E] border-gray-300 rounded focus:ring-[#A3853D]"
-      />
-      <label htmlFor="info" className="text-sm text-gray-700">
-        Deseo recibir información sobre eventos, capacitaciones y oportunidades.
-      </label>
-    </div>
-    <button
-      type="submit"
-      disabled={!formData.acceptTerms}
-      className="w-full bg-[#708C3E] hover:bg-[#5d7334] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-4 rounded-md text-lg font-medium transition-colors flex items-center justify-center"
-    >
-      <Users className="w-5 h-5 mr-2" />
-      Enviar Solicitud de Voluntariado
-    </button>
-    <p className="text-center text-sm text-gray-500">
-      Nos pondremos en contacto contigo en un plazo de 3-5 días hábiles
-    </p>
-  </div>
-</div>
+{step === 5 && (
+  <>
+    <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
+      <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
 
+      <div className="space-y-6 text-[#4A4A4A] mt-6">
+        {/* Datos Personales */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Datos Personales</h3>
+          <p><span className="text-sm text-gray-500">Nombre:</span> {formData.name}</p>
+          <p><span className="text-sm text-gray-500">Primer Apellido:</span> {formData.lastName1}</p>
+          <p><span className="text-sm text-gray-500">Segundo Apellido:</span> {formData.lastName2}</p>
+          <p><span className="text-sm text-gray-500">Cédula:</span> {formData.idNumber}</p>
+          <p><span className="text-sm text-gray-500">Fecha de Nacimiento:</span> {formData.birthDate}</p>
+        </div>
+
+        {/* Contacto */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Contacto</h3>
+          <p><span className="text-sm text-gray-500">Teléfono:</span> {formData.phone}</p>
+          <p><span className="text-sm text-gray-500">Email:</span> {formData.email}</p>
+          <p><span className="text-sm text-gray-500">Dirección:</span> {formData.address || "No especificado"}</p>
+          <p><span className="text-sm text-gray-500">Comunidad:</span> {formData.community}</p>
+        </div>
+
+        {/* Voluntariado */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Información de Voluntariado</h3>
+          <p><span className="text-sm text-gray-500">Tipo:</span> {formData.volunteeringType || "No especificado"}</p>
+          <p><span className="text-sm text-gray-500">Disponibilidad:</span> {formData.availability || "No especificado"}</p>
+          <p><span className="text-sm text-gray-500">Experiencia Previa:</span> {formData.previousExperience || "No especificado"}</p>
+          <p><span className="text-sm text-gray-500">Motivación:</span> {formData.motivation}</p>
+        </div>
+
+        {/* Términos */}
+        <div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Términos</h3>
+          <p><span className="text-sm text-gray-500">Acepta Términos:</span> {formData.acceptTerms ? "Sí" : "No"}</p>
+          <p><span className="text-sm text-gray-500">Recibir Información:</span> {formData.receiveInfo ? "Sí" : "No"}</p>
+        </div>
+      </div>
+    </div>
+
+    {/* Términos y botón */}
+    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+      <div className="p-6 space-y-4">
+        <div className="flex items-start space-x-2">
+          <input
+            type="checkbox"
+            id="terms"
+            checked={formData.acceptTerms}
+            onChange={(e) => handleInputChange("acceptTerms", e.target.checked)}
+            className="mt-1 h-4 w-4 text-[#708C3E] border-gray-300 rounded focus:ring-[#A3853D]"
+          />
+          <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
+            Acepto los <a href="#" className="text-[#A3853D] underline">términos y condiciones</a> y autorizo el tratamiento de mis datos.
+          </label>
+        </div>
+        <div className="flex items-start space-x-2">
+          <input
+            type="checkbox"
+            id="info"
+            checked={formData.receiveInfo}
+            onChange={(e) => handleInputChange("receiveInfo", e.target.checked)}
+            className="mt-1 h-4 w-4 text-[#708C3E] border-gray-300 rounded focus:ring-[#A3853D]"
+          />
+          <label htmlFor="info" className="text-sm text-gray-700">
+            Deseo recibir información sobre eventos, capacitaciones y oportunidades.
+          </label>
+        </div>
+        <div className="flex justify-between pt-6">
+          <button
+            type="button"
+            onClick={prevStep}
+            className="bg-red-600 text-white px-6 py-2 rounded-md"
+          >
+            Volver al formulario
+          </button>
+          <div>
+            <button
+              type="submit"
+              disabled={!formData.acceptTerms}
+              className="w-full bg-[#708C3E] hover:bg-[#5d7334] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 px-4 rounded-md text-lg font-medium transition-colors flex items-center justify-center"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              Enviar Solicitud de Voluntariado
+            </button>
+            <p className="text-center text-sm text-gray-500 mt-2">
+              Nos pondremos en contacto contigo en un plazo de 3-5 días hábiles
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
+)}
 </form>
 </div>
 

@@ -10,6 +10,31 @@ export default function AssociatesForm() {
   const [showForm, setShowForm] = useState(false)
   const { lookup } = useCedulaLookup()
 
+  const [step, setStep] = useState(1)
+
+  const isStepValid = () => {
+    if (step === 1) {
+      return (
+        formData.idNumber.trim() !== "" &&
+        formData.name.trim() !== "" &&
+        formData.lastName1.trim() !== "" &&
+        formData.lastName1.trim() !== "" &&
+        formData.birthDate.trim() !== ""
+      )
+    }
+    if (step === 2) {
+      return (
+        formData.phone.trim() !== "" &&
+        formData.email.trim() !== "" &&
+        formData.community.trim() !== ""
+      )
+    }
+    return true // El paso 3 y 4 no son obligatorios para avanzar
+  }
+
+  const nextStep = () => setStep((prev) => prev + 1)
+  const prevStep = () => setStep((prev) => Math.max(1, prev - 1))
+
 
   const handleInputChange = (field: keyof AssociatesFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -135,6 +160,8 @@ export default function AssociatesForm() {
 
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Información Personal */}
+                {step === 1 && (
+                  <>
               <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
                 <div className="px-6 py-4 border-b border-[#DCD6C9]">
                   <div className="flex items-center space-x-2">
@@ -147,26 +174,26 @@ export default function AssociatesForm() {
                 <div className="p-6 space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="cedula" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
                           Cédula *
                         </label>
                         <input
-                          id="cedula"
+                          id="idNumber"
                           type="text"
                           placeholder="Número de cédula"
-                          value={formData.cedula}
+                          value={formData.idNumber}
                          onChange={async (e) => {
                             const value = e.target.value
-                            handleInputChange("cedula", value)
+                            handleInputChange("idNumber", value)
 
                             if (value.length >= 9) {
                               const result = await lookup(value)
                               if (result) {
                                 setFormData(prev => ({
                                   ...prev,
-                                  nombre: result.firstname1 || result.firstname || "",
-                                  apellidos: `${result.lastname1 || ""} ${result.lastname2 || ""}`.trim(),
-                                  fechaNacimiento: "" // Esta API no lo trae
+                                  name: result.firstname || "",
+                                  lastName1: result.lastname1 || "",
+                                  lastName2: result.lastname2 || "",
                                 }))
                               }
                             }
@@ -176,51 +203,78 @@ export default function AssociatesForm() {
                         />
                     </div>
                     <div>
-                      <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="nameId" className="block text-sm font-medium text-gray-700 mb-1">
                           Nombre *
                         </label>
                         <input
-                          id="nombre"
+                          id="nameId"
                           type="text"
                           placeholder="Tu nombre"
-                          value={formData.nombre}
-                          readOnly
+                          value={formData.name}
+                          required
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="apellidos" className="block text-sm font-medium text-gray-700 mb-1">
-                        Apellidos *
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
                       <input
-                        id="apellidos"
+                        id="lastname1id"
                         type="text"
-                        placeholder="Tus apellidos"
-                        value={formData.apellidos}
-                        readOnly
+                        placeholder="Tu primer apellido"
+                        value={formData.lastName1}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"/>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
+                      <input
+                        id="lastname2id"
+                        type="text"
+                        placeholder="Tu segundo apellido"
+                        value={formData.lastName2}
+                        required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
-                    <div>
+                    
+                  </div>
+                  <div>
                        <label htmlFor="fechaNacimiento" className="block text-sm font-medium text-gray-700 mb-1">
                         Fecha de Nacimiento *
                       </label>
                       <input
-                        id="fechaNacimiento"
+                        id="birdthdateid"
                         type="date"
-                        value={formData.fechaNacimiento}
-                        onChange={(e) => handleInputChange("fechaNacimiento", e.target.value)}
+                        value={formData.birthDate}
+                        onChange={(e) => handleInputChange("birthDate", e.target.value)}
                         required
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       />
                     </div>
-                  </div>
                 </div>
+
+                
+              </div>
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  disabled={!isStepValid()}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
               </div>
 
+            </>
+              )}
+
               {/* Información de Contacto */}
+               {step === 2 && (
+                <>
               <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
                 <div className="px-6 py-4 border-b border-[#DCD6C9]">
                   <div className="flex items-center space-x-2">
@@ -237,11 +291,11 @@ export default function AssociatesForm() {
                         Teléfono *
                       </label>
                       <input
-                        id="telefono"
+                        id="phone"
                         type="tel"
                         placeholder="Número de teléfono"
-                        value={formData.telefono}
-                        onChange={(e) => handleInputChange("telefono", e.target.value)}
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
                         required
                         className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
                       />
@@ -266,11 +320,11 @@ export default function AssociatesForm() {
                       Dirección Completa
                     </label>
                     <input
-                      id="direccion"
+                      id="addressid"
                       type="text"
                       placeholder="Tu dirección completa"
-                      value={formData.direccion}
-                      onChange={(e) => handleInputChange("direccion", e.target.value)}
+                      value={formData.address}
+                      onChange={(e) => handleInputChange("address", e.target.value)}
                       className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
                     />
                   </div>
@@ -279,11 +333,11 @@ export default function AssociatesForm() {
                       Comunidad *
                     </label>
                     <input
-                      id="comunidad"
+                      id="communityid"
                       type="text"
                       placeholder="Tu comunidad"
-                      value={formData.comunidad}
-                      onChange={(e) => handleInputChange("comunidad", e.target.value)}
+                      value={formData.community}
+                      onChange={(e) => handleInputChange("community", e.target.value)}
                       required
                       className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
                     />
@@ -291,7 +345,32 @@ export default function AssociatesForm() {
                 </div>
               </div>
 
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                   className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                    disabled={!isStepValid()}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+              </>
+              )}
+
+              {/* Información de la Finca */}
+               
+
               {/* Información de Asociado */}
+              {step === 3 && (
+              <>
               <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
                 <div className="px-6 py-4 border-b border-[#DCD6C9]">
                   <div className="flex items-center space-x-2">
@@ -307,18 +386,38 @@ export default function AssociatesForm() {
                       Necesidades (opcional)
                     </label>
                     <textarea
-                      id="necesidades"
+                      id="needsid"
                       placeholder="¿Cuáles son tus principales necesidades o retos actuales como productor ganadero?"
-                      value={formData.necesidades}
-                      onChange={(e) => handleInputChange("necesidades", e.target.value)}
+                      value={formData.needs}
+                      onChange={(e) => handleInputChange("needs", e.target.value)}
                       rows={4}
                       className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#A3853D] focus:border-[#A3853D]"
                     />
                   </div>
                 </div>
               </div>
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                   className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+              </>
+                )}
 
               {/* Documentos */}
+              {step === 4 && (
+                <>
               <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
                 <div className="px-6 py-4 border-b border-[#DCD6C9]">
                   <div className="flex items-center space-x-2">
@@ -384,8 +483,60 @@ export default function AssociatesForm() {
                   </div>
                 </div>
               </div>
+              
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
+                >
+                  Siguiente
+                </button>
+              </div>
+              </>
+                )}
 
-              {/* Términos y botón */}
+            {step === 5 && (
+              <>
+              <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
+                <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
+
+                <div className="space-y-6 text-[#4A4A4A]">
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#708C3E]">Datos Personales</h3>
+                    <p><span className="text-center text-sm text-gray-500">Nombre:</span> {formData.name}</p>
+                    <p><span className="text-center text-sm text-gray-500">Primer Apellido:</span> {formData.lastName1}</p>
+                    <p><span className="text-center text-sm text-gray-500">Segundo Apellido:</span> {formData.lastName2}</p>
+                    <p><span className="text-center text-sm text-gray-500">Cédula:</span> {formData.idNumber}</p>
+                    <p><span className="text-center text-sm text-gray-500">Fecha de Nacimiento:</span> {formData.birthDate}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#708C3E]">Contacto</h3>
+                    <p><span className="text-center text-sm text-gray-500">Teléfono:</span> {formData.phone}</p>
+                    <p><span className="text-center text-sm text-gray-500">Email:</span> {formData.email}</p>
+                    <p><span className="text-center text-sm text-gray-500">Dirección:</span> {formData.address}</p>
+                    <p><span className="text-center text-sm text-gray-500">Comunidad:</span> {formData.community}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#708C3E]">Información Adicional</h3>
+                    <p><span className="text-center text-sm text-gray-500">Necesidades:</span> {formData.needs || "No especificado"}</p>
+                    <p><span className="text-center text-sm text-gray-500">Acepta Términos:</span> {formData.acceptTerms ? "Sí" : "No"}</p>
+                    <p><span className="text-center text-sm text-gray-500">Recibir Información:</span> {formData.receiveInfo ? "Sí" : "No"}</p>
+                  </div>
+                </div>
+                <div className="flex justify-center gap-6 mt-6">
+              </div>
+              </div>
+                 {/* Términos y botón */}
               <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
                 <div className="p-6 space-y-4">
                   <div className="flex items-start space-x-2">
@@ -415,7 +566,20 @@ export default function AssociatesForm() {
                     <label htmlFor="info" className="text-sm text-gray-700">
                       Deseo recibir información sobre eventos, capacitaciones y oportunidades.
                     </label>
-                  </div>
+                  </div >
+              
+                  
+                </div>
+                  </div> 
+                <div className="flex justify-between pt-6">
+                   <button
+                    type="button"
+                    onClick={prevStep}
+                    className="bg-red-600 text-white px-6 py-2 rounded-md"
+                  >
+                    Volver al formulario
+                  </button>
+                  <div>
                   <button
                     type="submit"
                     disabled={!formData.acceptTerms}
@@ -424,11 +588,14 @@ export default function AssociatesForm() {
                     <Users className="w-5 h-5 mr-2" />
                     Enviar Solicitud de Asociado
                   </button>
+                  
                   <p className="text-center text-sm text-gray-500">
                     Nos pondremos en contacto contigo en un plazo de 3-5 días hábiles
                   </p>
-                </div>
-              </div>
+                  </div>
+                  </div>
+              </>
+            )}
             </form>
           </div>
         </div>
