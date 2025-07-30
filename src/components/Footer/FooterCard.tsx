@@ -26,7 +26,7 @@ export const contact: FooterContact = {
   email: "camaradeganaderos@gmail.com",
   facebook: {
     name: "Cámara de Ganaderos de Hojancha",
-    url: "https://www.facebook.com/Cámara Ganaderos Hojancha",
+    url: "https://www.facebook.com/share/16xnNwXgPK",
   },
 }
 

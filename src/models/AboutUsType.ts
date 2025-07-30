@@ -9,7 +9,7 @@ export const aboutUs: AboutUsSection[] = [
     id: 1,
     title: "Nuestra Historia",
     description:
-      "La Cámara de Ganaderos es una organización que representa los intereses del sector pecuario, promoviendo el desarrollo sostenible, la innovación y la colaboración entre productores, profesionales y comunidades rurales."
+      "La Cámara de Ganaderos es una organización que representa los intereses del sector pecuario, promoviendo el desarrollo sostenible, la innovación y la colaboración entre productores, profesionales y comunidades rurales. La Cámara de Ganaderos es una organización que representa los intereses del sector pecuario, promoviendo el desarrollo sostenible, la innovación y la colaboración entre productores, profesionales y comunidades rurales. La Cámara de Ganaderos es una organización que representa los intereses del sector pecuario, promoviendo el desarrollo sostenible, la innovación y la colaboración entre productores, profesionales y comunidades rurales"
   },
   {
     id: 2,

@@ -22,7 +22,7 @@ export function EventCard({ event, onPrev, onNext }: any) {
 
           <h3 className="text-3xl font-bold text-[#2E321B] mb-6 leading-tight">{event.title}</h3>
 
-          <p className="text-[#475C1D] text-base leading-relaxed mb-8">{event.description}</p>
+          <p className=" text-[#2E321B] text-2xl leading-relaxed mb-8">{event.description}</p>
         </div>
       </div>
     </div>
