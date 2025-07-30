@@ -1,35 +1,40 @@
 export type VolunteerFormData = {
-   cedula: string
-  nombre: string
-  apellidos: string
-  fechaNacimiento: string
+    idNumber: string
+  name: string
+  lastName1: string
+  lastName2: string
+  birthDate: string
 
-  telefono: string
+    phone: string
   email: string
-  direccion: string
-  comunidad: string
-  tipoVoluntariado: string
-  disponibilidad: string
-  experienciaPrevia: string
-  motivacion: string
+  address: string
+  community: string
+
+
+  volunteeringType: string
+  availability: string
+  previousExperience: string
+  motivation: string
   acceptTerms: boolean
   receiveInfo: boolean
 }
 
 export const initialVolunteerFormData: VolunteerFormData = {
-  cedula: "",
-    nombre: "",
-    apellidos: "",
-    fechaNacimiento: "",
+  idNumber: "",
+  name: "",
+  lastName1: "",
+  lastName2: "",
+  birthDate: "",
     
-  telefono: "",
+  phone: "",
   email: "",
-  direccion: "",
-  comunidad: "",
-  tipoVoluntariado: "",
-  disponibilidad: "",
-  experienciaPrevia: "",
-  motivacion: "",
+  address: "",
+  community: "",
+
+  volunteeringType: "",
+  availability: "",
+  previousExperience: "",
+  motivation: "",
   acceptTerms: false,
   receiveInfo: false,
 }
