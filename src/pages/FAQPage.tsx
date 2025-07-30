@@ -7,7 +7,7 @@ export default function FAQPage() {
   const { openIndex, toggleFAQ } = useFaqToggle()
 
   return (
-    <div className="min-h-screen py-24 px-4 flex justify-center items-start bg-gradient-to-b from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
+    <div className="min-h-screen py-24 px-4 flex justify-center items-start bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]">
       <div className="w-full max-w-3xl px-4 sm:px-8 lg:px-0">
         <h2 className="text-4xl md:text-5xl font-bold text-center text-[#2E321B] mb-6">
           Preguntas Frecuentes
@@ -17,7 +17,7 @@ export default function FAQPage() {
           Encuentra respuestas a las preguntas más comunes sobre nuestra organización
         </p>
 
-        <div className="space-y-6">
+        <div className="mb-12 space-y-6">
           {faqs.map((faqs, index) => (
             <FaqItem
               key={index}
