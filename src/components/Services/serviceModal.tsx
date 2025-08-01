@@ -1,12 +1,5 @@
-import type { Service } from "../../models/ServicesType"
 
-
-interface Props {
-  content: Service
-  onClose: () => void
-}
-
-export function ServicesModal({ content, onClose }: Props) {
+export function ServicesModal({ content, onClose }: any) {
   return (
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
