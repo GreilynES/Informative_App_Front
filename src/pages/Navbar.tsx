@@ -1,95 +1,51 @@
-import { ShieldIcon as ShieldUser, ChevronDown } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useState } from "react"
+import { Menu, X } from "lucide-react" 
+import NavbarLinks from "../components/Navbar/NavbarLinks"
+import NavbarLoginIcon from "../components/Navbar/NavbarIcon"
 
-const Navbar = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLLIElement>(null)
+export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
 
   return (
-    <nav className="sticky top-0 w-full z-50 bg-white/80 backdrop-blur-md text-black px-16 py-4 shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/">
+    <nav className="sticky top-0 w-full z-50 bg-white/80 backdrop-blur-md text-black px-4 py-4 shadow-md md:px-16">
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+        {" "}
+        {/* Añadimos relative aquí para posicionar el menú móvil */}
+        {/* Logo - sigue usando <a> para recargar la página */}
+        <a href="/">
           <img
-            src="/logo-camara.png"
-            alt="Logo Cámara"
-            className="w-16 mb-2"
+            src="/logo-camara.png" 
+            alt="Logo de la empresa" // Texto alt genérico
+            className="h-12 w-auto" // Clases para el tamaño del logo
           />
-        </Link>
-        <div className="flex items-center space-x-8 ml-auto">
-          <ul className="flex space-x-6 text-base font-medium ml-auto text-gray-800">
-            <li>
-              <Link to="/" hash="AboutUsPage" className="hover:text-[#6D8B37] transition-colors">
-                Sobre Nosotros
-              </Link>
-            </li>
-            <li>
-              <Link to="/" hash="EventsPage" className="hover:text-[#6D8B37] transition-colors">
-                Eventos
-              </Link>
-            </li>
-            <li>
-              <Link to="/" hash="ServicesPage" className="hover:text-[#6D8B37] transition-colors">
-                Servicios
-              </Link>
-            </li>
-            {/* Dropdown */}
-            <li className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="hover:text-[#6D8B37] transition-colors focus:outline-none flex items-center gap-1"
-              >
-                Formularios
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-              {isDropdownOpen && (
-                <ul className="absolute right-0 mt-2 w-44 bg-white shadow-xl rounded-md border border-neutral-200 z-50">
-                  <li>
-                    <Link
-                      to="/volunteers"
-                      className="block px-4 py-2 hover:bg-[#F3F4EC] text-sm text-gray-800"
-                    >
-                      Voluntarios
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/associates"
-                      className="block px-4 py-2 hover:bg-[#F3F4EC] text-sm text-gray-800"
-                    >
-                      Asociados
-                    </Link>
-                  </li>
-                </ul>
-              )}
-            </li>
-          </ul>
-          {/* Icono login */}
-          <a
-            href="/login"
-            className="text-gray-800 hover:text-[#D8B769] transition-colors p-2 rounded-full border border-transparent hover:border-[#D8B769]"
-            title="Área Privada"
-          >
-            <ShieldUser className="w-6 h-6" />
-          </a>
+        </a>
+        {/* Menú de escritorio (visible en pantallas medianas y más grandes) */}
+        <div className="hidden md:flex items-center space-x-8 ml-auto">
+          <NavbarLinks /> {/* NavbarLinks para escritorio */}
+          <NavbarLoginIcon />
         </div>
+        {/* Botón de menú móvil (visible solo en pantallas pequeñas) */}
+        <div className="md:hidden">
+          <button onClick={toggleMenu} className="text-black focus:outline-none p-2">
+            {isMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
+          </button>
+        </div>
+        {/* Menú móvil desplegable (se muestra condicionalmente) */}
+        {isMenuOpen && (
+          <div className="md:hidden absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg p-4 z-40">
+            {/* Contenedor para los enlaces y el icono de login */}
+            <div className="flex flex-col space-y-4">
+              {/* NavbarLinks para móvil */}
+              <NavbarLinks isMobile={true} onLinkClick={toggleMenu} />
+              <NavbarLoginIcon isMobile={true} />
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )
 }
-
-export default Navbar

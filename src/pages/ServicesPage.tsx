@@ -1,13 +1,14 @@
 import { useState } from "react"
-import { useServicesCarousel } from "../hooks/useServicesCarousel"
-import { ServicesCard } from "../components/Services/serviceCard"
-import { ServicesModal } from "../components/Services/serviceModal"
 import { initialStateService, type Service } from "../models/ServicesType"
+import { useServicesCarousel } from "../hooks/useServicesCarousel"
+import ServicesCarouselButton from "../components/Services/serviceCarouselButton"
+import { ServicesCard } from "../components/Services/serviceCard"
+import ServicesCarouselIndicator from "../components/Services/serviceCarouselIndicator"
+import { ServicesModal } from "../components/Services/serviceModal"
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalContent, setModalContent] = useState<Service>(initialStateService)
-
 
   const {
     isTransitioning,
@@ -20,12 +21,7 @@ export default function ServicesPage() {
   } = useServicesCarousel(3)
 
   const openModal = (title: string, modalDescription: string, image: string) => {
-    setModalContent({
-      title,
-      cardDescription: "", 
-      modalDescription,
-      image,
-    })
+    setModalContent({ title, cardDescription: "", modalDescription, image })
     setIsModalOpen(true)
   }
 
@@ -33,53 +29,32 @@ export default function ServicesPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F7EC] text-[#2E321B] py-20">
-      <div className="container mx-auto px-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">Nuestros Servicios</h1>
-        <p className="text-center text-lg text-[#475C1D] mb-12">
+      <div className="container mx-auto px-6 md:px-20">
+        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">
+          Nuestros Servicios
+        </h1>
+        <p className="text-center text-lg text-[#475C1D] mb-12 max-w-3xl mx-auto">
           Desde capacitación técnica hasta innovación rural: apoyamos a nuestros asociados en cada paso.
         </p>
 
         <div className="relative">
-          <button
-            onClick={goToPrev}
-            disabled={isTransitioning}
-            className="absolute left-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center disabled:opacity-50"
-          >
-            <svg className="w-5 h-5 text-[#2E321B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+          <ServicesCarouselButton direction="left" onClick={goToPrev} disabled={isTransitioning} />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {getVisibleServices().map((service, index) => (
-              <ServicesCard
-                key={index}
-                service={service}
-                openModal={openModal}
-              />
+              <ServicesCard key={index} service={service} openModal={openModal} />
             ))}
           </div>
 
-          <button
-            onClick={goToNext}
-            disabled={isTransitioning}
-            className="absolute right-[-1.5rem] top-1/2 -translate-y-1/2 bg-white w-10 h-10 rounded-full shadow-lg hover:scale-105 transition z-10 flex items-center justify-center disabled:opacity-50"
-          >
-            <svg className="w-5 h-5 text-[#2E321B]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          <ServicesCarouselButton direction="right" onClick={goToNext} disabled={isTransitioning} />
         </div>
 
-        <div className="flex justify-center mt-10 space-x-2">
-          {Array.from({ length: originalLength }).map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => !isTransitioning && setCurrentSlide(originalLength + idx)}
-              className={`w-3 h-3 rounded-full ${idx === getRealSlideIndex() ? "bg-[#d8b769]" : "bg-gray-300"}`}
-            />
-          ))}
-        </div>
+        <ServicesCarouselIndicator
+          count={originalLength}
+          current={getRealSlideIndex()}
+          isTransitioning={isTransitioning}
+          onClick={(i: number) => setCurrentSlide(originalLength + i)}
+        />
       </div>
 
       {isModalOpen && <ServicesModal content={modalContent} onClose={closeModal} />}

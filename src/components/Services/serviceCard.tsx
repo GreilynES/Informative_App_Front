@@ -1,15 +1,4 @@
-interface Props {
-  service: {
-    title: string
-    cardDescription?: string
-    modalDescription?: string
-    image: string
-    key: string
-  }
-  openModal: (title: string, description: string, image: string) => void
-}
-
-export function ServicesCard({ service, openModal }: Props) {
+export function ServicesCard({ service, openModal }: any) {
   return (
     <div className="rounded-2xl shadow-sm hover:shadow-md hover:shadow-[#e7c78d]/40 transition-all duration-300 overflow-hidden">
       <div className="h-2 bg-gradient-to-r from-[#E7C78D] via-[#D8B769] to-[#A7C957]" />

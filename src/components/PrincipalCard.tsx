@@ -1,8 +1,13 @@
-// components/EventCard.tsx
-import { Calendar } from "lucide-react"
+import { CalendarDays, ArrowRight } from "lucide-react"
 import type { PrincipalType } from "../models/PrincipalType"
+import { motion } from "framer-motion"
+import { RippleButton } from "../animations/Buttons"
 
 export function PrincipalCard({ event }: { event: PrincipalType }) {
+  if (!event) {
+    return null
+  }
+
   return (
     <div className="relative">
       {/* Pin decorativo */}
@@ -16,32 +21,69 @@ export function PrincipalCard({ event }: { event: PrincipalType }) {
           </div>
         </div>
       </div>
-
-      {/* Tarjeta */}
-      <div
-        className="w-[430px] h-[360px] bg-white shadow-2xl transform rounded-lg rotate-3 hover:rotate-0 transition-transform duration-500 ease-in-out relative"
-        style={{ transformOrigin: "top left" }}
+      {/* Tarjeta - Animaciones de Framer Motion con balanceo inicial más sutil */}
+      <motion.div
+        className="w-[430px] bg-white shadow-2xl rounded-lg relative flex flex-col group"
+        style={{ transformOrigin: "4px 0px" }}
+        initial={{ rotate: -30 }}
+        animate={{ rotate: 5 }}
+        transition={{
+          type: "spring",
+          stiffness: 70,
+          damping: 8,
+          mass: 1,
+        }}
+        whileHover={{ rotate: 8 }}
       >
-        <div className="p-4">
+        {/* Sección del título con etiqueta en columna */}
+        <div className="p-4 pb-2">
+          <div className="flex flex-col items-start">
+            {" "}
+            {/* Contenedor flex-col para apilar */}
+            {/* Etiqueta "Destacado" - Ahora con color de fondo y texto más sutil */}
+            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full mb-1">
+              Destacado
+            </span>
+            {/* Título del evento */}
+            <h3 className="text-lg font-bold text-[#2E321B] w-full break-words">{event.title}</h3>
+          </div>
+        </div>
+
+        {/* Contenedor de la imagen y la fecha superpuesta */}
+        <div className="relative px-4 pb-4 overflow-hidden rounded-b-lg">
           <img
             src={
               event.illustration ||
-              "/placeholder.svg?height=180&width=350&query=cattle auction event"
+              "/placeholder.svg?height=180&width=350&query=cattle auction event" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg" ||
+              "/placeholder.svg"
             }
             alt="Subasta de ganado"
-            className="w-full h-60 object-cover rounded-lg"
+            className="w-full h-60 object-cover rounded-lg transition-transform duration-300"
           />
+          {/* Fecha del evento sobre la foto - POSICIONADO EN LA PARTE INFERIOR */}
+          <div className="absolute bottom-6 left-6 text-white px-3 py-1 rounded-md flex items-center space-x-2 ">
+            <CalendarDays className="w-5 h-5" />
+            <span className="text-2xl font-extrabold">{event.date}</span>
+          </div>
         </div>
 
-        <div className="px-4 pb-4">
-          <div className="flex items-center space-x-2 text-[#6F8C1F] text-base font-medium mb-2">
-            <Calendar className="w-5 h-5" />
-            <span>{event.date}</span>
-          </div>
-          <h3 className="text-base font-bold text-[#2E321B] mb-1">{event.title}</h3>
-          <p className="text-xs text-[#475C1D]">{event.description}</p>
+        {/* Sección "Saber más" como botón */}
+        <div className="px-4 pb-4 pt-2 flex justify-end">
+          <RippleButton size="sm" className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200">
+            <span>Saber más</span>
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </RippleButton>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

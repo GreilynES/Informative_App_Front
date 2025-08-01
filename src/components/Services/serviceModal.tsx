@@ -1,12 +1,5 @@
-import type { Service } from "../../models/ServicesType"
 
-
-interface Props {
-  content: Service
-  onClose: () => void
-}
-
-export function ServicesModal({ content, onClose }: Props) {
+export function ServicesModal({ content, onClose }: any) {
   return (
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
@@ -28,7 +21,7 @@ export function ServicesModal({ content, onClose }: Props) {
         <div className="text-right">
           <button
             onClick={onClose}
-            className="bg-gradient-to-r from-[#e7c78d] to-[#d8b769] text-[#2E321B] font-semibold px-6 py-2 rounded-lg shadow hover:brightness-110 transition"
+            className="bg-gradient-to-r from-[#7A944B] to-[#475C1D] text-white font-semibold px-6 py-2 rounded-lg shadow hover:brightness-110 transition"
           >
             Cerrar
           </button>
