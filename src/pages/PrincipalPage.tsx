@@ -1,13 +1,37 @@
 import { ChevronRight } from "lucide-react"
 import { events } from "../models/EventType"
-import { principalType } from "../models/PrincipalType"
+import { usePrincipal } from "../hooks/usePrincipal"
 import { RippleButton } from "../animations/Buttons"
 import { PrincipalCard } from "../components/PrincipalCard"
 
 export default function PrincipalPage() {
+  const { data: principal } = usePrincipal()
+
   const subastaEvent = events.find((event) =>
     event.title.toLowerCase().includes("subasta")
   )
+
+  if (!principal) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#2E321B] text-xl">
+        Cargando información...
+      </div>
+    )
+  }
+
+  // 🔠 Dividir título dinámicamente en 3 partes visuales
+  const palabras = principal.title.split(" ")
+  let parte1 = ""
+  let parte2 = ""
+  let parte3 = ""
+
+  if (palabras.length >= 4) {
+    parte1 = palabras.slice(0, 2).join(" ")        // Ej: Asociación Cámara
+    parte2 = palabras[2]                           // Ej: de
+    parte3 = palabras.slice(3).join(" ")           // Ej: Ganaderos Hojancha
+  } else {
+    parte1 = principal.title
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
@@ -16,15 +40,15 @@ export default function PrincipalPage() {
           {/* IZQUIERDA */}
           <div className="space-y-8">
             <h1 className="text-5xl md:text-6xl font-bold text-[#2E321B] mb-6">
-              Asociación Cámara
+              {parte1}
               <br />
-              de <span className="text-[#6F8C1F]">Ganaderos</span>
+              <span className="text-[#6F8C1F]">{parte2}</span>
               <br />
-              Hojancha
+              {parte3}
             </h1>
 
             <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
-              {principalType.description}
+              {principal.description}
             </p>
 
             <div className="flex flex-row gap-8">
