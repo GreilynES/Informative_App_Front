@@ -19,20 +19,6 @@ export default function PrincipalPage() {
     )
   }
 
-  // 🔠 Dividir título dinámicamente en 3 partes visuales
-  const palabras = principal.title.split(" ")
-  let parte1 = ""
-  let parte2 = ""
-  let parte3 = ""
-
-  if (palabras.length >= 4) {
-    parte1 = palabras.slice(0, 2).join(" ")        // Ej: Asociación Cámara
-    parte2 = palabras[2]                           // Ej: de
-    parte3 = palabras.slice(3).join(" ")           // Ej: Ganaderos Hojancha
-  } else {
-    parte1 = principal.title
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
       <main className="max-w-7xl mx-auto my-0 px-6 sm:px-6 lg:px-16 py-0">
@@ -40,11 +26,11 @@ export default function PrincipalPage() {
           {/* IZQUIERDA */}
           <div className="space-y-8">
             <h1 className="text-5xl md:text-6xl font-bold text-[#2E321B] mb-6">
-              {parte1}
+              Asociación Cámara
               <br />
-              <span className="text-[#6F8C1F]">{parte2}</span>
+              de <span className="text-[#6F8C1F]">Ganaderos</span>
               <br />
-              {parte3}
+              Hojancha
             </h1>
 
             <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
