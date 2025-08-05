@@ -8,7 +8,7 @@ export default function AboutUsPage() {
 
   if (isLoading) return <p className="text-center text-white">Cargando...</p>
 
-  const historia = aboutUs.find((item) => item.title.includes("Historia"))
+  const somos = aboutUs.find((item) => item.title.includes("Somos"))
   const mision = aboutUs.find((item) => item.title.includes("Misión"))
   const vision = aboutUs.find((item) => item.title.includes("Visión"))
 
@@ -30,11 +30,11 @@ export default function AboutUsPage() {
         </div>
 
         {/* Historia */}
-        {historia && (
+        {somos && (
           <AboutUsCard
             icon={<Users className="w-6 h-6 text-white" />}
-            title={historia.title}
-            description={historia.description}
+            title={somos.title}
+            description={somos.description}
           />
         )}
 
