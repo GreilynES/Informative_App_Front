@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react"
-import { services } from "../models/ServicesType"
-
-
+// hooks/useServicesCarousel.ts
+import { useEffect, useState } from "react"
+import { getInformativeServices } from "../services/servicesInformativeService"
+import { type Service } from "../models/ServicesType"
 
 export function useServicesCarousel(cardsPerSlide: number) {
+  const [services, setServices] = useState<Service[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
@@ -12,8 +13,13 @@ export function useServicesCarousel(cardsPerSlide: number) {
   const startIndex = originalLength
 
   useEffect(() => {
-    setCurrentSlide(startIndex)
-  }, [startIndex])
+    async function fetchData() {
+      const data = await getInformativeServices()
+      setServices(data)
+      setCurrentSlide(data.length)
+    }
+    fetchData()
+  }, [])
 
   const goToPrev = () => {
     if (isTransitioning) return
@@ -49,10 +55,12 @@ export function useServicesCarousel(cardsPerSlide: number) {
     const visible = []
     for (let i = 0; i < cardsPerSlide; i++) {
       const index = (currentSlide + i) % infiniteServices.length
-      visible.push({
-        ...infiniteServices[index],
-        key: `${infiniteServices[index].title}-${currentSlide}-${i}`,
-      })
+      if (infiniteServices[index]) {
+        visible.push({
+          ...infiniteServices[index],
+          key: `${infiniteServices[index].title}-${currentSlide}-${i}`,
+        })
+      }
     }
     return visible
   }
