@@ -1,17 +1,18 @@
 import { ChevronRight } from "lucide-react"
-import { events } from "../models/EventType"
 import { usePrincipal } from "../hooks/usePrincipal"
+import { useEvents } from "../hooks/useEvents"
 import { RippleButton } from "../animations/Buttons"
 import { PrincipalCard } from "../components/PrincipalCard"
 
 export default function PrincipalPage() {
   const { data: principal } = usePrincipal()
+  const { events, isLoading: isLoadingEvents } = useEvents()
 
   const subastaEvent = events.find((event) =>
     event.title.toLowerCase().includes("subasta")
   )
 
-  if (!principal) {
+  if (!principal || isLoadingEvents) {
     return (
       <div className="min-h-screen flex items-center justify-center text-[#2E321B] text-xl">
         Cargando información...

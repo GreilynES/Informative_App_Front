@@ -1,10 +1,16 @@
-import { useState } from "react"
-import { events } from "../models/EventType"
+import { useState, useEffect } from "react"
+import { useEvents } from "../hooks/useEvents"
 import { AnimatedEventWrapper } from "../animations/EventChange"
 
 export default function EventsPage() {
+  const { events, isLoading } = useEvents()
   const [currentEvent, setCurrentEvent] = useState(0)
   const [direction, setDirection] = useState(0)
+
+  useEffect(() => {
+    // Reiniciar índice si se recargan los eventos
+    if (events.length > 0) setCurrentEvent(0)
+  }, [events])
 
   const nextEvent = () => {
     setDirection(1)
@@ -19,6 +25,14 @@ export default function EventsPage() {
   const goToEvent = (index: number) => {
     setDirection(index > currentEvent ? 1 : -1)
     setCurrentEvent(index)
+  }
+
+  if (isLoading || events.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-xl text-[#2E321B]">
+        Cargando eventos...
+      </div>
+    )
   }
 
   return (
