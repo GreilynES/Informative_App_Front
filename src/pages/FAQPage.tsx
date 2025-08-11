@@ -1,10 +1,27 @@
+// src/pages/FAQPage.tsx
+import { useEffect, useState } from "react"
 import { FaqItem } from "../components/Faq/FAQCard"
 import { useFaqToggle } from "../hooks/faqHook"
 import { getFaqs } from "../services/faqService"
+import type { FAQ } from "../models/FAQType"
+
 
 export default function FAQPage() {
-  const faqs = getFaqs()
+  const [faqs, setFaqs] = useState<FAQ[]>([])
   const { openIndex, toggleFAQ } = useFaqToggle()
+
+  useEffect(() => {
+    async function fetchFaqs() {
+      try {
+        const data = await getFaqs()
+        setFaqs(data)
+      } catch (error) {
+        console.error("Error al cargar FAQs:", error)
+      }
+    }
+
+    fetchFaqs()
+  }, [])
 
   return (
     <div className="min-h-screen py-24 px-4 flex justify-center items-start bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]">
@@ -18,10 +35,10 @@ export default function FAQPage() {
         </p>
 
         <div className="mb-12 space-y-6">
-          {faqs.map((faqs, index) => (
+          {faqs.map((faq, index) => (
             <FaqItem
               key={index}
-              faqs={faqs}
+              faqs={faq}
               index={index}
               isOpen={openIndex === index}
               onToggle={toggleFAQ}

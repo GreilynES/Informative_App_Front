@@ -1,13 +1,24 @@
 import { ChevronRight } from "lucide-react"
-import { events } from "../models/EventType"
-import { principalType } from "../models/PrincipalType"
+import { usePrincipal } from "../hooks/usePrincipal"
+import { useEvents } from "../hooks/useEvents"
 import { RippleButton } from "../animations/Buttons"
 import { PrincipalCard } from "../components/PrincipalCard"
 
 export default function PrincipalPage() {
+  const { data: principal } = usePrincipal()
+  const { events, isLoading: isLoadingEvents } = useEvents()
+
   const subastaEvent = events.find((event) =>
     event.title.toLowerCase().includes("subasta")
   )
+
+  if (!principal || isLoadingEvents) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#2E321B] text-xl">
+        Cargando información...
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
@@ -24,7 +35,7 @@ export default function PrincipalPage() {
             </h1>
 
             <p className="text-xl text-[#475C1D] max-w-2xl mx-auto">
-              {principalType.description}
+              {principal.description}
             </p>
 
             <div className="flex flex-row gap-8">
