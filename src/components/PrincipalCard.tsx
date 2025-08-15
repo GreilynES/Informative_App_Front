@@ -1,9 +1,9 @@
 import { CalendarDays, ArrowRight } from "lucide-react"
-import type { PrincipalType } from "../models/PrincipalType"
 import { motion } from "framer-motion"
 import { RippleButton } from "../animations/Buttons"
+import type { EventData } from "../models/EventType"
 
-export function PrincipalCard({ event }: { event: PrincipalType }) {
+export function PrincipalCard({ event }: { event: EventData }) {
   if (!event) {
     return null
   }
