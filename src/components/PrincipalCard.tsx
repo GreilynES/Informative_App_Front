@@ -2,8 +2,10 @@ import { CalendarDays, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { RippleButton } from "../animations/Buttons"
 import type { EventData } from "../models/EventType"
+import { useNavigate } from "@tanstack/react-router"
 
 export function PrincipalCard({ event }: { event: EventData }) {
+   const navigate = useNavigate()
   if (!event) {
     return null
   }
@@ -78,10 +80,17 @@ export function PrincipalCard({ event }: { event: EventData }) {
 
         {/* Sección "Saber más" como botón */}
         <div className="px-4 pb-4 pt-2 flex justify-end">
-          <RippleButton size="sm" className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200">
-            <span>Saber más</span>
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </RippleButton>
+          <div className="px-4 pb-4 pt-2 flex justify-end">
+             <a href="#EventsPage" > {/*onClick={() => navigate({ to: "/events" })}*/}
+              <RippleButton
+                size="sm"
+                className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200"
+              >
+                <span>Saber más</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </RippleButton>
+            </a>
+          </div>
         </div>
       </motion.div>
     </div>

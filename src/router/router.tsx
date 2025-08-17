@@ -4,6 +4,7 @@ import HomePage from './HomePage'
 
 import VolunteersForm from '../pages/VolunteersForm'
 import AssociatesForm from '../pages/AssociatesForm'
+import EventsPage from '../pages/EventsPage'
 
 
 
@@ -23,6 +24,12 @@ const associatesRoute = createRoute({
   component: AssociatesForm,
 })
 
+const eventsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/events',
+  component: EventsPage,
+})
+
 const volunteersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/volunteers',
@@ -33,6 +40,7 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   associatesRoute,
   volunteersRoute,
+  eventsRoute
 ])
 
 export const router = createRouter({ routeTree })
