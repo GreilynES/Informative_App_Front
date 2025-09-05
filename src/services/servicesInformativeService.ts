@@ -1,6 +1,4 @@
 import type { Service } from "../models/ServicesType"
-
-
 const API_URL = "http://localhost:3000/servicesInformative"
 
 export async function getInformativeServices() {
@@ -9,6 +7,7 @@ export async function getInformativeServices() {
   if (!response.ok) throw new Error("Error al obtener los servicios informativos")
   return response.json()
 }
+
 
 export async function updateInformativeService(id: number, updatedService: Service) {
   const response = await fetch(`${API_URL}/${id}`, {

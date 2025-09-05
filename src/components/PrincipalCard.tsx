@@ -3,6 +3,7 @@ import { motion } from "framer-motion"
 import { RippleButton } from "../animations/Buttons"
 import type { EventData } from "../models/EventType"
 import { useNavigate } from "@tanstack/react-router"
+import { formatDateToWords } from "../utils/formatDate"
 
 export function PrincipalCard({ event }: { event: EventData }) {
    const navigate = useNavigate()
@@ -74,14 +75,22 @@ export function PrincipalCard({ event }: { event: EventData }) {
           {/* Fecha del evento sobre la foto - POSICIONADO EN LA PARTE INFERIOR */}
           <div className="absolute bottom-6 left-6 text-white px-3 py-1 rounded-md flex items-center space-x-2 ">
             <CalendarDays className="w-5 h-5" />
-            <span className="text-2xl font-extrabold">{event.date}</span>
+            <span className="text-2xl font-extrabold">{formatDateToWords(event.date, {
+              locale: "es-CR",
+              capitalize: true,
+              commaBeforeYear: false, // 👉 "Viernes 3 de octubre de 2025"
+            })}</span>
           </div>
         </div>
 
         {/* Sección "Saber más" como botón */}
         <div className="px-4 pb-4 pt-2 flex justify-end">
           <div className="px-4 pb-4 pt-2 flex justify-end">
-             <a href="#EventsPage" > {/*onClick={() => navigate({ to: "/events" })}*/}
+             <a href={`#EventsPage?eventId=${formatDateToWords(event.date, {
+                locale: "es-CR",
+                capitalize: true,
+                commaBeforeYear: false, // 👉 "Viernes 3 de octubre de 2025"
+              })}`} > 
               <RippleButton
                 size="sm"
                 className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200"

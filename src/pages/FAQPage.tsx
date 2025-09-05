@@ -4,11 +4,24 @@ import { FaqItem } from "../components/Faq/FAQCard"
 import { useFaqToggle } from "../hooks/faqHook"
 import { getFaqs } from "../services/faqService"
 import type { FAQ } from "../models/FAQType"
-
+import { useFaqRealtime } from "../hooks/faqHook"
+  
 
 export default function FAQPage() {
   const [faqs, setFaqs] = useState<FAQ[]>([])
   const { openIndex, toggleFAQ } = useFaqToggle()
+
+  useFaqRealtime((payload) => {
+    if (payload.action === 'created' && payload.data) {
+      setFaqs((prev) => [payload.data!, ...prev]);
+    }
+    if (payload.action === 'updated' && payload.data) {
+      setFaqs((prev) => prev.map(f => f.id === payload.data!.id ? payload.data! : f));
+    }
+    if (payload.action === 'deleted' && payload.id) {
+      setFaqs((prev) => prev.filter(f => f.id !== payload.id));
+    }
+  });
 
   useEffect(() => {
     async function fetchFaqs() {

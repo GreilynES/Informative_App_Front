@@ -1,16 +1,27 @@
-import { Users, Target, Eye } from "lucide-react"
-import { useAboutUs } from "../hooks/useAboutUs"
-import { AboutUsCard } from "../components/AboutUs/AboutUsCard"
-import AboutUsBackground from "../components/AboutUs/AboutUsBackground"
+import { Users, Target, Eye } from "lucide-react";
+import { AboutUsCard } from "../components/AboutUs/AboutUsCard";
+import AboutUsBackground from "../components/AboutUs/AboutUsBackground";
+import { useAboutUs } from "../hooks/useAboutUs";
+
+function normalize(s: string) {
+  return s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+}
 
 export default function AboutUsPage() {
-  const { data: aboutUs = [], isLoading } = useAboutUs()
+  const { data: aboutUs = [], isLoading } = useAboutUs();
 
-  if (isLoading) return <p className="text-center text-white">Cargando...</p>
+  // Muestra "Cargando..." solo si además no hay data todavía
+  if (isLoading && aboutUs.length === 0) {
+    return <p className="text-center text-white">Cargando...</p>;
+  }
 
-  const somos = aboutUs.find((item) => item.title.includes("Somos"))
-  const mision = aboutUs.find((item) => item.title.includes("Misión"))
-  const vision = aboutUs.find((item) => item.title.includes("Visión"))
+  // Match robusto por si vienen títulos con/ sin tildes
+  const getByTitle = (needle: string) =>
+    aboutUs.find((item) => normalize(item.title).includes(normalize(needle)));
+
+  const somos  = getByTitle("Quiénes Somos") || getByTitle("Quienes Somos") || getByTitle("Somos");
+  const mision = getByTitle("Misión") || getByTitle("Mision");
+  const vision = getByTitle("Visión") || getByTitle("Vision");
 
   return (
     <section className="min-h-screen relative overflow-hidden">
@@ -57,5 +68,5 @@ export default function AboutUsPage() {
         </div>
       </div>
     </section>
-  )
+  );
 }

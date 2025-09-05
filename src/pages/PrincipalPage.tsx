@@ -1,10 +1,12 @@
 import { ChevronRight } from "lucide-react"
-import { usePrincipal } from "../hooks/usePrincipal"
+import { usePrincipalEdit } from "../hooks/usePrincipal"
+import { useSubastaEvent } from "../hooks/useSubastaEvent"
 import { RippleButton } from "../animations/Buttons"
 import { PrincipalCard } from "../components/PrincipalCard"
 
 export default function PrincipalPage() {
-  const { data: principal } = usePrincipal()
+  const { data: principal } = usePrincipalEdit()
+  const { subastaEvent, isLoading: subastaLoading } = useSubastaEvent()
 
   if (!principal) {
     return (
@@ -13,8 +15,6 @@ export default function PrincipalPage() {
       </div>
     )
   }
-
-  const subastaEvent = principal.event;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] flex justify-between items-center">
@@ -53,7 +53,11 @@ export default function PrincipalPage() {
 
           {/* DERECHA */}
           <div className="flex justify-center items-center">
-            {subastaEvent ? (
+            {subastaLoading ? (
+              <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">
+                <p>Cargando evento de subasta...</p>
+              </div>
+            ) : subastaEvent ? (
               <PrincipalCard event={subastaEvent} />
             ) : (
               <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 text-center text-gray-500">

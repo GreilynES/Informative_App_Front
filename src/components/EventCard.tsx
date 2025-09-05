@@ -1,6 +1,7 @@
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar } from "lucide-react"
+import { formatDateToWords } from "../utils/formatDate"
 
-export function EventCard({ event, onPrev, onNext }: any) {
+export function EventCard({ event}: any) {
   return (
     <div className="overflow-hidden shadow-xl border border-[#DDE9BB] bg-white/90 relative rounded-xl">
       <div className="grid lg:grid-cols-2 gap-0">
@@ -17,7 +18,7 @@ export function EventCard({ event, onPrev, onNext }: any) {
         <div className="p-8 lg:p-12 flex flex-col justify-center">
           <div className="flex items-center gap-3 text-[#6F8C1F] mb-6">
             <Calendar className="h-6 w-6" />
-            <p className="font-bold text-lg">{event.date}</p>
+            <p className="font-bold text-lg">{formatDateToWords(event.date)}</p>
           </div>
 
           <h3 className="text-3xl font-bold text-[#2E321B] mb-6 leading-tight">{event.title}</h3>
