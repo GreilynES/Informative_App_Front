@@ -7,15 +7,20 @@ export function ServicesCard({ service, openModal }: any) {
         <div className="text-[#2E321B] text-base leading-relaxed whitespace-pre-wrap break-all">
             {service.modalDescription}
           </div>
-        <button
-          onClick={() => openModal(service.title, service.modalDescription || "", service.image)}
-          className="text-[#D8B769] to-[#A7C957] break-words line-clamp-3 font-medium text-m hover:underline flex items-center gap-1 mt-auto"
-        >
-          Más información
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+          <button
+              onClick={() =>
+                openModal(
+                  service.id,
+                  service.title,
+                  service.modalDescription ?? "",
+                  service.image ?? "",
+                  service.cardDescription ?? ""
+                )
+              }
+              className="text-[#D8B769] font-medium hover:underline flex items-center gap-1 mt-auto"
+            >
+              Más información
+            </button>
       </div>
     </div>
   )

@@ -6,6 +6,7 @@ import { ServicesCard } from "../components/Services/serviceCard"
 import ServicesCarouselIndicator from "../components/Services/serviceCarouselIndicator"
 import { ServicesModal } from "../components/Services/serviceModal"
 
+
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalContent, setModalContent] = useState<Service>(initialStateService)
