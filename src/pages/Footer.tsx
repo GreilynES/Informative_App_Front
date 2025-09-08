@@ -6,7 +6,7 @@ import { contact, quickLinks, schedule } from '../components/Footer/FooterCard'
 export default function FooterPage() {
   return (
     <footer className="bg-gradient-to-br from-[#2D2D2D] via-[#1C1C1C] to-black text-white">
-      <div className="max-w-7xl mx-auto px-18 py-20 grid grid-cols-1 md:grid-cols-4 gap-10">
+      <div id="Footer" className="max-w-7xl mx-auto px-18 py-20 grid grid-cols-1 md:grid-cols-4 gap-10">
 
         {/* LOGO + NOMBRE */}
         <div className="flex flex-col items-center md:items-start space-y-3">

@@ -35,7 +35,7 @@ export default function PrincipalPage() {
             </p>
 
             <div className="flex flex-row gap-8">
-              <a href="#FooterPage">
+              <a href="#Footer">
                 <RippleButton className="px-6 py-2 bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium transition-all duration-200">
                   Contáctanos
                 </RippleButton>

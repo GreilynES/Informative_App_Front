@@ -14,47 +14,69 @@ export default function ServicesPage() {
     isTransitioning,
     goToPrev,
     goToNext,
-    getVisibleServices,
     getRealSlideIndex,
+    getTranslateX,
     setCurrentSlide,
     originalLength,
-  } = useServicesCarousel(3)
+    cardsPerSlide,
+    infiniteServices,
+    getTotalSlides,
+    getCardWidth, // Added new function from hook
+  } = useServicesCarousel()
 
-  const openModal = (title: string, modalDescription: string, image: string) => {
-    setModalContent({ title, cardDescription: "", modalDescription, image })
+  const openModal = (id: number, title: string, modalDescription: string, image: string, cardDescription: string) => {
+    setModalContent({ id, title, modalDescription, image, cardDescription })
     setIsModalOpen(true)
   }
 
   const closeModal = () => setIsModalOpen(false)
 
+  const noData = originalLength === 0
+  const showNavigation = originalLength > 3
+
   return (
     <div className="min-h-screen bg-[#F5F7EC] text-[#2E321B] py-20">
       <div className="container mx-auto px-6 md:px-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">
-          Nuestros Servicios
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-[#2E321B] text-center mb-6">Nuestros Servicios</h1>
         <p className="text-center text-lg text-[#475C1D] mb-12 max-w-3xl mx-auto">
           Desde capacitación técnica hasta innovación rural: apoyamos a nuestros asociados en cada paso.
         </p>
 
-        <div className="relative">
-          <ServicesCarouselButton direction="left" onClick={goToPrev} disabled={isTransitioning} />
+        <div className="relative max-w-6xl mx-auto">
+          {showNavigation && (
+            <ServicesCarouselButton direction="left" onClick={goToPrev} disabled={isTransitioning || noData} />
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {getVisibleServices().map((service, index) => (
-              <ServicesCard key={index} service={service} openModal={openModal} />
-            ))}
+          <div className={`overflow-hidden ${showNavigation ? "mx-16" : "mx-0"}`}>
+            <div
+              className={`flex flex-nowrap gap-6 transition-transform duration-700 ease-in-out ${originalLength <= 3 ? "justify-center" : ""}`}
+              style={{ transform: `translateX(${getTranslateX()}%)` }}
+            >
+              {infiniteServices.map((service, index) => (
+                <div
+                  key={`${service.id}-${index}`}
+                  className="flex-none"
+                  style={{ width: getCardWidth() }} // Use dynamic width
+                >
+                  <ServicesCard service={service} openModal={openModal} />
+                </div>
+              ))}
+            </div>
           </div>
 
-          <ServicesCarouselButton direction="right" onClick={goToNext} disabled={isTransitioning} />
+          {showNavigation && (
+            <ServicesCarouselButton direction="right" onClick={goToNext} disabled={isTransitioning || noData} />
+          )}
         </div>
 
-        <ServicesCarouselIndicator
-          count={originalLength}
-          current={getRealSlideIndex()}
-          isTransitioning={isTransitioning}
-          onClick={(i: number) => setCurrentSlide(originalLength + i)}
-        />
+        {!noData && showNavigation && (
+          <ServicesCarouselIndicator
+            count={getTotalSlides()}
+            current={getRealSlideIndex()}
+            isTransitioning={isTransitioning}
+            onClick={(i: number) => setCurrentSlide(i + cardsPerSlide)}
+          />
+        )}
       </div>
 
       {isModalOpen && <ServicesModal content={modalContent} onClose={closeModal} />}

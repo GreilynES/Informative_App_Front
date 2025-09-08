@@ -1,10 +1,11 @@
-export interface Service {
+export type Service = {
   id: number
   title: string
   cardDescription: string
   modalDescription: string
   image: string
 }
+
 
 export const initialStateService: Service = {
   id: 0,

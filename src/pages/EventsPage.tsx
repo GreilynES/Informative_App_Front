@@ -1,98 +1,58 @@
-import { useState, useEffect, useRef } from "react";
-import { useEventRealtime, useEvents } from "../hooks/useEvents";
-import { AnimatedEventWrapper } from "../animations/EventChange";
-
-import type { EventData } from "../models/EventType";          // ajusta el tipo si tu model se llama distinto
+import { useState, useEffect, useRef } from "react"
+import { useEventRealtime, useEventsSubastaFirst } from "../hooks/useEvents"
+import { AnimatedEventWrapper } from "../animations/EventChange"
+import type { EventData } from "../models/EventType"
 
 export default function EventsPage() {
-  const { events, isLoading } = useEvents(); // fetch inicial (HTTP público)
-  const [rtEvents, setRtEvents] = useState<EventData[]>([]);   // 👈 fuente de verdad para render
-  const [currentEvent, setCurrentEvent] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const seeded = useRef(false);     // 👈 para evitar múltiples seeds
+  // Ahora el hook ya devuelve la lista con “Subasta” primero
+  const { events, isLoading, applyRealtime } = useEventsSubastaFirst()
 
-  // Obtener eventId de la URL si existe
+  const [rtEvents, setRtEvents] = useState<EventData[]>([])
+  const [currentEvent, setCurrentEvent] = useState(0)
+  const [direction, setDirection] = useState(0)
+  const seeded = useRef(false)
+
+  // Seed inicial (mantiene subasta al frente)
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || '');
-    const eventId = urlParams.get('eventId');
-    
-    if (eventId && events && events.length > 0) {
-      const eventIndex = events.findIndex(event => event.id === parseInt(eventId));
-      if (eventIndex !== -1) {
-        setCurrentEvent(eventIndex);
-        setRtEvents(events);
-        seeded.current = true;
-        return;
-      }
+    if (!seeded.current && events.length > 0) {
+      setRtEvents(events)
+      setCurrentEvent(0) // ya que subasta va de primera
+      seeded.current = true
+    } else if (seeded.current) {
+      setRtEvents(events)
+      setCurrentEvent((idx) => Math.min(idx, events.length - 1))
     }
-    
-    // seed: cuando llega la data inicial, llénala una sola vez
-    if (events && events.length > 0) {
-      if (!seeded.current) {
-        setRtEvents(events);
-        setCurrentEvent(0);
-        seeded.current = true;
-      }
-    }
-  }, [events]);
+  }, [events])
 
-  // realtime
-  useEventRealtime<EventData>((payload: any) => {
-    if (payload.action === "created" && payload.data) {
-      setRtEvents((prev) => [payload.data!, ...prev]);
-      setCurrentEvent(0);
-      return;
-    }
-    if (payload.action === "updated" && payload.data) {
-      setRtEvents((prev) =>
-        prev.map((e) => (e.id === payload.data!.id ? payload.data! : e))
-      );
-      return;
-    }
-    if (payload.action === "deleted" && payload.id != null) {
-      setRtEvents((prev) => {
-        const next = prev.filter((e) => e.id !== Number(payload.id));
-        // ajusta el índice si quedó fuera de rango
-        if (next.length === 0) {
-          setCurrentEvent(0);
-        } else if (currentEvent >= next.length) {
-          setCurrentEvent(next.length - 1);
-        }
-        return next;
-      });
-        const idNum = Number(payload.id);
-      setRtEvents(prev => {
-        const next = prev.filter(e => e.id !== idNum);
-        setCurrentEvent(ci => (next.length === 0 ? 0 : Math.min(ci, next.length - 1)));
-        return next;
-      });
-    }
-  });
+  // Realtime: delega al hook el ordenamiento y reflejamos el resultado localmente
+  useEventRealtime<EventData>((payload) => {
+    applyRealtime(payload)
+  })
 
   const nextEvent = () => {
-    if (rtEvents.length === 0) return;
-    setDirection(1);
-    setCurrentEvent((prev) => (prev + 1) % rtEvents.length);
-  };
+    if (rtEvents.length === 0) return
+    setDirection(1)
+    setCurrentEvent((prev) => (prev + 1) % rtEvents.length)
+  }
 
   const prevEvent = () => {
-    if (rtEvents.length === 0) return;
-    setDirection(-1);
-    setCurrentEvent((prev) => (prev - 1 + rtEvents.length) % rtEvents.length);
-  };
+    if (rtEvents.length === 0) return
+    setDirection(-1)
+    setCurrentEvent((prev) => (prev - 1 + rtEvents.length) % rtEvents.length)
+  }
 
   const goToEvent = (index: number) => {
-    if (rtEvents.length === 0) return;
-    setDirection(index > currentEvent ? 1 : -1);
-    setCurrentEvent(index);
-  };
+    if (rtEvents.length === 0) return
+    setDirection(index > currentEvent ? 1 : -1)
+    setCurrentEvent(index)
+  }
 
   if (isLoading || rtEvents.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center text-xl text-[#2E321B]">
         Cargando eventos...
       </div>
-    );
+    )
   }
 
   return (
@@ -108,10 +68,10 @@ export default function EventsPage() {
 
         <div className="max-w-6xl mx-auto">
           <AnimatedEventWrapper
-            event={rtEvents[currentEvent]}   // ✅ render con estado en vivo
+            event={rtEvents[currentEvent]}
             onPrev={prevEvent}
             onNext={nextEvent}
-            currentIndex={currentEvent}   
+            currentIndex={currentEvent}
             total={rtEvents.length}
             setCurrentIndex={goToEvent}
             direction={direction}
@@ -119,5 +79,5 @@ export default function EventsPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

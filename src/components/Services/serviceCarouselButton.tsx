@@ -1,4 +1,3 @@
-// components/Services/serviceCarouselButton.tsx
 interface Props {
   direction: "left" | "right"
   onClick: () => void

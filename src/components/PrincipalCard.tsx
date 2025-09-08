@@ -86,11 +86,7 @@ export function PrincipalCard({ event }: { event: EventData }) {
         {/* Sección "Saber más" como botón */}
         <div className="px-4 pb-4 pt-2 flex justify-end">
           <div className="px-4 pb-4 pt-2 flex justify-end">
-             <a href={`#EventsPage?eventId=${formatDateToWords(event.date, {
-                locale: "es-CR",
-                capitalize: true,
-                commaBeforeYear: false, // 👉 "Viernes 3 de octubre de 2025"
-              })}`} > 
+             <a href="#EventsPage" > 
               <RippleButton
                 size="sm"
                 className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200"
