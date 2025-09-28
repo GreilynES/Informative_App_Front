@@ -3,7 +3,7 @@ import App from '../App'
 import HomePage from './HomePage'
 
 import VolunteersForm from '../pages/VolunteersForm'
-import AssociatesForm from '../pages/AssociatesForm'
+import AssociatesPage from '../pages/AssociatePage'
 import EventsPage from '../pages/EventsPage'
 
 
@@ -21,7 +21,7 @@ const homeRoute = createRoute({
 const associatesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/associates',
-  component: AssociatesForm,
+  component: AssociatesPage,
 })
 
 const eventsRoute = createRoute({

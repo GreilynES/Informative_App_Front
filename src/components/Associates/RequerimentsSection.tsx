@@ -1,22 +1,12 @@
-// src/components/Associates/RequirementsSection.tsx
-
-import { CheckCircle } from "lucide-react"
+import { CheckCircle } from "lucide-react";
 
 interface RequirementsSectionProps {
-  showForm: boolean
-  setShowForm: (show: boolean) => void
+  requirements: string[];
+  showForm: boolean;
+  setShowForm: (show: boolean) => void;
 }
 
-export function RequirementsSection({ showForm, setShowForm }: RequirementsSectionProps) {
-  const requirements = [
-    "Autorizar el uso de datos y participación en actividades de la Cámara",
-    "Contar con una finca registrada con información técnica básica",
-    "Llenar y entregar el formulario de Diagnóstico de Finca",
-    "Disposición para participar en programas de capacitación",
-    "Compromiso con prácticas sostenibles y el desarrollo rural",
-    "Ser productor ganadero activo",
-  ]
-
+export function RequirementsSection({ requirements, showForm, setShowForm }: RequirementsSectionProps) {
   return (
     <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] max-w-6xl mx-auto mb-16">
       <h2 className="text-3xl font-bold text-[#708C3E] text-center mb-8">Requisitos</h2>
@@ -40,5 +30,5 @@ export function RequirementsSection({ showForm, setShowForm }: RequirementsSecti
         </div>
       )}
     </div>
-  )
+  );
 }

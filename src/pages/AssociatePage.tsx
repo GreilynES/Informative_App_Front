@@ -8,8 +8,9 @@ import { Steps } from "../components/Associates/Steps"
 import { TermsAndSubmit } from "../components/Associates/TermsAndSubmit"
 import { useCedulaLookup } from "../hooks/IdApiHook"
 import { useAssociatesForm } from "../hooks/useAssociatesForm"
+import { useAssociatesPage } from "../hooks/useAssociatesPage"
 
-export default function AssociatesForm() {
+export default function AssociatesPage() {
   const {
     formData,
     setFormData,
@@ -21,8 +22,19 @@ export default function AssociatesForm() {
     handleInputChange,
     isStepValid,
   } = useAssociatesForm()
-
   const { lookup } = useCedulaLookup()
+  const { data, loading, error, reload } = useAssociatesPage();
+
+
+  if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
+  if (error || !data) return (
+    <div className="p-8 text-center text-red-600">
+      Error: {error ?? "Sin datos"}
+      <div className="mt-4">
+        <button onClick={reload} className="px-4 py-2 rounded border">Reintentar</button>
+      </div>
+    </div>
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -31,14 +43,16 @@ export default function AssociatesForm() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
-      <HeaderSection />
+      <HeaderSection title={data.headerTitle} description={data.headerDescription} />
 
-      <BenefitsSection />
-
-      <RequirementsSection
-        showForm={showForm}
-        setShowForm={setShowForm}
-      />
+      <div className="max-w-6xl mx-auto">
+        <BenefitsSection items={[...data.benefits].sort((a, b) => a.order - b.order)} />
+        <RequirementsSection
+          requirements={[...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text)}
+          showForm={showForm}
+          setShowForm={setShowForm}
+        />
+      </div>
 
       {showForm && (
         <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">

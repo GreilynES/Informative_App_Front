@@ -179,8 +179,6 @@ const handleInputChange = (field: keyof VolunteerFormData, value: string | boole
         </div>
       </div>
 
-
-
       {/* Formulario */}
       {showForm && (
         <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">

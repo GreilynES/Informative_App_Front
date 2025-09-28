@@ -63,35 +63,39 @@ export function Steps({
                   Nombre *
                 </label>
                 <input
-                  id="nameId"
-                  type="text"
-                  placeholder="Tu nombre"
-                  value={formData.name}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
+  id="nameId"
+  type="text"
+  placeholder="Tu nombre"
+  value={formData.name}
+  onChange={(e) => handleInputChange("name", e.target.value)}
+  required
+  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+/>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
                 <input
-                  type="text"
-                  placeholder="Tu primer apellido"
-                  value={formData.lastName1}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
+  type="text"
+  placeholder="Tu primer apellido"
+  value={formData.lastName1}
+  onChange={(e) => handleInputChange("lastName1", e.target.value)}
+  required
+  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+/>
+
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
                 <input
-                  type="text"
-                  placeholder="Tu segundo apellido"
-                  value={formData.lastName2}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
+  type="text"
+  placeholder="Tu segundo apellido"
+  value={formData.lastName2}
+  onChange={(e) => handleInputChange("lastName2", e.target.value)}
+  required
+  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+/>
               </div>
             </div>
             <div>
