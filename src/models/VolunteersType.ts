@@ -1,11 +1,11 @@
-export type VolunteerFormData = {
-    idNumber: string
+export type VolunteersFormData = {
+  idNumber: string
   name: string
   lastName1: string
   lastName2: string
   birthDate: string
 
-    phone: string
+  phone: string
   email: string
   address: string
   community: string
@@ -19,7 +19,7 @@ export type VolunteerFormData = {
   receiveInfo: boolean
 }
 
-export const initialVolunteerFormData: VolunteerFormData = {
+export const initialVolunteersFormData: VolunteersFormData = {
   idNumber: "",
   name: "",
   lastName1: "",

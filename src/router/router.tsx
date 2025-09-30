@@ -2,9 +2,9 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import App from '../App'
 import HomePage from './HomePage'
 
-import VolunteersForm from '../pages/VolunteersForm'
 import AssociatesPage from '../pages/AssociatePage'
 import EventsPage from '../pages/EventsPage'
+import VolunteersPage from '../pages/VolunteersPage'
 
 
 
@@ -33,7 +33,7 @@ const eventsRoute = createRoute({
 const volunteersRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/volunteers',
-  component: VolunteersForm,
+  component: VolunteersPage,
 })
 
 const routeTree = rootRoute.addChildren([

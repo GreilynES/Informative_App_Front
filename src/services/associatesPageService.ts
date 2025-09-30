@@ -1,5 +1,5 @@
 import apiConfig from "../apiConfig";
-import type { InfoPageVM } from "../models/VolunteersInfoType";
+import type { InfoPageVM } from "../models/AssociatesVolunteersInfoType";
 
 /** GET /associates-page */
 export async function fetchAssociatesPage(): Promise<InfoPageVM> {
