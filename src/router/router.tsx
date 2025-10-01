@@ -1,12 +1,9 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from '../App'
+import AssociatesPage from '../modules/associatesInformation/AssociatePage'
+import EventsPage from '../modules/events/EventsPage'
+import VolunteersPage from '../modules/volunteersInformation/VolunteersPage'
 import HomePage from './HomePage'
-
-import AssociatesPage from '../pages/AssociatePage'
-import EventsPage from '../pages/EventsPage'
-import VolunteersPage from '../pages/VolunteersPage'
-
-
 
 const rootRoute = createRootRoute({
   component: App,

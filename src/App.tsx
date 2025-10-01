@@ -1,7 +1,7 @@
 import { Outlet } from '@tanstack/react-router'
-import Navbar from './pages/Navbar'
-import Footer from './pages/Footer'
-import FloatingWhatsapp from './components/FloatingWhatsapp'
+import Navbar from './shared/components/Navbar/Navbar'
+import FloatingWhatsapp from './shared/utils/FloatingWhatsapp'
+import Footer from './shared/components/Footer/Footer'
 
 export default function App() {
   return (
