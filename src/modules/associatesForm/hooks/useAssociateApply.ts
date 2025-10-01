@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { associateApplySchema, type AssociateApplyValues } from "../schemas/associateApply";
-import { createAssociate, type CreateAssociatePayload } from "../services/associatesFormService";
+import type { CreateAssociatePayload } from "../models/createAssociate";
+import { createAssociate } from "../services/associatesFormService";
 
 // Valida con Zod y DEVUELVE Record<string, string>
 function validateWithZod(values: any) {
