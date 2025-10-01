@@ -1,45 +1,38 @@
-
-import { BenefitsSection } from "../components/Associates/BenefitsSection"
-import { DownloadSection } from "../components/Associates/DownloadSection"
-import { HeaderSection } from "../components/Associates/HeaderSection"
-import { RequirementsSection } from "../components/Associates/RequerimentsSection"
-import { Stepper } from "../components/Associates/Stepper"
-import { Steps } from "../components/Associates/Steps"
-import { TermsAndSubmit } from "../components/Associates/TermsAndSubmit"
-import { useCedulaLookup } from "../hooks/IdApiHook"
-import { useAssociatesForm } from "../hooks/useAssociatesForm"
-import { useAssociatesPage } from "../hooks/useAssociatesPage"
+import { BenefitsSection } from "../components/Associates/BenefitsSection";
+import { DownloadSection } from "../components/Associates/DownloadSection";
+import { HeaderSection } from "../components/Associates/HeaderSection";
+import { RequirementsSection } from "../components/Associates/RequerimentsSection";
+import { Stepper } from "../components/Associates/Stepper";
+import { Steps } from "../components/Associates/Steps";
+import { useCedulaLookup } from "../hooks/IdApiHook";
+import { useAssociatesPage } from "../hooks/useAssociatesPage";
+import { useAssociateApply } from "../hooks/useAssociateApply";
+import { useState } from "react";
 
 export default function AssociatesPage() {
-  const {
-    formData,
-    setFormData,
-    step,
-    nextStep,
-    prevStep,
-    showForm,
-    setShowForm,
-    handleInputChange,
-    isStepValid,
-  } = useAssociatesForm()
-  const { lookup } = useCedulaLookup()
+  const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useAssociatesPage();
+  const [showForm, setShowForm] = useState(false);
+  const [step, setStep] = useState(1);
 
+  const { form, mutation } = useAssociateApply(() => {
+    setStep(1);
+    setShowForm(false);
+  });
 
   if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
-  if (error || !data) return (
-    <div className="p-8 text-center text-red-600">
-      Error: {error ?? "Sin datos"}
-      <div className="mt-4">
-        <button onClick={reload} className="px-4 py-2 rounded border">Reintentar</button>
+  if (error || !data)
+    return (
+      <div className="p-8 text-center text-red-600">
+        Error: {error ?? "Sin datos"}
+        <div className="mt-4">
+          <button onClick={reload} className="px-4 py-2 rounded border">Reintentar</button>
+        </div>
       </div>
-    </div>
-  );
+    );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-  }
+  const nextStep = () => setStep((s) => Math.min(5, s + 1));
+  const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
@@ -58,32 +51,24 @@ export default function AssociatesPage() {
         <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
           <div className="max-w-4xl mx-auto">
             <DownloadSection />
-
             <Stepper step={step} />
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form
+              onSubmit={(e) => { e.preventDefault(); form.handleSubmit(); }}
+              className="space-y-8"
+            >
               <Steps
                 step={step}
-                formData={formData}
-                setFormData={setFormData}
-                handleInputChange={handleInputChange}
+                form={form as any}
+                lookup={lookup}
                 nextStep={nextStep}
                 prevStep={prevStep}
-                isStepValid={isStepValid}
-                lookup={lookup}
+                isSubmitting={mutation.isPending}
               />
-
-              {step === 5 && (
-                <TermsAndSubmit
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  prevStep={prevStep}
-                />
-              )}
             </form>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

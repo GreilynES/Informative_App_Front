@@ -1,30 +1,23 @@
-import { ClipboardList, Files, IdCard, Upload } from "lucide-react"
-import { NavigationButtons } from "./NavigationButtons"
-import type { AssociatesFormData } from "../../models/AssociatesType"
+import { NavigationButtons } from "./NavigationButtons";
+import type { FormLike, FieldLike } from "../../types/form-lite";
+import { TermsAndSubmit } from "./TermsAndSubmit";
 
 interface StepsProps {
-  step: number
-  formData: AssociatesFormData
-  setFormData: (data: AssociatesFormData) => void
-  handleInputChange: (field: keyof AssociatesFormData, value: string | boolean) => void
-  nextStep: () => void
-  prevStep: () => void
-  isStepValid: () => boolean
-  lookup: (id: string) => Promise<any>
+  step: number;
+  form: FormLike; // tipo ligero
+  lookup: (id: string) => Promise<any>;
+  nextStep: () => void;
+  prevStep: () => void;
+  isSubmitting?: boolean;
 }
 
-export function Steps({
-  step,
-  formData,
-  handleInputChange,
-  nextStep,
-  prevStep,
-  isStepValid,
-  lookup,
-}: StepsProps) {
+export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: StepsProps) {
+  const errorFor = (name: string) =>
+    form.state?.meta?.errors?.[name]?.[0]?.message || form.state?.errors?.[name];
+
   return (
     <>
-      {/* Paso 1: Información Personal */}
+      {/* Paso 1 */}
       {step === 1 && (
         <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
           <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -33,90 +26,121 @@ export function Steps({
           </div>
           <div className="p-6 space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                  Cédula *
-                </label>
-                <input
-                  id="idNumber"
-                  type="text"
-                  placeholder="Número de cédula"
-                  value={formData.idNumber}
-                  onChange={async (e) => {
-                    const value = e.target.value
-                    handleInputChange("idNumber", value)
-                    if (value.length >= 9) {
-                      const result = await lookup(value)
-                      if (result) {
-                        handleInputChange("name", result.firstname || "")
-                        handleInputChange("lastName1", result.lastname1 || "")
-                        handleInputChange("lastName2", result.lastname2 || "")
-                      }
-                    }
-                  }}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
-              </div>
-              <div>
-                <label htmlFor="nameId" className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre *
-                </label>
-                <input
-  id="nameId"
-  type="text"
-  placeholder="Tu nombre"
-  value={formData.name}
-  onChange={(e) => handleInputChange("name", e.target.value)}
-  required
-  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-/>
-              </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
-                <input
-  type="text"
-  placeholder="Tu primer apellido"
-  value={formData.lastName1}
-  onChange={(e) => handleInputChange("lastName1", e.target.value)}
-  required
-  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-/>
+              {/* cédula */}
+              <form.Field name="cedula">
+                {(f: FieldLike<string>) => (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Cédula *</label>
+                    <input
+                      type="text"
+                      value={f.state.value}
+                      onChange={async (e) => {
+                        const v = e.target.value;
+                        f.handleChange(v);
+                        if (/^\d{9,12}$/.test(v)) {
+                          const r = await lookup(v);
+                          if (r) {
+                            form.setFieldValue("nombre", r.firstname || "");
+                            form.setFieldValue("apellido1", r.lastname1 || "");
+                            form.setFieldValue("apellido2", r.lastname2 || "");
+                          }
+                        }
+                      }}
+                      onBlur={f.handleBlur}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="Número de cédula"
+                    />
+                    {errorFor("cedula") && <p className="text-sm text-red-600 mt-1">{errorFor("cedula")}</p>}
+                  </div>
+                )}
+              </form.Field>
 
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
-                <input
-  type="text"
-  placeholder="Tu segundo apellido"
-  value={formData.lastName2}
-  onChange={(e) => handleInputChange("lastName2", e.target.value)}
-  required
-  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-/>
-              </div>
+              {/* nombre */}
+              <form.Field name="nombre">
+                {(f: FieldLike<string>) => (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                    <input
+                      type="text"
+                      value={f.state.value}
+                      onChange={(e) => f.handleChange(e.target.value)}
+                      onBlur={f.handleBlur}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="Tu nombre"
+                    />
+                    {errorFor("nombre") && <p className="text-sm text-red-600 mt-1">{errorFor("nombre")}</p>}
+                  </div>
+                )}
+              </form.Field>
             </div>
-            <div>
-              <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
-              <input
-                type="date"
-                value={formData.birthDate}
-                onChange={(e) => handleInputChange("birthDate", e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              />
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* apellido1 */}
+              <form.Field name="apellido1">
+                {(f: FieldLike<string>) => (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
+                    <input
+                      type="text"
+                      value={f.state.value}
+                      onChange={(e) => f.handleChange(e.target.value)}
+                      onBlur={f.handleBlur}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="Tu primer apellido"
+                    />
+                    {errorFor("apellido1") && <p className="text-sm text-red-600 mt-1">{errorFor("apellido1")}</p>}
+                  </div>
+                )}
+              </form.Field>
+
+              {/* apellido2 */}
+              <form.Field name="apellido2">
+                {(f: FieldLike<string>) => (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
+                    <input
+                      type="text"
+                      value={f.state.value}
+                      onChange={(e) => f.handleChange(e.target.value)}
+                      onBlur={f.handleBlur}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="Tu segundo apellido"
+                    />
+                    {errorFor("apellido2") && <p className="text-sm text-red-600 mt-1">{errorFor("apellido2")}</p>}
+                  </div>
+                )}
+              </form.Field>
             </div>
+
+            {/* fechaNacimiento */}
+            <form.Field name="fechaNacimiento">
+              {(f: FieldLike<string>) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
+                  <input
+                    type="date"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  />
+                  {errorFor("fechaNacimiento") && <p className="text-sm text-red-600 mt-1">{errorFor("fechaNacimiento")}</p>}
+                </div>
+              )}
+            </form.Field>
           </div>
+
           <NavigationButtons
             showPrev={false}
             onNext={nextStep}
-            disableNext={!isStepValid()}
+            disableNext={Boolean(
+              errorFor("cedula") || errorFor("nombre") || errorFor("apellido1") || errorFor("apellido2") || errorFor("fechaNacimiento")
+            )}
           />
         </div>
       )}
-            {/* Paso 2: Información de Contacto */}
+
+      {/* Paso 2: Contacto */}
       {step === 2 && (
         <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
           <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -125,160 +149,259 @@ export function Steps({
           </div>
           <div className="p-6 space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-[#4A4A4A] mb-1">Teléfono *</label>
-                <input
-                  type="tel"
-                  placeholder="Número de teléfono"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-[#4A4A4A] mb-1">Email *</label>
-                <input
-                  type="email"
-                  placeholder="correo@ejemplo.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-[#4A4A4A] mb-1">Dirección Completa</label>
-              <input
-                type="text"
-                placeholder="Tu dirección completa"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              />
-            </div>
-            <div>
-              <label htmlFor="community" className="block text-sm font-medium text-[#4A4A4A] mb-1">Comunidad *</label>
-              <input
-                type="text"
-                placeholder="Tu comunidad"
-                value={formData.community}
-                onChange={(e) => handleInputChange("community", e.target.value)}
-                required
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              />
-            </div>
-          </div>
-          <NavigationButtons
-            onPrev={prevStep}
-            onNext={nextStep}
-            disableNext={!isStepValid()}
-          />
-        </div>
-      )}
-
-      {/* ⬇️ Pegar la parte 3 aquí: Paso 3 - Información de Asociado */}
-            {/* Paso 3: Información de Asociado */}
-      {step === 3 && (
-        <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-          <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
-            <h3 className="text-lg font-semibold text-[#708C3E]">Información de Asociado</h3>
-          </div>
-          <div className="p-6">
-            <label htmlFor="needs" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Necesidades (opcional)
-            </label>
-            <textarea
-              placeholder="¿Cuáles son tus principales necesidades o retos actuales como productor ganadero?"
-              value={formData.needs}
-              onChange={(e) => handleInputChange("needs", e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-            />
-          </div>
-          <NavigationButtons
-            onPrev={prevStep}
-            onNext={nextStep}
-          />
-        </div>
-      )}
-
-      {/* ⬇️ Pegar la parte 4 aquí: Paso 4 - Documentos */}
-      {/* Paso 4: Documentos */}
-      {step === 4 && (
-        <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-          <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">4</div>
-            <h3 className="text-lg font-semibold text-[#708C3E]">Documentos</h3>
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                { label: "Copia de Cédula", icon: <IdCard className="w-8 h-8 text-[#708C3E] mx-auto mb-2" /> },
-                { label: "Formulario Diagnóstico de Finca", icon: <ClipboardList className="w-8 h-8 text-[#708C3E] mx-auto mb-2" /> },
-                { label: "Copia del Plano de la Finca o Contrato de Arrendamiento", icon: <Files className="w-8 h-8 text-[#708C3E] mx-auto mb-2" /> },
-                { label: "Otros Documentos que Considere Necesarios", icon: <Upload className="w-8 h-8 text-[#708C3E] mx-auto mb-2" /> },
-              ].map(({ label, icon }, i) => (
-                <div key={i}>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-2">{label} *</label>
-                  <div className="border-2 border-dashed border-[#B0B09C] rounded-lg p-6 text-center hover:border-[#A3853D] transition-colors cursor-pointer bg-white">
-                    {icon}
-                    <p className="text-sm text-gray-600 mb-1">Haz clic para subir o arrastra el archivo</p>
-                    <p className="text-xs text-gray-500">PDF, JPG, PNG hasta 5MB</p>
+              <form.Field name="telefono">
+                {(f: FieldLike<string>) => (
+                  <div>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Teléfono *</label>
+                    <input
+                      type="tel"
+                      value={f.state.value}
+                      onChange={(e) => f.handleChange(e.target.value)}
+                      onBlur={f.handleBlur}
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="Número de teléfono"
+                    />
+                    {errorFor("telefono") && <p className="text-sm text-red-600 mt-1">{errorFor("telefono")}</p>}
                   </div>
-                </div>
-              ))}
+                )}
+              </form.Field>
+
+              <form.Field name="email">
+                {(f: FieldLike<string>) => (
+                  <div>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Email *</label>
+                    <input
+                      type="email"
+                      value={f.state.value}
+                      onChange={(e) => f.handleChange(e.target.value)}
+                      onBlur={f.handleBlur}
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="correo@ejemplo.com"
+                    />
+                    {errorFor("email") && <p className="text-sm text-red-600 mt-1">{errorFor("email")}</p>}
+                  </div>
+                )}
+              </form.Field>
             </div>
+
+            <form.Field name="direccion">
+              {(f: FieldLike<string>) => (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Dirección Completa</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="Tu dirección completa"
+                  />
+                  {errorFor("direccion") && <p className="text-sm text-red-600 mt-1">{errorFor("direccion")}</p>}
+                </div>
+              )}
+            </form.Field>
           </div>
-          <NavigationButtons
-            onPrev={prevStep}
-            onNext={nextStep}
-          />
+
+          <NavigationButtons onPrev={prevStep} onNext={nextStep} />
         </div>
       )}
 
-      {/* ⬇️ Pegar la parte 5 aquí: Paso 5 - Confirmación */}
-           {/* Paso 5: Confirmación */}
-      {step === 5 && (
-        <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
-          <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
+      {/* Paso 3: Finca y Ganado (se envía al back si los llenas) */}
+{step === 3 && (
+  <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+    <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
+      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
+      <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Finca y Ganado</h3>
+    </div>
 
-          <div className="space-y-6 text-[#4A4A4A] mt-6">
+    <div className="p-6 space-y-4">
+      <div className="grid md:grid-cols-2 gap-4">
+        <form.Field name="distanciaFinca">
+          {(f: any) => (
             <div>
-              <h3 className="text-lg font-semibold text-[#708C3E]">Datos Personales</h3>
-              <p><span className="text-sm text-gray-500">Nombre:</span> {formData.name}</p>
-              <p><span className="text-sm text-gray-500">Primer Apellido:</span> {formData.lastName1}</p>
-              <p><span className="text-sm text-gray-500">Segundo Apellido:</span> {formData.lastName2}</p>
-              <p><span className="text-sm text-gray-500">Cédula:</span> {formData.idNumber}</p>
-              <p><span className="text-sm text-gray-500">Fecha de Nacimiento:</span> {formData.birthDate}</p>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Distancia a la finca (km)</label>
+              <input
+                type="text"
+                value={f.state.value}
+                onChange={(e) => f.handleChange(e.target.value)}
+                onBlur={f.handleBlur}
+                placeholder="Ej: 12.50"
+                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+              />
             </div>
+          )}
+        </form.Field>
 
+        <form.Field name="viveEnFinca">
+          {(f: any) => (
+            <div className="flex items-center gap-3 mt-1">
+              <input
+                id="viveEnFinca"
+                type="checkbox"
+                checked={!!f.state.value}
+                onChange={(e) => f.handleChange(e.target.checked)}
+                onBlur={f.handleBlur}
+              />
+              <label htmlFor="viveEnFinca" className="text-sm text-[#4A4A4A]">
+                ¿Vive en la finca?
+              </label>
+            </div>
+          )}
+        </form.Field>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <form.Field name="marcaGanado">
+          {(f: any) => (
             <div>
-              <h3 className="text-lg font-semibold text-[#708C3E]">Contacto</h3>
-              <p><span className="text-sm text-gray-500">Teléfono:</span> {formData.phone}</p>
-              <p><span className="text-sm text-gray-500">Email:</span> {formData.email}</p>
-              <p><span className="text-sm text-gray-500">Dirección:</span> {formData.address}</p>
-              <p><span className="text-sm text-gray-500">Comunidad:</span> {formData.community}</p>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Marca de Ganado</label>
+              <input
+                type="text"
+                value={f.state.value}
+                onChange={(e) => f.handleChange(e.target.value)}
+                onBlur={f.handleBlur}
+                placeholder="Ej: MG-2025"
+                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+              />
             </div>
+          )}
+        </form.Field>
 
+        <form.Field name="CVO">
+          {(f: any) => (
             <div>
-              <h3 className="text-lg font-semibold text-[#708C3E]">Información Adicional</h3>
-              <p><span className="text-sm text-gray-500">Necesidades:</span> {formData.needs || "No especificado"}</p>
-              <p><span className="text-sm text-gray-500">Acepta Términos:</span> {formData.acceptTerms ? "Sí" : "No"}</p>
-              <p><span className="text-sm text-gray-500">Recibir Información:</span> {formData.receiveInfo ? "Sí" : "No"}</p>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-1">CVO</label>
+              <input
+                type="text"
+                value={f.state.value}
+                onChange={(e) => f.handleChange(e.target.value)}
+                onBlur={f.handleBlur}
+                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+              />
             </div>
-          </div>
+          )}
+        </form.Field>
+      </div>
+    </div>
 
-          <div className="text-center mt-6">
-            <NavigationButtons
-              onPrev={prevStep}
-              showNext={false}
-            />
-          </div>
-        </div>
+    <NavigationButtons onPrev={prevStep} onNext={nextStep} />
+  </div>
+)}
+
+{/* Paso 4: Documentos (solo UI; no se envían aún) */}
+{step === 4 && (
+  <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+    <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
+      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">4</div>
+      <h3 className="text-lg font-semibold text-[#708C3E]">Documentos</h3>
+    </div>
+
+    <div className="p-6 space-y-6">
+      <p className="text-sm text-[#666]">
+        Sube tus documentos para revisión. <strong>Nota:</strong> por ahora no se envían al servidor en este paso; quedarán cargados en el formulario.
+      </p>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Cédula */}
+        <form.Field name="idCopy">
+          {(f: any) => (
+            <div>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-2">Copia de Cédula</label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file && file.size > 5 * 1024 * 1024) return alert("Máx 5MB");
+                  f.handleChange(file);
+                }}
+              />
+              {f.state.value && (
+                <p className="text-xs text-[#666] mt-1">Archivo: {(f.state.value as File).name}</p>
+              )}
+            </div>
+          )}
+        </form.Field>
+
+        {/* Diagnóstico de finca */}
+        <form.Field name="farmDiagnosis">
+          {(f: any) => (
+            <div>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-2">Formulario Diagnóstico de Finca</label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file && file.size > 5 * 1024 * 1024) return alert("Máx 5MB");
+                  f.handleChange(file);
+                }}
+              />
+              {f.state.value && (
+                <p className="text-xs text-[#666] mt-1">Archivo: {(f.state.value as File).name}</p>
+              )}
+            </div>
+          )}
+        </form.Field>
+
+        {/* Plano/Contrato */}
+        <form.Field name="farmMap">
+          {(f: any) => (
+            <div>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-2">Plano de la Finca / Contrato</label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file && file.size > 5 * 1024 * 1024) return alert("Máx 5MB");
+                  f.handleChange(file);
+                }}
+              />
+              {f.state.value && (
+                <p className="text-xs text-[#666] mt-1">Archivo: {(f.state.value as File).name}</p>
+              )}
+            </div>
+          )}
+        </form.Field>
+
+        {/* Otros */}
+        <form.Field name="otherDocuments">
+          {(f: any) => (
+            <div>
+              <label className="block text-sm font-medium text-[#4A4A4A] mb-2">Otros Documentos</label>
+              <input
+                type="file"
+                multiple={false}
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  if (file && file.size > 5 * 1024 * 1024) return alert("Máx 5MB");
+                  f.handleChange(file);
+                }}
+              />
+              {f.state.value && (
+                <p className="text-xs text-[#666] mt-1">Archivo: {(f.state.value as File).name}</p>
+              )}
+            </div>
+          )}
+        </form.Field>
+
+
+      </div>
+    </div>
+
+    <NavigationButtons onPrev={prevStep} onNext={nextStep} />
+  </div>
+)}
+{/* Paso 5: submit/terms */}
+{step === 5 && (
+        <TermsAndSubmit
+          form={form as any}
+          isSubmitting={isSubmitting}
+          prevStep={prevStep}
+        />
       )}
     </>
-  )
+  );
 }
