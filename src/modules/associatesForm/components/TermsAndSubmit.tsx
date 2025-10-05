@@ -26,6 +26,7 @@ export function TermsAndSubmit({
                 onChange={(e) => f.handleChange(e.target.checked)}
                 onBlur={f.handleBlur}
                 className="mt-1"
+                style={{ accentColor: '#708C3E' }}
               />
               <span className="text-sm">
                 Confirmo que he leído y acepto los términos y el aviso de privacidad.

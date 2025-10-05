@@ -1,0 +1,378 @@
+import type { FormLike } from "../../../shared/types/form-lite";
+import { ZodError } from "zod";
+import { associateApplySchema } from "../../associatesForm/schemas/associateApply";
+import { NavigationButtons } from "../../associatesForm/components/NavigationButtons";
+import { NucleoFamiliarSection } from "../../associatesForm/components/FamilyNucleusSection";
+
+interface Step1Props {
+  form: FormLike;
+  lookup: (id: string) => Promise<any>;
+  onNext: () => void;
+  canProceed: boolean;
+}
+
+export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
+  const validateField = (name: string, value: any) => {
+    try {
+      const fieldSchema = (associateApplySchema.shape as any)[name];
+      if (fieldSchema) {
+        fieldSchema.parse(value);
+      }
+      return undefined;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return error.issues[0]?.message || "Error de validación";
+      }
+      return "Error de validación";
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Información Personal */}
+      <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+        <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
+          <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">1</div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Información Personal</h3>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <form.Field 
+              name="cedula"
+              validators={{ onChange: ({ value }: any) => validateField("cedula", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cédula *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={async (e) => {
+                      const v = e.target.value;
+                      f.handleChange(v);
+                      if (/^\d{9,12}$/.test(v)) {
+                        const r = await lookup(v);
+                        if (r) {
+                          form.setFieldValue("nombre", r.firstname || "");
+                          form.setFieldValue("apellido1", r.lastname1 || "");
+                          form.setFieldValue("apellido2", r.lastname2 || "");
+                        }
+                      }
+                    }}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="Número de cédula"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field 
+              name="nombre"
+              validators={{ onChange: ({ value }: any) => validateField("nombre", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="Tu nombre"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <form.Field 
+              name="apellido1"
+              validators={{ onChange: ({ value }: any) => validateField("apellido1", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="Tu primer apellido"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field 
+              name="apellido2"
+              validators={{ onChange: ({ value }: any) => validateField("apellido2", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="Tu segundo apellido"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field 
+            name="fechaNacimiento"
+            validators={{ onChange: ({ value }: any) => validateField("fechaNacimiento", value) }}
+          >
+            {(f: any) => {
+              const today = new Date();
+              const year = today.getFullYear();
+              const month = String(today.getMonth() + 1).padStart(2, '0');
+              const day = String(today.getDate()).padStart(2, '0');
+              const maxDate = `${year}-${month}-${day}`;
+              
+              return (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
+                  <input
+                    type="date"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    max={maxDate}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              );
+            }}
+          </form.Field>
+        </div>
+      </div>
+
+      {/* Información de Contacto */}
+      <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+        <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
+          <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Información de Contacto</h3>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <form.Field 
+              name="telefono"
+              validators={{ onChange: ({ value }: any) => validateField("telefono", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Teléfono *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      f.handleChange(value);
+                    }}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="Número de teléfono"
+                    maxLength={12}
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field 
+              name="email"
+              validators={{ onChange: ({ value }: any) => validateField("email", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    placeholder="correo@ejemplo.com"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <form.Field 
+            name="direccion"
+            validators={{ onChange: ({ value }: any) => validateField("direccion", value) }}
+          >
+            {(f: any) => (
+              <div>
+                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Dirección Completa</label>
+                <input
+                  type="text"
+                  value={f.state.value}
+                  onChange={(e) => f.handleChange(e.target.value)}
+                  onBlur={f.handleBlur}
+                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  placeholder="Tu dirección completa"
+                />
+                {f.state.meta.errors?.length > 0 && (
+                  <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                )}
+              </div>
+            )}
+          </form.Field>
+        </div>
+      </div>
+
+      {/* Información de la Finca y Ganado */}
+      <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+        <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
+          <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Finca y Ganado</h3>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <form.Field 
+              name="distanciaFinca"
+              validators={{ onChange: ({ value }: any) => validateField("distanciaFinca", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Distancia a la finca (km) *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^\d.]/g, '');
+                      const parts = value.split('.');
+                      const filtered = parts.length > 2 
+                        ? parts[0] + '.' + parts.slice(1).join('') 
+                        : value;
+                      f.handleChange(filtered);
+                    }}
+                    onBlur={f.handleBlur}
+                    placeholder="Ej: 12.50"
+                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field name="viveEnFinca">
+              {(f: any) => (
+                <div className="flex items-center gap-3 mt-1">
+                  <input
+                    id="viveEnFinca"
+                    type="checkbox"
+                    checked={!!f.state.value}
+                    onChange={(e) => f.handleChange(e.target.checked)}
+                    onBlur={f.handleBlur}
+                    className="w-4 h-4 rounded "
+                    style={{ accentColor: '#708C3E' }}
+                  />
+                  <label htmlFor="viveEnFinca" className="text-sm text-[#4A4A4A]">
+                    ¿Vive en la finca?
+                  </label>
+                </div>
+              )}
+            </form.Field>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <form.Field 
+              name="marcaGanado"
+              validators={{ onChange: ({ value }: any) => validateField("marcaGanado", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Marca de Ganado *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    placeholder="Ej: MG-2025"
+                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+
+            <form.Field 
+              name="CVO"
+              validators={{ onChange: ({ value }: any) => validateField("CVO", value) }}
+            >
+              {(f: any) => (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">CVO *</label>
+                  <input
+                    type="text"
+                    value={f.state.value}
+                    onChange={(e) => f.handleChange(e.target.value)}
+                    onBlur={f.handleBlur}
+                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+                  />
+                  {f.state.meta.errors?.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          </div>
+        </div>
+      </div>
+
+      <NucleoFamiliarSection form={form}/>
+
+      <NavigationButtons 
+        showPrev={false} 
+        onNext={onNext} 
+        disableNext={!canProceed}
+      />
+    </div>
+  );
+}

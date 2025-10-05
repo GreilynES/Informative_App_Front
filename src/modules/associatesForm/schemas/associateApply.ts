@@ -1,29 +1,49 @@
 import { z } from "zod";
+import { fincaCompleteSchema } from "../../fincaForm/schema/fincaSchema";
 
+// Schema de persona
+const personaSchema = z.object({
+  cedula: z.string().min(8, "Cédula debe tener al menos 8 caracteres"),
+  nombre: z.string().min(1, "El nombre es requerido"),
+  apellido1: z.string().min(1, "El primer apellido es requerido"),
+  apellido2: z.string().min(1, "El segundo apellido es requerido"),
+  fechaNacimiento: z.string().min(1, "La fecha de nacimiento es requerida"),
+  telefono: z.string().min(8, "El teléfono debe tener al menos 8 dígitos"),
+  email: z.string().email("Email inválido"),
+  direccion: z.string().optional().or(z.literal("")),
+});
+
+// Schema de datos del asociado
+const datosAsociadoSchema = z.object({
+  distanciaFinca: z.string().min(1, "La distancia es requerida"),
+  viveEnFinca: z.boolean().default(false),
+  marcaGanado: z.string().min(1, "La marca de ganado es requerida"),
+  CVO: z.string().min(1, "El CVO es requerido"),
+});
+
+// Schema de núcleo familiar (NUEVO - OPCIONAL)
+const nucleoFamiliarSchema = z.object({
+  nucleoHombres: z.string().optional().or(z.literal("")),
+  nucleoMujeres: z.string().optional().or(z.literal("")),
+});
+
+// Schema de documentos
+const documentosSchema = z.object({
+  acceptTerms: z.boolean(),
+  receiveInfo: z.boolean().default(false),
+  idCopy: z.any().nullable(),
+  farmDiagnosis: z.any().nullable(),
+  farmMap: z.any().nullable(),
+  otherDocuments: z.any().nullable(),
+});
+
+// Schema completo que combina todo
 export const associateApplySchema = z.object({
-  cedula: z.string().min(8).max(12).regex(/^\d+$/, "Solo números"),
-  nombre: z.string().min(1).max(30),
-  apellido1: z.string().min(1).max(30),
-  apellido2: z.string().min(1).max(30),
-  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "YYYY-MM-DD"),
-  telefono: z.string().min(8).max(12).regex(/^\d+$/, "Solo números"),
-  email: z.string().email(),
-  direccion: z.string().max(255).optional().or(z.literal("")),
-
-  distanciaFinca: z.string().regex(/^\d+(\.\d{1,2})?$/).optional().or(z.literal("")),
-  viveEnFinca: z.boolean().optional(),
-  marcaGanado: z.string().optional().or(z.literal("")),
-  CVO: z.string().optional().or(z.literal("")),
-
-  // Solo UI (no se envían)
-  acceptTerms: z.boolean().refine((v) => v === true, { message: "Debes aceptar los términos" }),
-  receiveInfo: z.boolean().optional(),
-
-  // Archivos solo UI
-  idCopy: z.any().nullable().optional(),
-  farmDiagnosis: z.any().nullable().optional(),
-  farmMap: z.any().nullable().optional(),
-  otherDocuments: z.any().nullable().optional(),
+  ...personaSchema.shape,
+  ...datosAsociadoSchema.shape,
+  ...nucleoFamiliarSchema.shape, // NUEVO: campos de núcleo familiar
+  ...documentosSchema.shape,
+  ...fincaCompleteSchema.shape,
 });
 
 export type AssociateApplyValues = z.infer<typeof associateApplySchema>;

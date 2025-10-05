@@ -4,6 +4,8 @@ export type FormLike = {
   handleSubmit: () => void;
   reset: () => void;
   setFieldValue: any; // relajado para versiones distintas
+  // TanStack React Form expone useStore para seleccionar parte del estado de forma reactiva
+  useStore: <T>(selector: (state: any) => T) => T;
 };
 
 export type FieldLike<T = any> = {

@@ -1,17 +1,18 @@
-// src/components/Associates/Stepper.tsx
 
-interface StepperProps {
-  step: number
-}
+const stepLabels = [
+  "Información",
+  "Documentos",
+  "Confirmación"
+];
 
-export function Stepper({ step }: StepperProps) {
+export function Stepper({ step }: any) {
   return (
     <div className="flex justify-center items-center gap-4 mb-10">
-      {[1, 2, 3, 4, 5].map((s, index) => (
+      {[1, 2, 3].map((s, index) => (
         <div key={s} className="flex items-center gap-4">
           <div className="flex flex-col items-center">
             <div
-              className={`w-8 h-8 rounded-full border-2 text-sm font-bold flex items-center justify-center transition duration-200 ${
+              className={`w-10 h-10 rounded-full border-2 text-sm font-bold flex items-center justify-center transition duration-200 ${
                 step === s
                   ? "bg-[#708C3E] text-white border-[#708C3E]"
                   : step > s
@@ -22,7 +23,7 @@ export function Stepper({ step }: StepperProps) {
               {s}
             </div>
             <span
-              className={`text-xs mt-1 ${
+              className={`text-xs mt-1 text-center ${
                 step === s
                   ? "text-[#708C3E] font-medium"
                   : step > s
@@ -30,13 +31,15 @@ export function Stepper({ step }: StepperProps) {
                   : "text-gray-400"
               }`}
             >
-              Paso {s}
+              {stepLabels[index]}
             </span>
           </div>
 
           {/* Línea entre pasos */}
-          {index < 4 && (
-            <div className="w-8 h-px bg-[#DCD6C9]"></div>
+          {index < 2 && (
+            <div className={`w-16 h-1 rounded transition-colors ${
+              step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
+            }`}></div>
           )}
         </div>
       ))}
