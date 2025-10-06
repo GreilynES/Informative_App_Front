@@ -40,6 +40,19 @@ export interface CreateSolicitudDto {
     nucleoHombres: number;
     nucleoMujeres: number;
   };
+
+  propietario?: {
+    persona: {
+      cedula: string;
+      nombre: string;
+      apellido1: string;
+      apellido2: string;
+      fechaNacimiento: string;
+      telefono: string;
+      email: string;
+      direccion?: string;
+    };
+  };
 }
 
 /**
@@ -87,6 +100,21 @@ export interface SolicitudResponse {
       idGeografia: number;
     }>;
   };
+  propietario?: {
+    persona: {
+      idPersona: number;
+      cedula: string;
+      nombre: string;
+      apellido1: string;
+      apellido2: string;
+      fechaNacimiento: string;
+      telefono: string;
+      email: string;
+      direccion?: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
   estado: "PENDIENTE" | "APROBADO" | "RECHAZADO";
   fechaSolicitud: string;
   fechaResolucion: string | null;
@@ -94,39 +122,3 @@ export interface SolicitudResponse {
   createdAt: string;
   updatedAt: string;
 }
-
-/**
- * Ejemplo de payload válido
- */
-export const ejemploPayload: CreateSolicitudDto = {
-  persona: {
-    cedula: "109909999",
-    nombre: "Juan",
-    apellido1: "Pérez",
-    apellido2: "González",
-    fechaNacimiento: "1990-05-12",
-    telefono: "8765-4321",
-    email: "juan@email.com",
-    direccion: "San José, 200m norte del parque"
-  },
-  datosAsociado: {
-    viveEnFinca: true,
-    marcaGanado: "AR-2025",
-    CVO: "CVO-98765"
-  },
-  datosFinca: {
-    nombre: "Finca La Esperanza",
-    areaHa: 15.5,
-    numeroPlano: "L-32345-2025",
-    geografia: {
-      provincia: "Guanacaste",
-      canton: "Hojancha",
-      distrito: "Hojancha",
-      caserio: "Monte Romo"
-    }
-  },
-  nucleoFamiliar: {
-    nucleoHombres: 2,
-    nucleoMujeres: 3
-  }
-};

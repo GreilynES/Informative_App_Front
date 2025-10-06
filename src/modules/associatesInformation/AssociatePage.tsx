@@ -1,11 +1,11 @@
 import { DownloadSection } from "./components/DownloadSection";
 import { HeaderSection } from "./components/HeaderSection";
 import { RequirementsSection } from "./components/RequerimentsSection";
-import { Stepper } from "./components/Stepper";
+import { Stepper } from "../associatesForm/components/Stepper";
 import { useState } from "react";
 import { useAssociatesPage } from "./hooks/useAssociatesPage";
 import { BenefitsSection } from "./components/BenefitsSection";
-import { Steps } from "./components/Steps";
+import { Steps } from "../associatesForm/components/Steps";
 import { useAssociateApply } from "../associatesForm/hooks/useAssociateApply";
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
 

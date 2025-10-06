@@ -2,10 +2,10 @@ import type { FormLike } from "../../../shared/types/form-lite";
 import { ZodError } from "zod"; 
 import { useState, useEffect } from "react";
 import { associateApplySchema } from "../../associatesForm/schemas/associateApply";
-import { Step1 } from "../steps/stepPersonalInformation";
-import { Step2 } from "../steps/stepFincaGeoPropi";
-import { Step3 } from "../steps/stepDocumentsUpload";
-import { Step4 } from "../steps/stepConfirmation";
+import { Step1 } from "../../associatesForm/steps/stepPersonalInformation";
+import { Step2 } from "../../associatesForm/steps/stepFincaGeoPropi";
+import { Step3 } from "../../associatesForm/steps/stepDocumentsUpload";
+import { Step4 } from "../../associatesForm/steps/stepConfirmation";
 
 interface StepsProps {
   step: number;
@@ -36,9 +36,9 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
 
   const checkStepValidity = () => {
     const values = (form as any).state.values;
-
+  
     switch (step) {
-      case 1:
+      case 1: {
         const step1Valid = 
           values.cedula && values.cedula.length >= 8 &&
           values.nombre && values.nombre.length >= 1 &&
@@ -63,34 +63,74 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
                !validateField("distanciaFinca", values.distanciaFinca) &&
                !validateField("marcaGanado", values.marcaGanado) &&
                !validateField("CVO", values.CVO);
-
-      case 2:
+      }
+  
+      case 2: {
         // Validar campos de FINCA (básicos)
         const fincaValid = 
           values.nombreFinca && values.nombreFinca.length >= 1 &&
           values.areaHa && values.areaHa.length >= 1 &&
           values.numeroPlano && values.numeroPlano.length >= 1;
-
+      
         // Validar campos de GEOGRAFÍA
         const geografiaValid = 
           values.provincia && values.provincia.length >= 1 &&
           values.canton && values.canton.length >= 1 &&
           values.distrito && values.distrito.length >= 1;
-
-        // TODO: Agregar validación de propietario cuando esté listo el backend
+      
+        // Validar campos de propietario SOLO si NO es el propietario
+        let propietarioValid = true;
         
-        return fincaValid && geografiaValid;
-
-      case 3:
+        if (values.esPropietario === false) {
+          propietarioValid = !!(
+            values.propietarioCedula && values.propietarioCedula.length >= 8 &&
+            values.propietarioNombre && values.propietarioNombre.length >= 1 &&
+            values.propietarioApellido1 && values.propietarioApellido1.length >= 1 &&
+            values.propietarioApellido2 && values.propietarioApellido2.length >= 1 &&
+            values.propietarioTelefono && values.propietarioTelefono.length >= 8 &&
+            values.propietarioEmail && values.propietarioEmail.length >= 1 &&
+            values.propietarioFechaNacimiento && values.propietarioFechaNacimiento.length > 0
+          );
+          
+          console.log("[Steps] Validación propietario (NO es dueño):", {
+            cedula: values.propietarioCedula?.length,
+            nombre: values.propietarioNombre?.length,
+            apellido1: values.propietarioApellido1?.length,
+            apellido2: values.propietarioApellido2?.length,
+            telefono: values.propietarioTelefono?.length,
+            email: values.propietarioEmail?.length,
+            fechaNacimiento: values.propietarioFechaNacimiento?.length,
+            resultado: propietarioValid
+          });
+        } else {
+          console.log("[Steps] El asociado ES el propietario - no se valida sección de propietario");
+        }
+        
+        const result = fincaValid && geografiaValid && propietarioValid;
+        
+        console.log("[Steps] Step 2 validation:", {
+          fincaValid,
+          geografiaValid,
+          propietarioValid,
+          esPropietario: values.esPropietario,
+          finalResult: result
+        });
+        
+        return result;
+      }
+  
+      case 3: {
         const step3Valid = 
           values.idCopy !== null && values.idCopy !== undefined &&
           values.farmMap !== null && values.farmMap !== undefined;
         
         return step3Valid;
-
-      case 4:
+      }
+  
+      case 4: {
         return !!values.acceptTerms;
-
+      }
+  
       default:
         return false;
     }

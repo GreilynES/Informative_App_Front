@@ -96,3 +96,15 @@ export interface CreateGeografiaDto {
     createdAt: string;
     updatedAt: string;
   }
+
+  export interface Persona {
+    idPersona: number;
+    cedula: string;
+    nombre: string;
+    apellido1: string;
+    apellido2: string;
+    fechaNacimiento?: string;
+    telefono: string;
+    email: string;
+    direccion?: string;
+  }

@@ -1,5 +1,5 @@
 import type { FormLike } from "../../../shared/types/form-lite";
-import { TermsAndSubmit } from "../../associatesForm/components/TermsAndSubmit";
+import { TermsAndSubmit } from "../components/TermsAndSubmit";
 
 interface Step4Props {
   form: FormLike;

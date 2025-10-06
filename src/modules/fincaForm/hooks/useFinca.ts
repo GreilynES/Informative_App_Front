@@ -13,9 +13,65 @@ interface UseFincaOptions {
   onError?: (error: any) => void;
 }
 
+/**
+ * Hook para manejar operaciones de fincas
+ */
 export function useFinca(options: UseFincaOptions = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Procesa y prepara los datos de geografía
+   */
+  const processGeografia = async (formData: FincaFormPayload): Promise<number> => {
+    const geografiaData: CreateGeografiaDto = {
+      provincia: formData.provincia,
+      canton: formData.canton,
+      distrito: formData.distrito,
+      caserio: formData.caserio || "",
+    };
+
+    return await fincaService.getOrCreateGeografia(geografiaData);
+  };
+
+  /**
+   * Procesa y prepara los datos del propietario (si aplica)
+   */
+  const processPropietario = async (formData: FincaFormPayload): Promise<number | undefined> => {
+    if (formData.esPropietario) {
+      console.log("[useFinca] El asociado es el propietario");
+      return undefined;
+    }
+
+    // Validar campos requeridos del propietario
+    const camposRequeridos = [
+      formData.propietarioCedula,
+      formData.propietarioNombre,
+      formData.propietarioApellido1,
+      formData.propietarioApellido2,
+      formData.propietarioTelefono,
+      formData.propietarioEmail,
+    ];
+
+    if (camposRequeridos.some(campo => !campo)) {
+      throw new Error("Faltan datos obligatorios del propietario");
+    }
+
+    const propietarioData: CreatePropietarioDto = {
+      persona: {
+        cedula: formData.propietarioCedula!,
+        nombre: formData.propietarioNombre!,
+        apellido1: formData.propietarioApellido1!,
+        apellido2: formData.propietarioApellido2!,
+        fechaNacimiento: formData.propietarioFechaNacimiento,
+        telefono: formData.propietarioTelefono!,
+        email: formData.propietarioEmail!,
+        direccion: formData.propietarioDireccion,
+      },
+    };
+
+    return await fincaService.getOrCreatePropietario(propietarioData);
+  };
 
   /**
    * Crea una finca completa con geografía y propietario
@@ -25,58 +81,19 @@ export function useFinca(options: UseFincaOptions = {}) {
     setError(null);
 
     try {
-      // 1. Crear o buscar geografía
-      const geografiaData: CreateGeografiaDto = {
-        provincia: formData.provincia,
-        canton: formData.canton,
-        distrito: formData.distrito,
-        caserio: formData.caserio,
-      };
-
-      console.log("[useFinca] Creando/buscando geografía...", geografiaData);
-      const idGeografia = await fincaService.getOrCreateGeografia(geografiaData);
-      console.log("[useFinca] Geografía obtenida:", idGeografia);
-
-      // 2. Crear o buscar propietario (solo si NO es el asociado)
-      let idPropietario: number | undefined;
-
-      if (!formData.esPropietario) {
-        if (
-          !formData.propietarioCedula ||
-          !formData.propietarioNombre ||
-          !formData.propietarioApellido1 ||
-          !formData.propietarioApellido2 ||
-          !formData.propietarioTelefono ||
-          !formData.propietarioEmail
-        ) {
-          throw new Error("Faltan datos del propietario");
-        }
-
-        const propietarioData: CreatePropietarioDto = {
-          persona: {
-            cedula: formData.propietarioCedula,
-            nombre: formData.propietarioNombre,
-            apellido1: formData.propietarioApellido1,
-            apellido2: formData.propietarioApellido2,
-            fechaNacimiento: formData.propietarioFechaNacimiento,
-            telefono: formData.propietarioTelefono,
-            email: formData.propietarioEmail,
-            direccion: formData.propietarioDireccion,
-          },
-        };
-
-        console.log("[useFinca] Creando/buscando propietario...", propietarioData);
-        idPropietario = await fincaService.getOrCreatePropietario(propietarioData);
-        console.log("[useFinca] Propietario obtenido:", idPropietario);
-      } else {
-        console.log("[useFinca] El asociado es el propietario, no se crea propietario separado");
-      }
-
-      // 3. Crear finca
       if (!options.idAsociado) {
         throw new Error("idAsociado es requerido para crear la finca");
       }
 
+      // 1. Procesar geografía
+      console.log("[useFinca] Procesando geografía...");
+      const idGeografia = await processGeografia(formData);
+
+      // 2. Procesar propietario (si no es el asociado)
+      console.log("[useFinca] Procesando propietario...");
+      const idPropietario = await processPropietario(formData);
+
+      // 3. Crear finca
       const fincaData: CreateFincaDto = {
         idAsociado: options.idAsociado,
         nombre: formData.nombreFinca,
@@ -86,15 +103,15 @@ export function useFinca(options: UseFincaOptions = {}) {
         idPropietario,
       };
 
-      console.log("[useFinca] Creando finca...", fincaData);
+      console.log("[useFinca] Creando finca:", fincaData);
       const finca = await fincaService.createFinca(fincaData);
-      console.log("[useFinca] Finca creada exitosamente:", finca);
+      console.log("[useFinca] ✓ Finca creada:", finca.idFinca);
 
       options.onSuccess?.(finca.idFinca);
       return finca.idFinca;
     } catch (err: any) {
-      console.error("[useFinca] Error al crear finca completa:", err);
       const errorMessage = err?.response?.data?.message || err?.message || "Error al crear la finca";
+      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       options.onError?.(err);
       return null;
@@ -114,8 +131,8 @@ export function useFinca(options: UseFincaOptions = {}) {
       const fincas = await fincaService.getFincasByAsociado(idAsociado);
       return fincas;
     } catch (err: any) {
-      console.error("[useFinca] Error al obtener fincas:", err);
       const errorMessage = err?.response?.data?.message || err?.message || "Error al obtener las fincas";
+      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       return [];
     } finally {
@@ -132,11 +149,11 @@ export function useFinca(options: UseFincaOptions = {}) {
 
     try {
       const updatedFinca = await fincaService.updateFinca(idFinca, data);
-      console.log("[useFinca] Finca actualizada:", updatedFinca);
+      console.log("[useFinca] ✓ Finca actualizada:", updatedFinca.idFinca);
       return updatedFinca;
     } catch (err: any) {
-      console.error("[useFinca] Error al actualizar finca:", err);
       const errorMessage = err?.response?.data?.message || err?.message || "Error al actualizar la finca";
+      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       return null;
     } finally {
@@ -153,11 +170,11 @@ export function useFinca(options: UseFincaOptions = {}) {
 
     try {
       await fincaService.deleteFinca(idFinca);
-      console.log("[useFinca] Finca eliminada:", idFinca);
+      console.log("[useFinca] ✓ Finca eliminada:", idFinca);
       return true;
     } catch (err: any) {
-      console.error("[useFinca] Error al eliminar finca:", err);
       const errorMessage = err?.response?.data?.message || err?.message || "Error al eliminar la finca";
+      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       return false;
     } finally {

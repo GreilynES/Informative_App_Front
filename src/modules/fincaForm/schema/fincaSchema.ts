@@ -32,61 +32,27 @@ export const geografiaSchema = z.object({
     .or(z.literal("")),
 });
 
-// Schema para propietario (DESHABILITADO - Backend pendiente)
-// Por ahora solo validamos que esPropietario exista
-export const propietarioSchema = z.object({
-  esPropietario: z.boolean().default(true),
-  
-  // Campos opcionales - no se validan por ahora
-  propietarioCedula: z.string().optional().or(z.literal("")),
-  propietarioNombre: z.string().optional().or(z.literal("")),
-  propietarioApellido1: z.string().optional().or(z.literal("")),
-  propietarioApellido2: z.string().optional().or(z.literal("")),
-  propietarioTelefono: z.string().optional().or(z.literal("")),
-  propietarioEmail: z.string().optional().or(z.literal("")),
-  propietarioFechaNacimiento: z.string().optional().or(z.literal("")),
-  propietarioDireccion: z.string().optional().or(z.literal("")),
-});
 
-// Cuando el backend esté listo, descomentar esta validación:
-/*
-export const propietarioSchema = z.object({
-  esPropietario: z.boolean(),
-  
-  propietarioCedula: z.string().optional().or(z.literal("")),
-  propietarioNombre: z.string().optional().or(z.literal("")),
-  propietarioApellido1: z.string().optional().or(z.literal("")),
-  propietarioApellido2: z.string().optional().or(z.literal("")),
-  propietarioTelefono: z.string().optional().or(z.literal("")),
-  propietarioEmail: z.string().optional().or(z.literal("")),
-  propietarioFechaNacimiento: z.string().optional().or(z.literal("")),
-  propietarioDireccion: z.string().optional().or(z.literal("")),
-}).refine((data) => {
-  // Si NO es propietario, todos los campos son obligatorios
-  if (!data.esPropietario) {
-    return (
-      data.propietarioCedula && data.propietarioCedula.length >= 8 &&
-      data.propietarioNombre && data.propietarioNombre.length >= 1 &&
-      data.propietarioApellido1 && data.propietarioApellido1.length >= 1 &&
-      data.propietarioApellido2 && data.propietarioApellido2.length >= 1 &&
-      data.propietarioTelefono && data.propietarioTelefono.length >= 8 &&
-      data.propietarioEmail && data.propietarioEmail.length >= 1
-    );
-  }
-  return true;
-}, {
-  message: "Complete todos los datos del propietario",
-});
-*/
+// Campos del Propietario (solo se aplican si NO es el solicitante)
+export const propietarioFieldsSchema = z.object({
+    propietarioCedula: z.string().min(8, "Cédula del propietario debe tener al menos 8 dígitos").trim(),
+    propietarioNombre: z.string().min(1, "Nombre del propietario es obligatorio").trim(),
+    propietarioApellido1: z.string().min(1, "Primer apellido es obligatorio").trim(),
+    propietarioApellido2: z.string().min(1, "Segundo apellido es obligatorio").trim(),
+    propietarioTelefono: z.string().min(8, "Teléfono debe tener al menos 8 dígitos").trim(),
+    propietarioEmail: z.string().email("Email inválido").trim(),
+    propietarioDireccion: z.string().optional(),
+  });
+
 
 // Schema completo de finca
 export const fincaCompleteSchema = z.object({
   ...fincaBasicSchema.shape,
   ...geografiaSchema.shape,
-  ...propietarioSchema.shape,
+  ...propietarioFieldsSchema.shape,
 });
 
 export type FincaBasicValues = z.infer<typeof fincaBasicSchema>;
 export type GeografiaValues = z.infer<typeof geografiaSchema>;
-export type PropietarioValues = z.infer<typeof propietarioSchema>;
+export type PropietarioValues = z.infer<typeof propietarioFieldsSchema>;
 export type FincaCompleteValues = z.infer<typeof fincaCompleteSchema>;

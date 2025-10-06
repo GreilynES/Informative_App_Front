@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
-import {type AssociateApplyValues } from "../schemas/associateApply";
+import { type AssociateApplyValues } from "../schemas/associateApply";
 import { createSolicitud } from "../services/associatesFormService";
 import { type CreateSolicitudDto } from "../models/createAssociate";
 
@@ -25,8 +25,6 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       viveEnFinca: Boolean(values.viveEnFinca),
       marcaGanado: values.marcaGanado,
       CVO: values.CVO,
-      // NOTA: distanciaFinca NO se envía en la creación inicial
-      // Se puede actualizar después mediante el endpoint PATCH /associates/:id
     },
     datosFinca: {
       nombre: values.nombreFinca,
@@ -54,7 +52,31 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
     }
   }
 
-  console.log("[Hook] Payload mapeado:", JSON.stringify(payload, null, 2));
+  // LÓGICA DEL PROPIETARIO
+  const esPropietario = (values as any).esPropietario;
+
+  if (esPropietario === false) {
+    // Caso 1: El asociado NO es el propietario - enviar datos del propietario
+    console.log("[Hook] El asociado NO es el propietario - enviando datos del propietario");
+    
+    payload.propietario = {
+      persona: {
+        cedula: (values as any).propietarioCedula,
+        nombre: (values as any).propietarioNombre,
+        apellido1: (values as any).propietarioApellido1,
+        apellido2: (values as any).propietarioApellido2,
+        telefono: (values as any).propietarioTelefono,
+        email: (values as any).propietarioEmail,
+        fechaNacimiento: (values as any).propietarioFechaNacimiento,
+        ...((values as any).propietarioDireccion?.trim()
+          ? { direccion: (values as any).propietarioDireccion.trim() }
+          : {}
+        ),
+      },
+    };
+  }
+
+  console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
   
   return payload;
 }
@@ -95,7 +117,7 @@ export function useAssociateApply(onSuccess?: () => void) {
       direccion: "",
       
       // Datos del Asociado
-      distanciaFinca: "", // Campo en el form pero NO se envía al crear
+      distanciaFinca: "",
       viveEnFinca: false,
       marcaGanado: "",
       CVO: "",
@@ -123,12 +145,19 @@ export function useAssociateApply(onSuccess?: () => void) {
       distrito: "",
       caserio: "",
 
-      // Propietario (deshabilitado - backend pendiente)
+      // Propietario
       esPropietario: true,
+      propietarioCedula: "",
+      propietarioNombre: "",
+      propietarioApellido1: "",
+      propietarioApellido2: "",
+      propietarioTelefono: "",
+      propietarioEmail: "",
+      propietarioDireccion: "",
+      propietarioFechaNacimiento: "",
     },
     onSubmit: async ({ value, formApi }) => {
       console.log("[Hook] Submit iniciado");
-      console.log("[Hook] Valores del formulario:", value);
       
       try {
         await mutation.mutateAsync(value as any);

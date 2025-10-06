@@ -1,6 +1,6 @@
 import type { FormLike } from "../../../shared/types/form-lite";
-import { NavigationButtons } from "../../associatesForm/components/NavigationButtons";
-import { DocumentUpload } from "../../associatesForm/components/DocumentUpload";
+import { NavigationButtons } from "../components/NavigationButtons";
+import { DocumentUpload } from "../components/DocumentUpload";
 
 interface Step3Props {
   form: FormLike;

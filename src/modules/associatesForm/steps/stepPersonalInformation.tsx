@@ -1,8 +1,8 @@
 import type { FormLike } from "../../../shared/types/form-lite";
 import { ZodError } from "zod";
-import { associateApplySchema } from "../../associatesForm/schemas/associateApply";
-import { NavigationButtons } from "../../associatesForm/components/NavigationButtons";
-import { NucleoFamiliarSection } from "../../associatesForm/components/FamilyNucleusSection";
+import { associateApplySchema } from "../schemas/associateApply";
+import { NavigationButtons } from "../components/NavigationButtons";
+import { NucleoFamiliarSection } from "../components/FamilyNucleusSection";
 
 interface Step1Props {
   form: FormLike;

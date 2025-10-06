@@ -21,7 +21,7 @@ const datosAsociadoSchema = z.object({
   CVO: z.string().min(1, "El CVO es requerido"),
 });
 
-// Schema de núcleo familiar (NUEVO - OPCIONAL)
+// Schema de núcleo familiar (OPCIONAL)
 const nucleoFamiliarSchema = z.object({
   nucleoHombres: z.string().optional().or(z.literal("")),
   nucleoMujeres: z.string().optional().or(z.literal("")),
@@ -37,13 +37,32 @@ const documentosSchema = z.object({
   otherDocuments: z.any().nullable(),
 });
 
+// Schema del propietario con validación condicional
+const propietarioConditionalSchema = z.object({
+  esPropietario: z.boolean().default(true),
+  propietarioCedula: z.string().optional().or(z.literal("")),
+  propietarioNombre: z.string().optional().or(z.literal("")),
+  propietarioApellido1: z.string().optional().or(z.literal("")),
+  propietarioApellido2: z.string().optional().or(z.literal("")),
+  propietarioTelefono: z.string()
+  .optional()
+  .or(z.literal(""))
+  .refine(
+    (val) => !val || val === "" || val.length >= 8,
+    { message: "El teléfono debe tener al menos 8 dígitos" }
+  ),  propietarioEmail: z.string().optional().or(z.literal("")),
+  propietarioDireccion: z.string().optional().or(z.literal("")),
+  propietarioFechaNacimiento: z.string().optional().or(z.literal("")),
+});
+
 // Schema completo que combina todo
 export const associateApplySchema = z.object({
   ...personaSchema.shape,
   ...datosAsociadoSchema.shape,
-  ...nucleoFamiliarSchema.shape, // NUEVO: campos de núcleo familiar
+  ...nucleoFamiliarSchema.shape,
   ...documentosSchema.shape,
   ...fincaCompleteSchema.shape,
+  ...propietarioConditionalSchema.shape,
 });
 
 export type AssociateApplyValues = z.infer<typeof associateApplySchema>;
