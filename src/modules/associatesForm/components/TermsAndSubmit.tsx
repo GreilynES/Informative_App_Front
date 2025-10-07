@@ -17,7 +17,17 @@ export function TermsAndSubmit({
       <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
 
       <div className="space-y-6 text-[#4A4A4A] mt-6">
-        <form.Field name="acceptTerms">
+        <form.Field 
+          name="acceptTerms"
+          validators={{
+            onChange: ({ value }: any) => {
+              if (!value) {
+                return 'Debes aceptar los términos y condiciones para continuar';
+              }
+              return undefined;
+            }
+          }}
+        >
           {(f: FieldLike<boolean>) => (
             <label className="flex items-start gap-3">
               <input
@@ -47,8 +57,8 @@ export function TermsAndSubmit({
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 rounded bg-[#708C3E] text-white shadow hover:opacity-95 disabled:opacity-60"
+          disabled={isSubmitting || !form.state.values.acceptTerms}
+          className="px-6 py-2 rounded bg-[#708C3E] text-white shadow hover:opacity-95 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Enviando..." : "Enviar solicitud"}
         </button>

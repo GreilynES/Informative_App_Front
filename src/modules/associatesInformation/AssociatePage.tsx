@@ -1,4 +1,3 @@
-import { DownloadSection } from "./components/DownloadSection";
 import { HeaderSection } from "./components/HeaderSection";
 import { RequirementsSection } from "./components/RequerimentsSection";
 import { Stepper } from "../associatesForm/components/Stepper";

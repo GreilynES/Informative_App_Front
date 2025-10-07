@@ -212,24 +212,35 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
                   </form.Field>
 
                   <form.Field name="propietarioTelefono">
-                    {(fprop: any) => (
-                      <div>
-                        <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Teléfono *</label>
-                        <input
-                          type="text"
-                          value={fprop.state.value || ""}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, "");
-                            fprop.handleChange(value);
-                          }}
-                          onBlur={fprop.handleBlur}
-                          className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                          placeholder="Teléfono"
-                          minLength={8}
-                          maxLength={12}
-                        />
-                      </div>
-                    )}
+                    {(fprop: any) => {
+                      const hasError = fprop.state.value && fprop.state.value.length > 0 && fprop.state.value.length < 8;
+                      
+                      return (
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Teléfono *</label>
+                          <input
+                            type="text"
+                            value={fprop.state.value || ""}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "");
+                              fprop.handleChange(value);
+                            }}
+                            onBlur={fprop.handleBlur}
+                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
+                              hasError ? "border-red-500" : "border-[#CFCFCF]"
+                            }`}
+                            placeholder="Teléfono (mínimo 8 dígitos)"
+                            maxLength={12}
+                            minLength={8}
+                          />
+                          {hasError && (
+                            <p className="text-sm text-red-600 mt-1">
+                              El teléfono debe tener al menos 8 dígitos
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }}
                   </form.Field>
                 </div>
 
