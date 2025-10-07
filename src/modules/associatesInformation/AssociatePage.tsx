@@ -8,6 +8,7 @@ import { Steps } from "../associatesForm/components/Steps";
 import { useAssociateApply } from "../associatesForm/hooks/useAssociateApply";
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
 
+
 export default function AssociatesPage() {
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useAssociatesPage();
@@ -61,7 +62,6 @@ export default function AssociatesPage() {
                 lookup={lookup}
                 nextStep={nextStep}
                 prevStep={prevStep}
-                isSubmitting={mutation.isPending}
               />
             </form>
           </div>

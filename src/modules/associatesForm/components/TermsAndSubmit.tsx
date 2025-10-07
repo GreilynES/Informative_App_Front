@@ -39,7 +39,7 @@ export function TermsAndSubmit({
                 style={{ accentColor: '#708C3E' }}
               />
               <span className="text-sm">
-                Confirmo que he leído y acepto los términos y el aviso de privacidad.
+                Confirmo mi consentimiento para que mis datos personales sean utilizados para el registro de mi solicitud de asociado. 
               </span>
             </label>
           )}
