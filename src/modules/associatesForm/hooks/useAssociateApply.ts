@@ -3,7 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { type AssociateApplyValues } from "../schemas/associateApply";
-import { createSolicitud } from "../services/associatesFormService";
+import { createSolicitud, uploadDocuments } from "../services/associatesFormService";
 import { type CreateSolicitudDto } from "../models/createAssociate";
 
 /**
@@ -86,23 +86,63 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
  */
 export function useAssociateApply(onSuccess?: () => void) {
   const mutation = useMutation({
-    mutationFn: async (values: AssociateApplyValues) => {
-      console.log("[Hook] Iniciando envío de solicitud...");
-      const payload = mapToSolicitudPayload(values);
-      return createSolicitud(payload);
-    },
-    onSuccess: (data) => {
-      console.log("[Hook] Solicitud creada exitosamente:", data);
-      onSuccess?.();
-    },
-    onError: (error: any) => {
-      console.error("[Hook] Error al crear solicitud:", error);
-      console.error("[Hook] Detalles:", error?.response?.data);
-    },
-    onSettled: () => {
-      console.log("[Hook] Proceso finalizado");
-    },
-  });
+  mutationFn: async (values: AssociateApplyValues) => {
+    console.log("[Hook] Iniciando envío de solicitud...");
+    
+    // 1. Crear la solicitud
+    const payload = mapToSolicitudPayload(values);
+    const response = await createSolicitud(payload);
+    
+    // 2. Obtener el idSolicitud de la respuesta
+    const idSolicitud = (response as any).data?.idSolicitud;
+    
+    if (!idSolicitud) {
+      throw new Error("No se recibió el ID de la solicitud");
+    }
+
+    console.log("[Hook] Solicitud creada con ID:", idSolicitud);
+
+    // 3. Subir archivos si existen
+    const cedula = values.idCopy instanceof File ? values.idCopy : undefined;
+    const planoFinca = values.farmMap instanceof File ? values.farmMap : undefined;
+
+    console.log("[Hook] Verificando archivos:");
+    console.log("[Hook] - idCopy:", values.idCopy);
+    console.log("[Hook] - idCopy es File?:", values.idCopy instanceof File);
+    console.log("[Hook] - farmMap:", values.farmMap);
+    console.log("[Hook] - farmMap es File?:", values.farmMap instanceof File);
+
+    if (cedula || planoFinca) {
+      console.log("[Hook] Subiendo documentos...");
+      console.log("[Hook] Cédula a subir:", cedula?.name);
+      console.log("[Hook] Plano a subir:", planoFinca?.name);
+      
+      await uploadDocuments(idSolicitud, {
+        cedula,
+        planoFinca,
+      });
+      
+      console.log("[Hook] Documentos subidos exitosamente");
+    } else {
+      console.log("[Hook] ⚠️ No hay archivos válidos para subir");
+      console.log("[Hook] values.idCopy:", values.idCopy);
+      console.log("[Hook] values.farmMap:", values.farmMap);
+    }
+
+    return response;
+  },
+  onSuccess: (data) => {
+    console.log("[Hook] Solicitud creada exitosamente:", data);
+    onSuccess?.();
+  },
+  onError: (error: any) => {
+    console.error("[Hook] Error al crear solicitud:", error);
+    console.error("[Hook] Detalles:", error?.response?.data);
+  },
+  onSettled: () => {
+    console.log("[Hook] Proceso finalizado");
+  },
+});
 
   const form = useForm({
     defaultValues: {

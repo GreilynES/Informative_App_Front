@@ -60,4 +60,61 @@ export async function createSolicitud(payload: any) {
     console.error("[Service] Response data:", err?.response?.data);
     throw err;
   }
+
+
+}
+
+//PARA SUBIR DOCUMENTOS
+export async function uploadDocuments(
+  solicitudId: number,
+  files: {
+    cedula?: File;
+    planoFinca?: File;
+  }
+) {
+  console.log("[Service] uploadDocuments llamado con:", {
+    solicitudId,
+    cedula: files.cedula?.name,
+    planoFinca: files.planoFinca?.name,
+  });
+
+  const formData = new FormData();
+  
+  if (files.cedula) {
+    console.log("[Service] Agregando cédula al FormData:", files.cedula.name);
+    formData.append('cedula', files.cedula);
+  }
+  
+  if (files.planoFinca) {
+    console.log("[Service] Agregando plano al FormData:", files.planoFinca.name);
+    formData.append('planoFinca', files.planoFinca);
+  }
+
+  // Verificar que el FormData tiene datos
+  const entries = Array.from(formData.entries()).map(([k, ]) => k);
+  console.log("[Service] FormData entries:", entries);
+
+  if (entries.length === 0) {
+    console.error("[Service] ❌ FormData está vacío!");
+    throw new Error("No hay archivos para subir");
+  }
+
+  try {
+    const response = await apiConfig.post(
+      `/solicitudes/${solicitudId}/upload-documents`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    console.log("[Service] ✅ Documentos subidos:", response.data);
+    return response.data;
+  } catch (err: any) {
+    console.error("[Service] ❌ Error al subir documentos:", err?.message || err);
+    console.error("[Service] Response:", err?.response?.data);
+    throw err;
+  }
+
 }
