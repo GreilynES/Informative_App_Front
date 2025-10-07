@@ -90,8 +90,7 @@ export async function uploadDocuments(
     formData.append('planoFinca', files.planoFinca);
   }
 
-  // Verificar que el FormData tiene datos
-  const entries = Array.from(formData.entries()).map(([k, ]) => k);
+  const entries = Array.from(formData.entries()).map(([k, v]) => k);
   console.log("[Service] FormData entries:", entries);
 
   if (entries.length === 0) {
@@ -100,21 +99,26 @@ export async function uploadDocuments(
   }
 
   try {
-    const response = await apiConfig.post(
-      `/solicitudes/${solicitudId}/upload-documents`,
-      formData,
+    // Usar fetch nativo en lugar de axios para FormData
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const response = await fetch(
+      `${apiUrl}/solicitudes/${solicitudId}/upload-documents`,
       {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        method: 'POST',
+        body: formData,
+        // NO agregar Content-Type - fetch lo maneja automáticamente
       }
     );
-    console.log("[Service] ✅ Documentos subidos:", response.data);
-    return response.data;
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("[Service] ✅ Documentos subidos:", data);
+    return data;
   } catch (err: any) {
     console.error("[Service] ❌ Error al subir documentos:", err?.message || err);
-    console.error("[Service] Response:", err?.response?.data);
     throw err;
   }
-
 }
