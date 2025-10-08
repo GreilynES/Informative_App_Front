@@ -35,7 +35,6 @@ function sanitizePayload(obj: any, keepEmptyKeys: string[] = []): any {
   return obj;
 }
 
-
 export async function createSolicitud(payload: any) {
   console.log("[Service] ===== VERIFICACIÓN DE PAYLOAD =====");
   console.log("[Service] Payload completo:", JSON.stringify(payload, null, 2));
@@ -60,11 +59,9 @@ export async function createSolicitud(payload: any) {
     console.error("[Service] Response data:", err?.response?.data);
     throw err;
   }
-
-
 }
 
-//PARA SUBIR DOCUMENTOS
+// ========== NUEVA FUNCIÓN PARA SUBIR DOCUMENTOS ==========
 export async function uploadDocuments(
   solicitudId: number,
   files: {
@@ -90,7 +87,7 @@ export async function uploadDocuments(
     formData.append('planoFinca', files.planoFinca);
   }
 
-  const entries = Array.from(formData.entries()).map(([k, v]) => k);
+  const entries = Array.from(formData.entries()).map(([k]) => k);
   console.log("[Service] FormData entries:", entries);
 
   if (entries.length === 0) {
@@ -99,7 +96,7 @@ export async function uploadDocuments(
   }
 
   try {
-    // Usar fetch nativo en lugar de axios para FormData
+    // ⚠️ USAR FETCH EN LUGAR DE AXIOS PARA FORMDATA
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     const response = await fetch(
       `${apiUrl}/solicitudes/${solicitudId}/upload-documents`,

@@ -56,7 +56,6 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
   const esPropietario = (values as any).esPropietario;
 
   if (esPropietario === false) {
-    // Caso 1: El asociado NO es el propietario - enviar datos del propietario
     console.log("[Hook] El asociado NO es el propietario - enviando datos del propietario");
     
     payload.propietario = {
@@ -86,63 +85,55 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
  */
 export function useAssociateApply(onSuccess?: () => void) {
   const mutation = useMutation({
-  mutationFn: async (values: AssociateApplyValues) => {
-    console.log("[Hook] Iniciando envío de solicitud...");
-    
-    // 1. Crear la solicitud
-    const payload = mapToSolicitudPayload(values);
-    const response = await createSolicitud(payload);
-    
-    // 2. Obtener el idSolicitud de la respuesta
-    const idSolicitud = (response as any).data?.idSolicitud;
-    
-    if (!idSolicitud) {
-      throw new Error("No se recibió el ID de la solicitud");
-    }
-
-    console.log("[Hook] Solicitud creada con ID:", idSolicitud);
-
-    // 3. Subir archivos si existen
-    const cedula = values.idCopy instanceof File ? values.idCopy : undefined;
-    const planoFinca = values.farmMap instanceof File ? values.farmMap : undefined;
-
-    console.log("[Hook] Verificando archivos:");
-    console.log("[Hook] - idCopy:", values.idCopy);
-    console.log("[Hook] - idCopy es File?:", values.idCopy instanceof File);
-    console.log("[Hook] - farmMap:", values.farmMap);
-    console.log("[Hook] - farmMap es File?:", values.farmMap instanceof File);
-
-    if (cedula || planoFinca) {
-      console.log("[Hook] Subiendo documentos...");
-      console.log("[Hook] Cédula a subir:", cedula?.name);
-      console.log("[Hook] Plano a subir:", planoFinca?.name);
+    mutationFn: async (values: AssociateApplyValues) => {
+      console.log("[Hook] Iniciando envío de solicitud...");
       
-      await uploadDocuments(idSolicitud, {
-        cedula,
-        planoFinca,
-      });
+      // 1. Crear la solicitud
+      const payload = mapToSolicitudPayload(values);
+      const response = await createSolicitud(payload);
       
-      console.log("[Hook] Documentos subidos exitosamente");
-    } else {
-      console.log("[Hook] ⚠️ No hay archivos válidos para subir");
-      console.log("[Hook] values.idCopy:", values.idCopy);
-      console.log("[Hook] values.farmMap:", values.farmMap);
-    }
+      // 2. Obtener el idSolicitud de la respuesta
+  const idSolicitud = (response as any).data?.idSolicitud;
+      
+      if (!idSolicitud) {
+        throw new Error("No se recibió el ID de la solicitud");
+      }
 
-    return response;
-  },
-  onSuccess: (data) => {
-    console.log("[Hook] Solicitud creada exitosamente:", data);
-    onSuccess?.();
-  },
-  onError: (error: any) => {
-    console.error("[Hook] Error al crear solicitud:", error);
-    console.error("[Hook] Detalles:", error?.response?.data);
-  },
-  onSettled: () => {
-    console.log("[Hook] Proceso finalizado");
-  },
-});
+      console.log("[Hook] Solicitud creada con ID:", idSolicitud);
+
+      // 3. Subir archivos si existen
+      const cedula = values.idCopy instanceof File ? values.idCopy : undefined;
+      const planoFinca = values.farmMap instanceof File ? values.farmMap : undefined;
+
+      if (cedula || planoFinca) {
+        console.log("[Hook] Subiendo documentos...");
+        console.log("[Hook] Cédula a subir:", cedula?.name);
+        console.log("[Hook] Plano a subir:", planoFinca?.name);
+        
+        await uploadDocuments(idSolicitud, {
+          cedula,
+          planoFinca,
+        });
+        
+        console.log("[Hook] Documentos subidos exitosamente");
+      } else {
+        console.log("[Hook] No hay archivos para subir");
+      }
+
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log("[Hook] Solicitud creada exitosamente:", data);
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      console.error("[Hook] Error al crear solicitud:", error);
+      console.error("[Hook] Detalles:", error?.response?.data);
+    },
+    onSettled: () => {
+      console.log("[Hook] Proceso finalizado");
+    },
+  });
 
   const form = useForm({
     defaultValues: {
