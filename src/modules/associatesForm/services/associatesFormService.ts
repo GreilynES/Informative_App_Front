@@ -60,4 +60,65 @@ export async function createSolicitud(payload: any) {
     console.error("[Service] Response data:", err?.response?.data);
     throw err;
   }
+
+
+}
+
+//PARA SUBIR DOCUMENTOS
+export async function uploadDocuments(
+  solicitudId: number,
+  files: {
+    cedula?: File;
+    planoFinca?: File;
+  }
+) {
+  console.log("[Service] uploadDocuments llamado con:", {
+    solicitudId,
+    cedula: files.cedula?.name,
+    planoFinca: files.planoFinca?.name,
+  });
+
+  const formData = new FormData();
+  
+  if (files.cedula) {
+    console.log("[Service] Agregando cédula al FormData:", files.cedula.name);
+    formData.append('cedula', files.cedula);
+  }
+  
+  if (files.planoFinca) {
+    console.log("[Service] Agregando plano al FormData:", files.planoFinca.name);
+    formData.append('planoFinca', files.planoFinca);
+  }
+
+  const entries = Array.from(formData.entries()).map(([k, v]) => k);
+  console.log("[Service] FormData entries:", entries);
+
+  if (entries.length === 0) {
+    console.error("[Service] ❌ FormData está vacío!");
+    throw new Error("No hay archivos para subir");
+  }
+
+  try {
+    // Usar fetch nativo en lugar de axios para FormData
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const response = await fetch(
+      `${apiUrl}/solicitudes/${solicitudId}/upload-documents`,
+      {
+        method: 'POST',
+        body: formData,
+        // NO agregar Content-Type - fetch lo maneja automáticamente
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("[Service] ✅ Documentos subidos:", data);
+    return data;
+  } catch (err: any) {
+    console.error("[Service] ❌ Error al subir documentos:", err?.message || err);
+    throw err;
+  }
 }
