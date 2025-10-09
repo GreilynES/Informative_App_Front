@@ -3,6 +3,7 @@ export interface CreateHatoDto {
     tipoExplotacion: string;
     totalGanado: number;
     razaPredominante?: string;
+    animales: CreateAnimalDto[];
   }
   
   export interface CreateAnimalDto {

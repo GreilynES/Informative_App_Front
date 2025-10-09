@@ -2,6 +2,7 @@
 const stepLabels = [
   "Información",
   "Finca",
+  "Forraje, Registro ",
   "Documentos",
   "Confirmación"
 ];
@@ -9,7 +10,7 @@ const stepLabels = [
 export function Stepper({ step }: any) {
   return (
     <div className="flex justify-center items-center gap-4 mb-10">
-      {[1, 2, 3, 4].map((s, index) => (
+      {[1, 2, 3, 4, 5].map((s, index) => (
         <div key={s} className="flex items-center gap-4">
           <div className="flex flex-col items-center">
             <div
@@ -37,7 +38,7 @@ export function Stepper({ step }: any) {
           </div>
 
           {/* Línea entre pasos */}
-          {index < 3 && (
+          {index < 4 && (
             <div className={`w-16 h-1 rounded transition-colors ${
               step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
             }`}></div>

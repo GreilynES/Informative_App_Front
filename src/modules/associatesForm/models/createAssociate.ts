@@ -1,4 +1,4 @@
-// src/modules/associatesForm/models/solicitudTypes.ts
+// src/modules/associatesForm/models/createAssociate.ts
 
 /**
  * DTO para crear una solicitud completa
@@ -53,6 +53,33 @@ export interface CreateSolicitudDto {
       direccion?: string;
     };
   };
+
+  // ========== NUEVOS CAMPOS OPCIONALES ==========
+  
+  hato?: {
+    idFinca: number; // Placeholder, el backend lo ignora en la transacción
+    tipoExplotacion: string;
+    totalGanado: number;
+    razaPredominante?: string;
+  };
+
+  animales?: Array<{
+    tipoAnimal: string;
+    edadAnios: number;
+    cantidad: number;
+  }>;
+
+  forrajes?: Array<{
+    tipoForraje: string;
+    variedad: string;
+    hectareas: number;
+    utilizacion: string;
+  }>;
+
+  registrosProductivos?: {
+    reproductivos: boolean;
+    costosProductivos: boolean;
+  };
 }
 
 /**
@@ -98,6 +125,30 @@ export interface SolicitudResponse {
       createdAt: string;
       updatedAt: string;
       idGeografia: number;
+      hato?: {
+        idHato: number;
+        tipoExplotacion: string;
+        totalGanado: number;
+        razaPredominante?: string;
+        animales?: Array<{
+          idAnimal: number;
+          tipoAnimal: string;
+          edadAnios: number;
+          cantidad: number;
+        }>;
+      };
+      forrajes?: Array<{
+        idForraje: number;
+        tipoForraje: string;
+        variedad: string;
+        hectareas: number;
+        utilizacion: string;
+      }>;
+      registrosProductivos?: {
+        idRegistrosProductivos: number;
+        reproductivos: boolean;
+        costosProductivos: boolean;
+      };
     }>;
   };
   propietario?: {
