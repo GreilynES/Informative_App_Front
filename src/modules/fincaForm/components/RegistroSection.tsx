@@ -6,16 +6,14 @@ interface RegistroSectionProps {
 }
 
 export function RegistroSection({ form }: RegistroSectionProps) {
-  // Lee lo que haya en el form (puede venir null la 1ra vez)
   const registrosExistentes = (form as any).state?.values?.registrosProductivos;
 
-  // Estado local con valores seguros
   const [formValues, setFormValues] = React.useState({
     reproductivos: Boolean(registrosExistentes?.reproductivos) || false,
     costosProductivos: Boolean(registrosExistentes?.costosProductivos) || false,
   });
 
-  // Al montar: asegura que el form tenga un objeto válido (no null)
+  // Asegura objeto válido al montar
   React.useEffect(() => {
     if (!registrosExistentes) {
       (form as any).setFieldValue("registrosProductivos", {
@@ -31,7 +29,7 @@ export function RegistroSection({ form }: RegistroSectionProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sincroniza con el form global cada vez que cambia algo
+  // Sincroniza con form global
   React.useEffect(() => {
     (form as any).setFieldValue("registrosProductivos", {
       reproductivos: Boolean(formValues.reproductivos),
@@ -45,7 +43,6 @@ export function RegistroSection({ form }: RegistroSectionProps) {
     console.log("[RegistroSection] Registros actualizados:", newValues);
   };
 
-  // “No, no hay” — desmarca ambos si alguno está activo
   const handleNoTiene = () => {
     if (formValues.reproductivos || formValues.costosProductivos) {
       const newValues = { reproductivos: false, costosProductivos: false };
@@ -58,10 +55,12 @@ export function RegistroSection({ form }: RegistroSectionProps) {
   const noTiene = !formValues.reproductivos && !formValues.costosProductivos;
 
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9] mb-6">
+    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 rounded-full border-2 border-[#708C3E] flex items-center justify-center">
-          <span className="text-[#708C3E] font-medium">○</span>
+        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4 3a1 1 0 00-1 1v12a1 1 0 001.447.894L10 14.118l5.553 2.776A1 1 0 0017 16V4a1 1 0 00-1.553-.894L10 5.882 4.447 3.106A1 1 0 004 3z" />
+          </svg>
         </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">
           Registro y gestión de recursos en la finca
@@ -71,7 +70,7 @@ export function RegistroSection({ form }: RegistroSectionProps) {
       <div className="p-6 space-y-6">
         <div>
           <p className="text-sm font-medium text-[#4A4A4A] mb-3">
-            ¿Lleva registros en su finca? Marque todas las que posee.
+            ¿Lleva registros en su finca? Marque todas las que posee. *
           </p>
 
           <div className="space-y-2">

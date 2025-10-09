@@ -7,7 +7,7 @@ const personaSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
   apellido1: z.string().min(1, "El primer apellido es requerido"),
   apellido2: z.string().min(1, "El segundo apellido es requerido"),
-  fechaNacimiento: z.string().min(1, "La fecha de nacimiento es requerida"),
+  fechaNacimiento: z.string().min(1, "La fecha de nacimiento es requerida, no puede ser una fecha posterior a la actual"),
   telefono: z.string().min(8, "El teléfono debe tener al menos 8 dígitos"),
   email: z.string().email("Email inválido"),
   direccion: z.string().optional().or(z.literal("")),

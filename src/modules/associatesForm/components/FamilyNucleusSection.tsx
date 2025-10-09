@@ -38,11 +38,17 @@ export function NucleoFamiliarSection({ form }: NucleoFamiliarSectionProps) {
                   min="0"
                   value={field.state.value || ""}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    let value = parseInt(e.target.value, 10);
+                    if (isNaN(value) || value < 0) value = 0;
                     field.handleChange(value);
-                    setHombres(parseInt(value) || 0);
+                    setHombres(value);
                   }}
                   onBlur={field.handleBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="0"
                 />
@@ -61,14 +67,21 @@ export function NucleoFamiliarSection({ form }: NucleoFamiliarSectionProps) {
                   min="0"
                   value={field.state.value || ""}
                   onChange={(e) => {
-                    const value = e.target.value;
+                    let value = parseInt(e.target.value, 10);
+                    if (isNaN(value) || value < 0) value = 0;
                     field.handleChange(value);
-                    setMujeres(parseInt(value) || 0);
+                    setMujeres(value);
                   }}
                   onBlur={field.handleBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="0"
                 />
+
               </div>
             )}
           </form.Field>

@@ -66,20 +66,23 @@ export function FincaBasicInfo({ form }: FincaBasicInfoProps) {
               <div>
                 <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Área (Hectáreas) *</label>
                 <input
-                  type="text"
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[1-9][0-9]*"
                   value={f.state.value}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d.]/g, '');
-                    const parts = value.split('.');
-                    const filtered = parts.length > 2 
-                      ? parts[0] + '.' + parts.slice(1).join('') 
-                      : value;
-                    f.handleChange(filtered);
+                    // Elimina todo lo que no sea dígito
+                    let v = e.target.value.replace(/\D/g, '');
+                    // No permite ceros al inicio ni dejar vacío
+                    if (v !== "" && (v.startsWith("0") || parseInt(v) === 0)) v = "";
+                    f.handleChange(v);
                   }}
                   onBlur={f.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 15.50"
+                  placeholder="Ej: 12345"
+                  maxLength={50}
                 />
+
                 {f.state.meta.errors?.length > 0 && (
                   <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
                 )}

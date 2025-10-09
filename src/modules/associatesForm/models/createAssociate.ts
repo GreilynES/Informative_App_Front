@@ -80,6 +80,9 @@ export interface CreateSolicitudDto {
     reproductivos: boolean;
     costosProductivos: boolean;
   };
+
+  fuentesAgua?: CreateFuenteAguaDto[];
+  metodosRiego?: CreateMetodoRiegoDto[];
 }
 
 /**
@@ -149,6 +152,8 @@ export interface SolicitudResponse {
         reproductivos: boolean;
         costosProductivos: boolean;
       };
+      fuentesAgua?: CreateFuenteAguaDto[];
+      metodosRiego?: CreateMetodoRiegoDto[];
     }>;
   };
   propietario?: {
@@ -173,3 +178,12 @@ export interface SolicitudResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CreateFuenteAguaDto {
+  nombre: string;
+}
+
+export interface CreateMetodoRiegoDto {
+  tipo: string;
+}
+

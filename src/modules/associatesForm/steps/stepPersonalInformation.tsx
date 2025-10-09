@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 import { associateApplySchema } from "../schemas/associateApply";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { NucleoFamiliarSection } from "../components/FamilyNucleusSection";
+import { useEffect, useState } from "react";
 
 interface Step1Props {
   form: FormLike;
@@ -27,8 +28,52 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
     }
   };
 
+  const [showModal, setShowModal] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    // Solo lo muestra si no existe el flag en localStorage
+    const warned = localStorage.getItem("showModalAviso");
+    setShowModal(!warned);
+  }, []);
+
+  function handleClose() {
+    setIsVisible(false);
+    setTimeout(() => {
+      setShowModal(false);
+      localStorage.setItem("showModalAviso", "true"); // Marca como visto
+      setIsVisible(true); // opcional si reusas el modal en otro lado
+    }, 250);
+  }
   return (
+    <>
+    {showModal && (
+        <div
+          className={`
+            fixed inset-0 flex items-center justify-center z-50
+            bg-white/30 backdrop-blur-sm
+            transition-all duration-250
+            ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}
+          `}
+        >
+          <div className="bg-white p-8 rounded-xl shadow-xl max-w-lg mx-4 transition-all duration-250">
+            <h2 className="text-2xl font-semibold mb-3">Aviso importante</h2>
+            <p className="mb-6 text-lg">
+              Antes de empezar, tenga a mano copia de la cédula, copia del acta de finca o contrato de arriendo de finca. Estos documentos serán necesarios.
+            </p>
+            <button
+              onClick={handleClose}
+              className="px-5 py-2 bg-[#708C3E] text-white rounded hover:bg-[#5d7334] text-lg"
+            >
+              Entendido, continuar
+            </button>
+          </div>
+        </div>
+      )}
+
+{!showModal && (
     <div className="space-y-6">
+      
       {/* Información Personal */}
       <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
         <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -155,8 +200,21 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
                   <input
                     type="date"
+                    required
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      const inputDate = e.target.value;
+                      if (!inputDate) {
+                        // Campo obligatorio
+                        f.handleChange("");
+                      } else if (inputDate > maxDate) {
+                        // No permitir fechas posteriores a hoy ingresadas manualmente
+                        f.handleChange(today);
+                        
+                      } else {
+                        f.handleChange(inputDate);
+                      }
+                    }}
                     onBlur={f.handleBlur}
                     max={maxDate}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
@@ -278,19 +336,36 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Distancia a la finca (km) *</label>
                   <input
-                    type="text"
+                    type="number"
+                    min="1"
                     value={f.state.value}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^\d.]/g, '');
+                      // SOLO permite dígitos y punto decimal, elimina cualquier guion
+                      let value = e.target.value.replace(/[^\d.]/g, '');
+
+                      // Evita múltiples puntos decimales
                       const parts = value.split('.');
                       const filtered = parts.length > 2 
                         ? parts[0] + '.' + parts.slice(1).join('') 
                         : value;
+
+                      // Evita ingresar cero como primer dígito (solo permite números mayores a cero)
+                      if (filtered === "" || filtered === "0" || parseFloat(filtered) === 0) {
+                        f.handleChange(""); // vacía el campo si se intenta ingresar cero
+                        return;
+                      }
+
                       f.handleChange(filtered);
                     }}
                     onBlur={f.handleBlur}
                     placeholder="Ej: 12.50"
                     className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+                    onKeyDown={(e) => {
+                      // Previene ingreso de guion (-), e, y cero como primer dígito
+                      if (e.key === "-" || e.key === "e" || (e.key === "0" && !f.state.value)) {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                   {f.state.meta.errors?.length > 0 && (
                     <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
@@ -353,6 +428,7 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
                     type="text"
                     value={f.state.value}
                     onChange={(e) => f.handleChange(e.target.value)}
+                    placeholder="Ej: CVO-123456"
                     onBlur={f.handleBlur}
                     className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
                   />
@@ -374,5 +450,7 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
         disableNext={!canProceed}
       />
     </div>
+    )}
+    </>
   );
 }

@@ -1,50 +1,49 @@
-import React, { useEffect } from 'react';
-import type { FormLike } from '../../../shared/types/form-lite';
-import type { CreateHatoDto } from '../models/hatoInfoType';
+import React, { useEffect } from "react";
+import type { FormLike } from "../../../shared/types/form-lite";
 
 interface HatoFormProps {
   form: FormLike;
-  onNext: () => void;
+  onNext: () => void;  
   onPrev: () => void;
 }
 
 export function HatoSection({ form }: HatoFormProps) {
-  // Cargar lo que exista en el form global
+  // Levanta lo que haya guardado en el form global
   const hatoDataExistente = (form as any).state?.values?.hatoData;
 
-  const [formValues, setFormValues] = React.useState<CreateHatoDto>(
+  const [formValues, setFormValues] = React.useState<any>(
     hatoDataExistente || {
-      idFinca: 0, // el backend lo ignora en la transacción de solicitud
-      tipoExplotacion: '',
+      idFinca: 0,
+      tipoExplotacion: "",
       totalGanado: 0,
-      razaPredominante: '',
-      animales: [],
+      razaPredominante: "",
+      animales: [] as Array<{ id?: string; nombre: string; edad: string; cantidad: string }>,
     }
   );
 
   const [currentAnimal, setCurrentAnimal] = React.useState({
-    nombre: '',
-    edad: '',
-    cantidad: '',
+    nombre: "",
+    edad: "",
+    cantidad: "",
   });
 
-  // Calcular automáticamente el total del hato
+  // Calcula total automáticamente
   useEffect(() => {
-    const total = (formValues.animales || []).reduce((sum: number, animal: any) => {
-      return sum + (parseInt(animal.cantidad) || 0);
+    const total = (formValues.animales || []).reduce((sum: number, a: any) => {
+      return sum + (parseInt(a.cantidad) || 0);
     }, 0);
 
     if (total !== formValues.totalGanado) {
-      setFormValues((prev) => ({ ...prev, totalGanado: total }));
+      setFormValues((prev: any) => ({ ...prev, totalGanado: total }));
     }
   }, [formValues.animales]);
 
-  // 🔄 Sincronizar SIEMPRE con el form global (sin necesitar botón/submit local)
+  // Sincroniza con el form global cuando cambie algo relevante
   useEffect(() => {
-    (form as any).setFieldValue('hatoData', {
+    (form as any).setFieldValue("hatoData", {
       tipoExplotacion: formValues.tipoExplotacion,
-      totalGanado: String(formValues.totalGanado), // el hook lo parsea a number
-      razaPredominante: formValues.razaPredominante || '',
+      totalGanado: String(formValues.totalGanado),
+      razaPredominante: formValues.razaPredominante || "",
       animales: formValues.animales || [],
       idFinca: 0,
     });
@@ -52,23 +51,23 @@ export function HatoSection({ form }: HatoFormProps) {
 
   const agregarAnimal = () => {
     if (!currentAnimal.nombre || !currentAnimal.edad || !currentAnimal.cantidad) {
-      alert('Por favor completa todos los campos del animal');
+      alert("Por favor completa todos los campos del animal");
       return;
     }
 
-    const nuevoAnimal = {
+    const nuevo = {
       id: Date.now().toString(),
-      nombre: currentAnimal.nombre,
+      nombre: currentAnimal.nombre.trim(),
       edad: currentAnimal.edad,
       cantidad: currentAnimal.cantidad,
     };
 
     setFormValues((prev: any) => ({
       ...prev,
-      animales: [...(prev.animales || []), nuevoAnimal],
+      animales: [...(prev.animales || []), nuevo],
     }));
 
-    setCurrentAnimal({ nombre: '', edad: '', cantidad: '' });
+    setCurrentAnimal({ nombre: "", edad: "", cantidad: "" });
   };
 
   const eliminarAnimal = (id: string) => {
@@ -79,10 +78,10 @@ export function HatoSection({ form }: HatoFormProps) {
   };
 
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9] mb-6">
-      {/* 🔧 IMPORTANTE: ya no hay <form> aquí dentro */}
+    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+      {/* Header */}
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 rounded-full bg-[#708C3E] flex items-center justify-center text-white">
+        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
           </svg>
@@ -90,7 +89,9 @@ export function HatoSection({ form }: HatoFormProps) {
         <h3 className="text-lg font-semibold text-[#708C3E]">Descripción del hato ganadero</h3>
       </div>
 
+      {/* Body */}
       <div className="p-6 space-y-4">
+        {/* Campos principales */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
@@ -102,7 +103,6 @@ export function HatoSection({ form }: HatoFormProps) {
               onChange={(e) => setFormValues({ ...formValues, tipoExplotacion: e.target.value })}
               placeholder="Intensivo, extensivo o mixto"
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              required
             />
           </div>
 
@@ -110,7 +110,7 @@ export function HatoSection({ form }: HatoFormProps) {
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Raza predominante</label>
             <input
               type="text"
-              value={formValues.razaPredominante || ''}
+              value={formValues.razaPredominante || ""}
               onChange={(e) => setFormValues({ ...formValues, razaPredominante: e.target.value })}
               placeholder="Brahman, Holstein, Criollo, etc."
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
@@ -118,59 +118,59 @@ export function HatoSection({ form }: HatoFormProps) {
           </div>
         </div>
 
-        {/* Agregar animales */}
-        <div>
-          <p className="text-sm text-gray-600 mb-3">
-            Los números de hembras y machos hacen referencia a la edad en años de los animales.
-          </p>
+        {/* Sección agregar animales */}
+        <p className="text-sm text-gray-600">
+          Los números de hembras y machos hacen referencia a la edad en años de los animales.
+        </p>
 
-          <div className="grid md:grid-cols-4 gap-4 items-end">
-            <div>
-              <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Animal</label>
-              <input
-                type="text"
-                value={currentAnimal.nombre}
-                onChange={(e) => setCurrentAnimal({ ...currentAnimal, nombre: e.target.value })}
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                placeholder="Ej: Vaca"
-              />
-            </div>
+        <div className="grid md:grid-cols-4 gap-4 items-end">
+          <div>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Animal</label>
+            <input
+              type="text"
+              value={currentAnimal.nombre}
+              onChange={(e) => setCurrentAnimal({ ...currentAnimal, nombre: e.target.value })}
+              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              placeholder="Ej: Vaca"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Edad</label>
-              <input
-                type="number"
-                value={currentAnimal.edad}
-                onChange={(e) => setCurrentAnimal({ ...currentAnimal, edad: e.target.value })}
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                placeholder="Años"
-                min="0"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Edad</label>
+            <input
+              type="number"
+              value={currentAnimal.edad}
+              onChange={(e) => setCurrentAnimal({ ...currentAnimal, edad: e.target.value })}
+              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              placeholder="Años"
+              min="0"
+            />
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cantidad</label>
-              <input
-                type="number"
-                value={currentAnimal.cantidad}
-                onChange={(e) => setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value })}
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                placeholder="Cantidad"
-                min="1"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cantidad</label>
+            <input
+              type="number"
+              value={currentAnimal.cantidad}
+              onChange={(e) => setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value })}
+              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              placeholder="Cantidad"
+              min="1"
+            />
+          </div>
 
+          <div className="flex gap-2 mt-4">
             <button
               type="button"
               onClick={agregarAnimal}
-              className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+              className="flex-1 px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
             >
               Agregar
             </button>
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Tabla animales */}
         {Array.isArray(formValues.animales) && formValues.animales.length > 0 && (
           <div className="overflow-x-auto border border-[#CFCFCF] rounded-md">
             <table className="w-full">
@@ -184,15 +184,18 @@ export function HatoSection({ form }: HatoFormProps) {
               </thead>
               <tbody>
                 {formValues.animales.map((animal: any, idx: number) => (
-                  <tr key={animal.id || idx} className={idx !== formValues.animales.length - 1 ? "border-b border-[#CFCFCF]" : ""}>
-                    <td className="px-4 py-3 text-sm">{animal.nombre}</td>
-                    <td className="px-4 py-3 text-sm">{animal.edad}</td>
-                    <td className="px-4 py-3 text-sm">{animal.cantidad}</td>
+                  <tr
+                    key={animal.id || idx}
+                    className={idx !== formValues.animales.length - 1 ? "border-b border-[#CFCFCF]" : ""}
+                  >
+                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.nombre}</td>
+                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.edad}</td>
+                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.cantidad}</td>
                     <td className="px-4 py-3 text-center">
                       <button
                         type="button"
                         onClick={() => eliminarAnimal(animal.id)}
-                        className="px-3 py-1 border border-[#CFCFCF] rounded text-sm hover:bg-red-50 hover:text-red-600"
+                        className="px-3 py-1 border border-[#CFCFCF] rounded text-sm text-[#4A4A4A] hover:bg-red-50 hover:text-red-600 transition-colors"
                       >
                         Eliminar
                       </button>
@@ -204,7 +207,7 @@ export function HatoSection({ form }: HatoFormProps) {
           </div>
         )}
 
-        {/* Total */}
+        {/* Total del hato */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
             Total del hato <span className="text-red-500">*</span>
@@ -213,7 +216,7 @@ export function HatoSection({ form }: HatoFormProps) {
             type="number"
             value={String(formValues.totalGanado)}
             readOnly
-            className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
+            className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed"
             placeholder="Se calcula automáticamente"
           />
           <p className="text-xs text-gray-500 mt-1">

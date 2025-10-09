@@ -2,6 +2,7 @@ import type { FormLike } from "../../../shared/types/form-lite";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { ForrajeSection } from "../../fincaForm/components/ForrajeSection";
 import { RegistroSection } from "../../fincaForm/components/RegistroSection";
+import { FuenteAguaSection } from "../../fincaForm/components/FuenteAguaSection";
 
 interface Step3Props {
   form: FormLike;
@@ -14,6 +15,7 @@ export function Step3({ form, onNext, onPrev }: Step3Props) {
     <div className="space-y-6">
       <ForrajeSection form={form} />
       <RegistroSection form={form} />
+      <FuenteAguaSection form={form} />
 
       <NavigationButtons 
         onPrev={onPrev} 

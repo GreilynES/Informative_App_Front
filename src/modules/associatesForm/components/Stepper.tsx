@@ -2,7 +2,7 @@
 const stepLabels = [
   "Información",
   "Finca",
-  "Forraje, Registro ",
+  "Forraje, Registro\n y Fuentes",
   "Documentos",
   "Confirmación"
 ];
