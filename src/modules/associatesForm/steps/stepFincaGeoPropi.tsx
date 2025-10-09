@@ -3,7 +3,7 @@ import { NavigationButtons } from "../components/NavigationButtons";
 import { FincaBasicInfo } from "../../fincaForm/components/FincaBasicInfo";
 import { GeografiaSection } from "../../fincaForm/components/GeografiaSection";
 import { PropietarioSection} from "../../fincaForm/components/PropieatarioSection";
-import { HatoForm} from "../../fincaForm/components/HatoSection";
+import { HatoSection} from "../../fincaForm/components/HatoSection";
 
 interface Step2Props {
   form: FormLike;
@@ -18,7 +18,7 @@ export function Step2({ form, onNext, onPrev, canProceed }: Step2Props) {
       <FincaBasicInfo form={form} />
       <GeografiaSection form={form} />
       <PropietarioSection form={form}/>
-      <HatoForm idFinca={0} onNext={onNext} onPrev={onPrev} />
+      <HatoSection form={form} onNext={onNext} onPrev={onPrev} />
 
       <NavigationButtons 
         onPrev={onPrev} 

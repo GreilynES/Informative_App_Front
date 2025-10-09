@@ -1,5 +1,3 @@
-// src/modules/associatesForm/hooks/useAssociateApply.ts
-
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { type AssociateApplyValues } from "../schemas/associateApply";
@@ -56,7 +54,6 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
   const esPropietario = (values as any).esPropietario;
 
   if (esPropietario === false) {
-    // Caso 1: El asociado NO es el propietario - enviar datos del propietario
     console.log("[Hook] El asociado NO es el propietario - enviando datos del propietario");
     
     payload.propietario = {
@@ -75,6 +72,53 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       },
     };
   }
+
+  // LÓGICA DEL HATO
+  const hatoData = (values as any).hatoData;
+  if (hatoData) {
+    payload.hato = {
+      idFinca: 0,
+      tipoExplotacion: hatoData.tipoExplotacion,
+      totalGanado: parseInt(hatoData.totalGanado),
+      ...(hatoData.razaPredominante && { razaPredominante: hatoData.razaPredominante }),
+    };
+  
+    if (Array.isArray(hatoData.animales) && hatoData.animales.length > 0) {
+      // ⬇️ Cambio clave: enviar nombre/edad (lo que la tabla espera)
+      payload.animales = hatoData.animales.map((a: any) => ({
+        nombre: a.nombre,                 // antes: tipoAnimal
+        edad: parseInt(a.edad),           // antes: edadAnios
+        cantidad: parseInt(a.cantidad),
+        // idHato lo asigna el back en la transacción
+      }));
+    }
+  }
+
+ // --- FORRAJES ---
+const forrajes = (values as any).forrajes;
+if (Array.isArray(forrajes) && forrajes.length > 0) {
+  const mapeados = forrajes
+    .filter((f: any) => f?.tipoForraje && f?.variedad && f?.utilizacion && Number(f?.hectareas) > 0)
+    .map((f: any) => ({
+      tipoForraje: String(f.tipoForraje).trim(),
+      variedad: String(f.variedad).trim(),
+      hectareas: Number(f.hectareas),        // número
+      utilizacion: String(f.utilizacion).trim(),
+    }));
+
+  if (mapeados.length > 0) {
+    payload.forrajes = mapeados;
+  }
+}
+
+// --- REGISTROS PRODUCTIVOS ---
+const registrosProductivos = (values as any).registrosProductivos;
+if (registrosProductivos) {
+  payload.registrosProductivos = {
+    reproductivos: Boolean(registrosProductivos.reproductivos),
+    costosProductivos: Boolean(registrosProductivos.costosProductivos),
+  };
+}
 
   console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
   
@@ -155,6 +199,11 @@ export function useAssociateApply(onSuccess?: () => void) {
       propietarioEmail: "",
       propietarioDireccion: "",
       propietarioFechaNacimiento: "",
+
+      // NUEVOS CAMPOS
+      hatoData: null as any, // Guardará: { tipoExplotacion, totalGanado, razaPredominante, animales: [] }
+      forrajes: [] as any[], // Array de forrajes
+      registrosProductivos: null as any, // { reproductivos: boolean, costosProductivos: boolean }
     },
     onSubmit: async ({ value, formApi }) => {
       console.log("[Hook] Submit iniciado");

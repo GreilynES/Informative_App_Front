@@ -37,7 +37,7 @@ const apiConfig = {
     return { data };
   },
 
-  async post<T>(url: string, body: any, p0: { headers: { "Content-Type": string; }; }): Promise<{ data: T } > {
+  async post<T>(url: string, body: any, _p0: { headers: { "Content-Type": string; }; }): Promise<{ data: T } > {
     const response = await fetch(`${BASE_URL}${url}`, {
       method: 'POST',
       headers: getHeaders(),

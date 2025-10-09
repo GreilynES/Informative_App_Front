@@ -1,118 +1,128 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { createHato, createAnimal} from '../services/hatoService';
+import { createHato, createAnimal } from '../services/hatoService';
 import type { CreateHatoDto, CreateAnimalDto } from '../models/hatoInfoType';
 
-interface AnimalForm {
-  id: string;
-  nombre: string;
-  edad: string;
-  cantidad: string;
-}
-
-interface HatoFormValues {
-  tipoExplotacion: string;
-  totalGanado: string;
-  razaPredominante: string;
-  animales: AnimalForm[];
-}
-
 export function useHatoForm(idFinca: number, onSuccess?: () => void) {
-  const [formValues, setFormValues] = useState<HatoFormValues>({
+  const [formValues, setFormValues] = useState<
+    Omit<CreateHatoDto, 'idFinca' | 'totalGanado' | 'animales'> & { totalGanado: string }
+  >({
     tipoExplotacion: '',
-    totalGanado: '',
     razaPredominante: '',
-    animales: [],
+    totalGanado: '',
   });
 
-  const [currentAnimal, setCurrentAnimal] = useState({
-    nombre: '',
-    edad: '',
+  // Estado para animales “en edición” (strings para inputs)
+  const [animalsInput, setAnimalsInput] = useState<
+    Array<
+      Pick<CreateAnimalDto, 'tipoAnimal'> & {
+        edadAnios: string;
+        cantidad: string;
+        _localId: string; // solo para la UI
+      }
+    >
+  >([]);
+
+  const [currentAnimal, setCurrentAnimal] = useState<
+    Pick<CreateAnimalDto, 'tipoAnimal'> & { edadAnios: string; cantidad: string }
+  >({
+    tipoAnimal: '',
+    edadAnios: '',
     cantidad: '',
   });
 
-  // Mutación para crear el hato
   const hatoMutation = useMutation({
-    mutationFn: async (values: HatoFormValues) => {
-      console.log("[Hook] Creando hato para finca:", idFinca);
-      
+    mutationFn: async () => {
+      // 1) Crear Hato (sin forrajes aquí, y sin animales en el payload)
+      const total = Number.parseInt(formValues.totalGanado, 10);
       const hatoPayload: CreateHatoDto = {
         idFinca,
-        tipoExplotacion: values.tipoExplotacion,
-        totalGanado: parseInt(values.totalGanado),
-        ...(values.razaPredominante && { razaPredominante: values.razaPredominante }),
+        tipoExplotacion: formValues.tipoExplotacion.trim(),
+        totalGanado: Number.isFinite(total) ? total : 0,
+        ...(formValues.razaPredominante?.trim()
+          ? { razaPredominante: formValues.razaPredominante.trim() }
+          : {}),
+        animales: [], // ← requerido por el tipo, pero enviamos vacío; los creamos luego
       };
 
       const hato = await createHato(hatoPayload);
-      console.log("[Hook] Hato creado con ID:", hato.idHato);
 
-      // Crear los animales si hay
-      if (values.animales.length > 0) {
-        console.log("[Hook] Creando", values.animales.length, "animales...");
-        
-        const animalPromises = values.animales.map((animal) => {
+      // 2) Crear Animales (si hay)
+      if (animalsInput.length > 0) {
+        const promises = animalsInput.map((a) => {
+          const edad = Number.parseInt(a.edadAnios, 10);
+          const cant = Number.parseInt(a.cantidad, 10);
           const animalPayload: CreateAnimalDto = {
             idHato: hato.idHato,
-            tipoAnimal: animal.nombre,
-            edadAnios: parseInt(animal.edad),
-            cantidad: parseInt(animal.cantidad),
+            tipoAnimal: a.tipoAnimal.trim(),
+            edadAnios: Number.isFinite(edad) ? edad : 0,
+            cantidad: Number.isFinite(cant) ? cant : 0,
           };
           return createAnimal(animalPayload);
         });
 
-        await Promise.all(animalPromises);
-        console.log("[Hook] ✅ Todos los animales creados");
+        await Promise.all(promises);
       }
 
       return hato;
     },
     onSuccess: () => {
-      console.log("[Hook] ✅ Proceso completado exitosamente");
       onSuccess?.();
     },
     onError: (error: any) => {
-      console.error("[Hook] ❌ Error en el proceso:", error);
+      console.error('[useHatoForm] Error:', error?.message || error);
     },
   });
 
+  // Helpers UI
   const agregarAnimal = () => {
-    if (!currentAnimal.nombre || !currentAnimal.edad || !currentAnimal.cantidad) {
+    if (
+      !currentAnimal.tipoAnimal.trim() ||
+      !currentAnimal.edadAnios.trim() ||
+      !currentAnimal.cantidad.trim()
+    ) {
       alert('Por favor completa todos los campos del animal');
       return;
     }
 
-    const nuevoAnimal: AnimalForm = {
-      id: Date.now().toString(),
-      nombre: currentAnimal.nombre,
-      edad: currentAnimal.edad,
-      cantidad: currentAnimal.cantidad,
-    };
+    setAnimalsInput((prev) => [
+      ...prev,
+      {
+        _localId: Date.now().toString(),
+        tipoAnimal: currentAnimal.tipoAnimal,
+        edadAnios: currentAnimal.edadAnios,
+        cantidad: currentAnimal.cantidad,
+      },
+    ]);
 
-    setFormValues({
-      ...formValues,
-      animales: [...formValues.animales, nuevoAnimal],
-    });
+    setCurrentAnimal({ tipoAnimal: '', edadAnios: '', cantidad: '' });
 
-    setCurrentAnimal({ nombre: '', edad: '', cantidad: '' });
+    // Si quieres calcular totalGanado automáticamente desde animales:
+    const nuevoTotal =
+      animalsInput.reduce((acc, a) => acc + (parseInt(a.cantidad, 10) || 0), 0) +
+      (parseInt(currentAnimal.cantidad, 10) || 0);
+
+    setFormValues((prev) => ({ ...prev, totalGanado: String(nuevoTotal) }));
   };
 
-  const eliminarAnimal = (id: string) => {
-    setFormValues({
-      ...formValues,
-      animales: formValues.animales.filter(a => a.id !== id),
+  const eliminarAnimal = (localId: string) => {
+    setAnimalsInput((prev) => {
+      const filtrados = prev.filter((a) => a._localId !== localId);
+      const nuevoTotal = filtrados.reduce((acc, a) => acc + (parseInt(a.cantidad, 10) || 0), 0);
+      setFormValues((fv) => ({ ...fv, totalGanado: String(nuevoTotal) }));
+      return filtrados;
     });
   };
 
   const handleSubmit = async () => {
-    if (!formValues.tipoExplotacion || !formValues.totalGanado) {
+    if (!formValues.tipoExplotacion || formValues.totalGanado === '') {
       alert('Por favor completa los campos obligatorios');
       return false;
     }
-
     try {
-      await hatoMutation.mutateAsync(formValues);
+      await hatoMutation.mutateAsync();
       return true;
-    } catch (err) {
+    } catch {
       return false;
     }
   };
@@ -122,6 +132,8 @@ export function useHatoForm(idFinca: number, onSuccess?: () => void) {
     setFormValues,
     currentAnimal,
     setCurrentAnimal,
+    animalsInput,
+    setAnimalsInput,
     agregarAnimal,
     eliminarAnimal,
     handleSubmit,

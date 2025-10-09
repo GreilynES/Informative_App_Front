@@ -2,14 +2,14 @@ import type { FormLike } from "../../../shared/types/form-lite";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { DocumentUpload } from "../components/DocumentUpload";
 
-interface Step3Props {
+interface Step4Props {
   form: FormLike;
   onNext: () => void;
   onPrev: () => void;
   canProceed: boolean;
 }
 
-export function Step3({ form, onNext, onPrev, canProceed }: Step3Props) {
+export function Step4({ form, onNext, onPrev, canProceed }: Step4Props) {
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">

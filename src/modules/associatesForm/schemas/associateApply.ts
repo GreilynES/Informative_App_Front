@@ -66,3 +66,33 @@ export const associateApplySchema = z.object({
 });
 
 export type AssociateApplyValues = z.infer<typeof associateApplySchema>;
+
+export const forrajeSchema = z.object({
+  tipoForraje: z
+    .string()
+    .min(1, "El tipo de forraje es requerido"),
+    
+  variedad: z
+    .string()
+    .min(3, "La variedad es requerida (mínimo 3 caracteres)")
+    .max(100, "Máximo 100 caracteres"),
+    
+    hectareas: z
+    .number()
+    .refine((val) => !isNaN(val), { message: "Debe ser un número válido" })
+    .positive("Las hectáreas deben ser mayores a 0")
+    .max(9999, "Cantidad demasiado alta"),
+    
+  utilizacion: z
+    .string()
+    .min(3, "La utilización es requerida (mínimo 3 caracteres)")
+    .max(150, "Máximo 150 caracteres"),
+});
+
+export type ForrajeValues = z.infer<typeof forrajeSchema>;
+
+// Validación para la lista completa de forrajes
+export const forrajeListSchema = z
+  .array(forrajeSchema)
+  .min(1, "Debe registrar al menos un tipo de forraje")
+  .max(10, "Se pueden registrar hasta 10 tipos de forraje");

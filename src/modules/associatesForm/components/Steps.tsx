@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { associateApplySchema } from "../../associatesForm/schemas/associateApply";
 import { Step1 } from "../../associatesForm/steps/stepPersonalInformation";
 import { Step2 } from "../../associatesForm/steps/stepFincaGeoPropi";
-import { Step3 } from "../../associatesForm/steps/stepDocumentsUpload";
-import { Step4 } from "../../associatesForm/steps/stepConfirmation";
+import { Step4 } from "../../associatesForm/steps/stepDocumentsUpload";
+import { Step5  } from "../../associatesForm/steps/stepConfirmation";
+import { Step3 } from "../../associatesForm/steps/stepForrajeRegisto";
 
 interface StepsProps {
   step: number;
@@ -118,16 +119,39 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
         
         return result;
       }
-  
+
       case 3: {
-        const step3Valid = 
+        const values = (form as any).state.values;
+
+        const hasForrajes = values.forrajes && values.forrajes.length > 0;
+        const hasRegistros = values.registrosProductivos !== null;
+
+        // Valida los documentos también si querés
+        const docsValid =
           values.idCopy !== null && values.idCopy !== undefined &&
           values.farmMap !== null && values.farmMap !== undefined;
-        
+
+        const step3Valid = hasForrajes && hasRegistros && docsValid;
+
+        console.log("[Steps] Step 3 validation:", {
+          hasForrajes,
+          hasRegistros,
+          docsValid,
+          result: step3Valid,
+        });
+
         return step3Valid;
       }
   
       case 4: {
+        const step4Valid = 
+          values.idCopy !== null && values.idCopy !== undefined &&
+          values.farmMap !== null && values.farmMap !== undefined;
+        
+        return step4Valid;
+      }
+  
+      case 5: {
         return !!values.acceptTerms;
       }
   
@@ -170,6 +194,14 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
 
       {step === 3 && (
         <Step3
+          form={form}
+          onPrev={prevStep} 
+          onNext={nextStep}
+        />
+      )}
+
+      {step === 4 && (
+        <Step4
           form={form} 
           onPrev={prevStep} 
           onNext={nextStep}
@@ -177,8 +209,8 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
         />
       )}
 
-      {step === 4 && (
-        <Step4
+      {step === 5 && (
+        <Step5
           form={form} 
           onPrev={prevStep} 
           isSubmitting={isSubmitting}
