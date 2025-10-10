@@ -1,6 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 import type { ForrajeItem } from "../models/forrajeInfoType";
+import { forrajeItemSchema } from "../../fincaForm/schema/fincaSchema";
+
+/** Componente de error con alto fijo para no mover el layout */
+function FieldError({ msg }: { msg?: string }) {
+  return (
+    <p className={`mt-1 h-5 text-sm ${msg ? "text-red-600" : "text-transparent"}`}>
+      {msg || "placeholder"}
+    </p>
+  );
+}
 
 interface ForrajeSectionProps {
   form: FormLike;
@@ -21,6 +31,16 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
     hectareas: 0,
     utilizacion: "",
   });
+
+  // Errores por campo
+  const [errors, setErrors] = React.useState<{
+    tipoForraje?: string;
+    variedad?: string;
+    hectareas?: string;
+    utilizacion?: string;
+  }>({});
+
+  // Banner general
   const [error, setError] = React.useState<string | null>(null);
 
   // Sincroniza con el form global
@@ -28,14 +48,32 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
     (form as any).setFieldValue("forrajes", forrajes);
   }, [forrajes, form]);
 
+  // ---- Helpers ----
+  const validateDraft = (draft: ForrajeDraft) => {
+    const parsed = forrajeItemSchema.safeParse(draft);
+    if (parsed.success) return {};
+    const fieldErrs: typeof errors = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0] as keyof typeof errors;
+      fieldErrs[key] = issue.message;
+    }
+    return fieldErrs;
+  };
+
+  const onBlurField = (key: keyof ForrajeDraft, value: string | number) => {
+    const next: ForrajeDraft = { ...currentForraje, [key]: value } as ForrajeDraft;
+    const fieldErrs = validateDraft(next);
+    setErrors((prev) => ({ ...prev, [key]: fieldErrs[key] }));
+  };
+
+  // ✅ Solo letras (tildes/ñ/ü) y espacios
+  const keepLetters = (s: string) => s.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
+
   const agregarForraje = () => {
-    // Validaciones básicas (+ no negativos)
-    if (
-      !currentForraje.tipoForraje.trim() ||
-      !currentForraje.variedad.trim() ||
-      !currentForraje.utilizacion.trim() ||
-      currentForraje.hectareas <= 0
-    ) {
+    const fieldErrs = validateDraft(currentForraje);
+    setErrors(fieldErrs);
+
+    if (Object.keys(fieldErrs).length > 0) {
       setError(
         "Por favor complete todos los campos correctamente (las hectáreas deben ser mayores a 0)."
       );
@@ -50,10 +88,9 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
       utilizacion: currentForraje.utilizacion.trim(),
     };
 
-    const nuevos = [...forrajes, nuevoForraje];
-    setForrajes(nuevos);
+    setForrajes((prev) => [...prev, nuevoForraje]);
 
-    // Reset del draft
+    // Reset
     setCurrentForraje({
       tipoForraje: "",
       variedad: "",
@@ -61,14 +98,14 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
       utilizacion: "",
     });
 
+    setErrors({});
     setError(null);
     console.log("[ForrajeSection] Forraje agregado:", nuevoForraje);
   };
 
   const eliminarForraje = (id: number | undefined) => {
     if (!id) return;
-    const nuevos = forrajes.filter((f) => f.id !== id);
-    setForrajes(nuevos);
+    setForrajes((prev) => prev.filter((f) => f.id !== id));
     console.log("[ForrajeSection] Forraje eliminado:", id);
   };
 
@@ -98,7 +135,8 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
         )}
 
         {/* Draft */}
-        <div className="grid md:grid-cols-4 gap-4 items-end">
+        <div className="grid md:grid-cols-5 gap-4 items-start">
+          {/* Tipo */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Tipo *
@@ -108,6 +146,7 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
               onChange={(e) =>
                 setCurrentForraje({ ...currentForraje, tipoForraje: e.target.value })
               }
+              onBlur={(e) => onBlurField("tipoForraje", e.target.value)}
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
             >
               <option value="">Seleccione</option>
@@ -117,8 +156,10 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
               <option value="Banco de proteína">Banco de proteína</option>
               <option value="Otro">Otro</option>
             </select>
+            <FieldError msg={errors.tipoForraje} />
           </div>
 
+          {/* Variedad (solo letras) */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Variedad *
@@ -127,13 +168,19 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
               type="text"
               value={currentForraje.variedad}
               onChange={(e) =>
-                setCurrentForraje({ ...currentForraje, variedad: e.target.value })
+                setCurrentForraje({ ...currentForraje, variedad: keepLetters(e.target.value) })
               }
-              placeholder="Ej: Estrella africana, Cuba 22..."
+              onBlur={(e) => onBlurField("variedad", e.target.value)}
+              placeholder="Ej: Estrella africana"
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              maxLength={75}
+              inputMode="text"
+              pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]*"
             />
+            <FieldError msg={errors.variedad} />
           </div>
 
+          {/* Hectáreas */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Hectáreas *
@@ -149,10 +196,14 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
                   hectareas: parseFloat(e.target.value) || 0,
                 })
               }
+              // pasamos string al validador para evitar NaN
+              onBlur={(e) => onBlurField("hectareas", e.target.value)}
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
             />
+            <FieldError msg={errors.hectareas} />
           </div>
 
+          {/* Utilización (solo letras) */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Utilización *
@@ -161,21 +212,31 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
               type="text"
               value={currentForraje.utilizacion}
               onChange={(e) =>
-                setCurrentForraje({ ...currentForraje, utilizacion: e.target.value })
+                setCurrentForraje({ ...currentForraje, utilizacion: keepLetters(e.target.value) })
               }
-              placeholder="Alimentación directa, ensilaje, heno..."
+              onBlur={(e) => onBlurField("utilizacion", e.target.value)}
+              placeholder="Alimentación directa"
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              maxLength={75}
+              inputMode="text"
+              pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]*"
             />
+            <FieldError msg={errors.utilizacion} />
           </div>
 
-          <div className="flex gap-2 mt-4">
+          {/* Botón (alineado con inputs) */}
+          <div className="flex flex-col">
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1 invisible">
+              Acción
+            </label>
             <button
               type="button"
               onClick={agregarForraje}
-              className="flex-1 px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+              className="w-full px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
             >
               Agregar
             </button>
+            <div className="h-5" />
           </div>
         </div>
 

@@ -1,8 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
+import {
+  fuenteAguaItemSchema,
+  metodoRiegoItemSchema,
+} from "../../fincaForm/schema/fincaSchema";
 
 interface FuenteAguaSectionProps {
   form: FormLike;
+}
+
+/** Error con alto fijo para no mover el layout */
+function FieldError({ msg }: { msg?: string }) {
+  return (
+    <p className={`mt-1 h-5 text-sm ${msg ? "text-red-600" : "text-transparent"}`}>
+      {msg || "placeholder"}
+    </p>
+  );
 }
 
 export function FuenteAguaSection({ form }: FuenteAguaSectionProps) {
@@ -32,7 +45,15 @@ export function FuenteAguaSection({ form }: FuenteAguaSectionProps) {
   const [fuentesText, setFuentesText] = useState<string>(initialFuentesText);
   const [riegoText, setRiegoText] = useState<string>(initialRiegoText);
 
-  // Helper: parsea por líneas o comas, quita duplicados y vacíos
+  // Errores por textarea
+  const [fuentesError, setFuentesError] = useState<string>("");
+  const [riegoError, setRiegoError] = useState<string>("");
+
+  // Sanitiza: permite letras (con tildes/ñ/ü), espacios, comas y saltos de línea
+  const sanitizeTextarea = (s: string) =>
+    s.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s,\n]/g, "");
+
+  // parsea por líneas o comas, quita duplicados y vacíos
   const parseList = (text: string) => {
     return Array.from(
       new Set(
@@ -42,6 +63,35 @@ export function FuenteAguaSection({ form }: FuenteAguaSectionProps) {
           .filter((t) => t.length > 0)
       )
     );
+  };
+
+  // Validar textareas con Zod (requeridos + 150 por línea + solo letras/espacios)
+  const validateFuentes = (text: string) => {
+    const items = parseList(text).map((nombre) => ({ nombre }));
+    if (items.length === 0) return "Debe registrar al menos una fuente de agua";
+    for (let i = 0; i < items.length; i++) {
+      const r = fuenteAguaItemSchema.safeParse(items[i]);
+      if (!r.success) {
+        const msg = r.error.issues[0]?.message || "Dato inválido";
+        // SIN “(línea X)”
+        return msg;
+      }
+    }
+    return "";
+  };
+
+  const validateRiego = (text: string) => {
+    const items = parseList(text).map((tipo) => ({ tipo }));
+    if (items.length === 0) return "Debe registrar al menos un método de riego";
+    for (let i = 0; i < items.length; i++) {
+      const r = metodoRiegoItemSchema.safeParse(items[i]);
+      if (!r.success) {
+        const msg = r.error.issues[0]?.message || "Dato inválido";
+        // SIN “(línea X)”
+        return msg;
+      }
+    }
+    return "";
   };
 
   // Sincroniza con el form global cada vez que cambie el textarea
@@ -73,15 +123,21 @@ export function FuenteAguaSection({ form }: FuenteAguaSectionProps) {
         {/* Fuentes de agua */}
         <div>
           <label className="block text-lg font-medium text-[#4A4A4A] mb-3">
-            ¿Qué fuentes de agua existen en la finca?
+            ¿Qué fuentes de agua existen en la finca? *
           </label>
           <textarea
             value={fuentesText}
-            onChange={(e) => setFuentesText(e.target.value)}
+            onChange={(e) => {
+              setFuentesText(sanitizeTextarea(e.target.value));
+              if (fuentesError) setFuentesError("");
+            }}
+            onBlur={(e) => setFuentesError(validateFuentes(e.target.value))}
             placeholder="Ejemplos: Pozo, Naciente, Quebrada La Esperanza, Río Grande…&#10;(Puedes separar por coma o una por línea)"
             className="w-full min-h-[112px] px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            maxLength={150}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <FieldError msg={fuentesError} />
+          <p className="text-xs text-gray-500">
             Separa por comas o ingresa una por línea. Guardamos cada una como un registro.
           </p>
         </div>
@@ -89,15 +145,21 @@ export function FuenteAguaSection({ form }: FuenteAguaSectionProps) {
         {/* Métodos de riego */}
         <div>
           <label className="block text-lg font-medium text-[#4A4A4A] mb-3">
-            ¿Qué tipos de riego para forraje o cultivos tiene en su finca?
+            ¿Qué tipos de riego para forraje o cultivos tiene en su finca? *
           </label>
           <textarea
             value={riegoText}
-            onChange={(e) => setRiegoText(e.target.value)}
+            onChange={(e) => {
+              setRiegoText(sanitizeTextarea(e.target.value));
+              if (riegoError) setRiegoError("");
+            }}
+            onBlur={(e) => setRiegoError(validateRiego(e.target.value))}
             placeholder="Ejemplos: Gravedad, Aspersión, Goteo, Riego por manguera…&#10;(Puedes separar por coma o una por línea)"
             className="w-full min-h-[112px] px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            maxLength={150}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <FieldError msg={riegoError} />
+          <p className="text-xs text-gray-500">
             Separa por comas o ingresa una por línea. Guardamos cada tipo como un registro.
           </p>
         </div>
