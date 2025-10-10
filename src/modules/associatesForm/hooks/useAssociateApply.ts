@@ -140,29 +140,55 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       const objetos = fuentesAgua
         .filter((f: any) => f?.nombre)
         .map((f: any) => ({ nombre: String(f.nombre).trim() }));
-      if ( objetos.length > 0) payload.fuentesAgua = objetos;
+      if (objetos.length > 0) payload.fuentesAgua = objetos;
     }
   }
 
-const metodosRiego = (values as any).metodosRiego;
-if (Array.isArray(metodosRiego) && metodosRiego.length > 0) {
-  const asStrings = normalizeStringList(metodosRiego);
+  const metodosRiego = (values as any).metodosRiego;
+  if (Array.isArray(metodosRiego) && metodosRiego.length > 0) {
+    const asStrings = normalizeStringList(metodosRiego);
 
-  if (asStrings.length > 0) {
-    // ✅ Enviar como { nombre }
-    payload.metodosRiego = asStrings.map((nombre) => ({ nombre, tipo: nombre }));
-  } else {
-    // Acepta objetos con { tipo } o { nombre } y los normaliza a { nombre }
-    const objetos = metodosRiego
-      .filter((m: any) => m?.nombre || m?.tipo)
-      .map((m: any) => ({ nombre: String(m.nombre ?? m.tipo).trim() }))
-      .filter((m: any) => m.nombre.length > 0);
+    if (asStrings.length > 0) {
+      payload.metodosRiego = asStrings.map((nombre) => ({ nombre, tipo: nombre }));
+    } else {
+      const objetos = metodosRiego
+        .filter((m: any) => m?.nombre || m?.tipo)
+        .map((m: any) => ({ nombre: String(m.nombre ?? m.tipo).trim() }))
+        .filter((m: any) => m.nombre.length > 0);
 
-    if (objetos.length > 0) {
-      payload.metodosRiego = objetos.map((m: any) => ({ nombre: m.nombre, tipo: m.nombre })); 
+      if (objetos.length > 0) {
+        payload.metodosRiego = objetos.map((m: any) => ({ nombre: m.nombre, tipo: m.nombre }));
+      }
     }
   }
-}
+
+  // ========== NUEVOS CAMPOS: Actividades e Infraestructura ==========
+  const actividadesInfra = (values as any).actividadesInfraestructura;
+  if (actividadesInfra && (
+    (Array.isArray(actividadesInfra.cultivos) && actividadesInfra.cultivos.length > 0) ||
+    actividadesInfra.aparatos > 0 ||
+    actividadesInfra.bebederos > 0 ||
+    actividadesInfra.saleros > 0
+  )) {
+    payload.actividadesInfraestructura = {
+      cultivos: actividadesInfra.cultivos || [],
+      aparatos: actividadesInfra.aparatos || 0,
+      bebederos: actividadesInfra.bebederos || 0,
+      saleros: actividadesInfra.saleros || 0,
+    };
+  }
+
+  // ========== NUEVOS CAMPOS: Características Físicas ==========
+  const caracteristicasFisicas = (values as any).caracteristicasFisicas;
+  if (caracteristicasFisicas && (
+    (Array.isArray(caracteristicasFisicas.tiposCerca) && caracteristicasFisicas.tiposCerca.length > 0) ||
+    (Array.isArray(caracteristicasFisicas.equipos) && caracteristicasFisicas.equipos.length > 0)
+  )) {
+    payload.caracteristicasFisicas = {
+      tiposCerca: caracteristicasFisicas.tiposCerca || [],
+      equipos: caracteristicasFisicas.equipos || [],
+    };
+  }
 
   console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
   return payload;
@@ -199,9 +225,6 @@ export function useAssociateApply(onSuccess?: () => void) {
       } else {
         console.log("[Hook] No hay archivos para subir");
       }
-
-      // ⚠️ NO LLAMAMOS services extra de fuentes/metodos aquí
-      // porque tu backend ya los crea dentro de SolicitudService.create(...)
 
       return response;
     },
@@ -271,13 +294,23 @@ export function useAssociateApply(onSuccess?: () => void) {
       propietarioFechaNacimiento: "",
 
       // Secciones dinámicas
-      hatoData: null as any,               // { tipoExplotacion, totalGanado, razaPredominante, animales: [] }
-      forrajes: [] as any[],               // [{ tipoForraje, variedad, hectareas, utilizacion }]
-      registrosProductivos: null as any,   // { reproductivos: boolean, costosProductivos: boolean }
+      hatoData: null as any,
+      forrajes: [] as any[],
+      registrosProductivos: null as any,
+      fuentesAgua: [] as any[],
+      metodosRiego: [] as any[],
 
-      // Nuevos
-      fuentesAgua: [] as any[],            // [{ nombre }] o ["Pozo", ...]
-      metodosRiego: [] as any[],           // [{ tipo }]   o ["Aspersión", ...]
+      // ========== NUEVOS CAMPOS PARA STEP 4 ==========
+      actividadesInfraestructura: {
+        cultivos: [] as string[],
+        aparatos: 0,
+        bebederos: 0,
+        saleros: 0,
+      },
+      caracteristicasFisicas: {
+        tiposCerca: [] as string[],
+        equipos: [] as string[],
+      },
     },
     onSubmit: async ({ value, formApi }) => {
       console.log("[Hook] Submit iniciado");

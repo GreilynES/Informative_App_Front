@@ -2,7 +2,6 @@
 
 /**
  * DTO para crear una solicitud completa
- * Incluye: persona, datos del asociado, datos de la finca y núcleo familiar (opcional)
  */
 export interface CreateSolicitudDto {
   persona: {
@@ -10,33 +9,31 @@ export interface CreateSolicitudDto {
     nombre: string;
     apellido1: string;
     apellido2: string;
-    fechaNacimiento: string; // Formato: "YYYY-MM-DD"
+    fechaNacimiento: string;
     telefono: string;
     email: string;
-    direccion?: string; // Opcional
+    direccion?: string;
   };
   
   datosAsociado: {
     viveEnFinca: boolean;
     marcaGanado: string;
     CVO: string;
-    // NOTA: distanciaFinca NO se incluye aquí en la creación inicial
-    // Se puede actualizar después mediante el endpoint de actualización
   };
   
   datosFinca: {
     nombre: string;
-    areaHa: number; // Número decimal, ej: 15.5
+    areaHa: number;
     numeroPlano: string;
     geografia: {
       provincia: string;
       canton: string;
       distrito: string;
-      caserio: string; // Puede ser string vacío ""
+      caserio: string;
     };
   };
   
-  nucleoFamiliar?: { // OPCIONAL
+  nucleoFamiliar?: {
     nucleoHombres: number;
     nucleoMujeres: number;
   };
@@ -54,10 +51,8 @@ export interface CreateSolicitudDto {
     };
   };
 
-  // ========== NUEVOS CAMPOS OPCIONALES ==========
-  
   hato?: {
-    idFinca: number; // Placeholder, el backend lo ignora en la transacción
+    idFinca: number;
     tipoExplotacion: string;
     totalGanado: number;
     razaPredominante?: string;
@@ -83,6 +78,19 @@ export interface CreateSolicitudDto {
 
   fuentesAgua?: CreateFuenteAguaDto[];
   metodosRiego?: CreateMetodoRiegoDto[];
+
+  // ========== NUEVOS CAMPOS ==========
+  actividadesInfraestructura?: {
+    cultivos: string[];
+    aparatos: number;
+    bebederos: number;
+    saleros: number;
+  };
+
+  caracteristicasFisicas?: {
+    tiposCerca: string[];
+    equipos: string[];
+  };
 }
 
 /**
@@ -105,7 +113,7 @@ export interface SolicitudResponse {
   };
   asociado: {
     idAsociado: number;
-    persona: any; // Referencia a persona
+    persona: any;
     distanciaFinca: number | null;
     viveEnFinca: boolean;
     marcaGanado: string;
@@ -154,6 +162,16 @@ export interface SolicitudResponse {
       };
       fuentesAgua?: CreateFuenteAguaDto[];
       metodosRiego?: CreateMetodoRiegoDto[];
+      actividadesInfraestructura?: {
+        cultivos: string[];
+        aparatos: number;
+        bebederos: number;
+        saleros: number;
+      };
+      caracteristicasFisicas?: {
+        tiposCerca: string[];
+        equipos: string[];
+      };
     }>;
   };
   propietario?: {
@@ -185,5 +203,5 @@ export interface CreateFuenteAguaDto {
 
 export interface CreateMetodoRiegoDto {
   tipo: string;
+  nombre: string;
 }
-

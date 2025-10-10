@@ -1,12 +1,14 @@
 import type { FormLike } from "../../../shared/types/form-lite";
 import { ZodError } from "zod"; 
 import { useState, useEffect } from "react";
-import { associateApplySchema } from "../../associatesForm/schemas/associateApply";
-import { Step1 } from "../../associatesForm/steps/stepPersonalInformation";
-import { Step2 } from "../../associatesForm/steps/stepFincaGeoPropi";
-import { Step4 } from "../../associatesForm/steps/stepDocumentsUpload";
-import { Step5  } from "../../associatesForm/steps/stepConfirmation";
-import { Step3 } from "../../associatesForm/steps/stepForrajeRegisto";
+import { associateApplySchema } from "../schemas/associateApply";
+import { Step1 } from "../steps/stepPersonalInformation";
+import { Step2 } from "../steps/stepFincaGeoPropi";
+import { Step3 } from "../steps/stepForrajeRegisto";
+
+import { Step5 } from "../steps/stepDocumentsUpload";
+import { Step6 } from "../steps/stepConfirmation";
+import { Step4 } from "../steps/stepActividadessCaracteristicas";
 
 interface StepsProps {
   step: number;
@@ -67,19 +69,16 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       }
   
       case 2: {
-        // Validar campos de FINCA (básicos)
         const fincaValid = 
           values.nombreFinca && values.nombreFinca.length >= 1 &&
           values.areaHa && values.areaHa.length >= 1 &&
           values.numeroPlano && values.numeroPlano.length >= 1;
       
-        // Validar campos de GEOGRAFÍA
         const geografiaValid = 
           values.provincia && values.provincia.length >= 1 &&
           values.canton && values.canton.length >= 1 &&
           values.distrito && values.distrito.length >= 1;
       
-        // Validar campos de propietario SOLO si NO es el propietario
         let propietarioValid = true;
         
         if (values.esPropietario === false) {
@@ -92,66 +91,34 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
             values.propietarioEmail && values.propietarioEmail.length >= 1 &&
             values.propietarioFechaNacimiento && values.propietarioFechaNacimiento.length > 0
           );
-          
-          console.log("[Steps] Validación propietario (NO es dueño):", {
-            cedula: values.propietarioCedula?.length,
-            nombre: values.propietarioNombre?.length,
-            apellido1: values.propietarioApellido1?.length,
-            apellido2: values.propietarioApellido2?.length,
-            telefono: values.propietarioTelefono?.length,
-            email: values.propietarioEmail?.length,
-            fechaNacimiento: values.propietarioFechaNacimiento?.length,
-            resultado: propietarioValid
-          });
-        } else {
-          console.log("[Steps] El asociado ES el propietario - no se valida sección de propietario");
         }
         
-        const result = fincaValid && geografiaValid && propietarioValid;
-        
-        console.log("[Steps] Step 2 validation:", {
-          fincaValid,
-          geografiaValid,
-          propietarioValid,
-          esPropietario: values.esPropietario,
-          finalResult: result
-        });
-        
-        return result;
+        return fincaValid && geografiaValid && propietarioValid;
       }
 
       case 3: {
-        const values = (form as any).state.values;
-
         const hasForrajes = values.forrajes && values.forrajes.length > 0;
         const hasRegistros = values.registrosProductivos !== null;
-
-        // Valida los documentos también si querés
-        const docsValid =
-          values.idCopy !== null && values.idCopy !== undefined &&
-          values.farmMap !== null && values.farmMap !== undefined;
-
-        const step3Valid = hasForrajes && hasRegistros && docsValid;
-
-        console.log("[Steps] Step 3 validation:", {
-          hasForrajes,
-          hasRegistros,
-          docsValid,
-          result: step3Valid,
-        });
-
-        return step3Valid;
-      }
-  
-      case 4: {
-        const step4Valid = 
-          values.idCopy !== null && values.idCopy !== undefined &&
-          values.farmMap !== null && values.farmMap !== undefined;
         
-        return step4Valid;
+        return hasForrajes && hasRegistros;
+      }
+
+      case 4: {
+        // Nuevo paso: Actividades + Características físicas (opcional)
+        return true;
       }
   
       case 5: {
+        // Documentos
+        const step5Valid = 
+          values.idCopy !== null && values.idCopy !== undefined &&
+          values.farmMap !== null && values.farmMap !== undefined;
+        
+        return step5Valid;
+      }
+  
+      case 6: {
+        // Confirmación
         return !!values.acceptTerms;
       }
   
@@ -160,16 +127,17 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     }
   };
 
+  // ✅ SOLUCIÓN DEFINITIVA: Polling con intervalo + validación al cambiar de step
   useEffect(() => {
+    // Validación inicial
+    setCanProceed(checkStepValidity());
+
+    // Polling cada 500ms
     const intervalId = setInterval(() => {
       setCanProceed(checkStepValidity());
-    }, 300);
+    }, 500);
 
     return () => clearInterval(intervalId);
-  }, [step]);
-
-  useEffect(() => {
-    setCanProceed(checkStepValidity());
   }, [step]);
 
   return (
@@ -202,6 +170,14 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
 
       {step === 4 && (
         <Step4
+          form={form}
+          onPrev={prevStep} 
+          onNext={nextStep}
+        />
+      )}
+
+      {step === 5 && (
+        <Step5
           form={form} 
           onPrev={prevStep} 
           onNext={nextStep}
@@ -209,8 +185,8 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
         />
       )}
 
-      {step === 5 && (
-        <Step5
+      {step === 6 && (
+        <Step6
           form={form} 
           onPrev={prevStep} 
           isSubmitting={isSubmitting}
