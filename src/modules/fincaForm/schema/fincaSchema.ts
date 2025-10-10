@@ -97,3 +97,49 @@ export const hatoGanaderoSchema = z
 
 export type HatoItemValues = z.infer<typeof hatoItemSchema>;
 export type HatoGanaderoValues = z.infer<typeof hatoGanaderoSchema>;
+
+
+
+// Un forraje
+export const forrajeItemSchema = z.object({
+  // viene de un <select>, pero validamos requerido
+  tipoForraje: z
+    .string()
+    .min(1, "El tipo de forraje es requerido")
+    .max(75, "Máximo 75 caracteres"),
+
+  // texto requerido, 75 máx
+  variedad: z
+    .string()
+    .min(1, "La variedad es requerida")
+    .max(75, "Máximo 75 caracteres"),
+
+  // número > 0 (acepta string y lo convierte)
+  hectareas: z.preprocess(
+  (v) => {
+    // Permite string/number y evita NaN
+    if (v === "" || v === null || v === undefined) return 0;
+    const n = typeof v === "string" ? Number(v) : Number(v);
+    return Number.isFinite(n) ? n : 0;
+  },
+  z
+    .number()
+    .positive("Las hectáreas deben ser mayores a 0")
+    .max(100000, "Cantidad demasiado alta")
+),
+
+
+  // texto requerido, 75 máx
+  utilizacion: z
+    .string()
+    .min(1, "La utilización es requerida")
+    .max(75, "Máximo 75 caracteres"),
+});
+
+// Lista de forrajes (opcional, por si la usas al enviar todo)
+export const forrajeListSchema = z
+  .array(forrajeItemSchema)
+  .min(1, "Debe registrar al menos un tipo de forraje")
+  .max(100, "Demasiados registros");
+
+export type ForrajeItemValues = z.infer<typeof forrajeItemSchema>;
