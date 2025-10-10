@@ -3,6 +3,7 @@
 import type { FormLike } from "../../../shared/types/form-lite";
 import { ActividadesInfraestructuraSection } from "../components/ActividadesInfraestructuraSection";
 import { CaracteristicasFisicasSection } from "../components/CaracteristicasFisicasSection";
+import { InfraestructuraSection } from "../components/InfraestructuraSection";
 import { NavigationButtons } from "../components/NavigationButtons";
 
 interface Step4Props {
@@ -16,6 +17,7 @@ export function Step4({ form, onNext, onPrev }: Step4Props) {
     <div className="space-y-6">
       <ActividadesInfraestructuraSection form={form} />
       <CaracteristicasFisicasSection form={form} />
+      <InfraestructuraSection form={form} />
 
       <NavigationButtons 
         onPrev={onPrev} 

@@ -102,6 +102,32 @@ export interface CreateSolicitudDto {
     electrica: boolean;
     pMuerto: boolean;
   };
+
+  // ========== INFRAESTRUCTURA Y CORRIENTE ELÉCTRICA ==========
+  
+  infraestructuras?: Array<{
+    nombre: string;
+  }>;
+
+  corrienteElectrica?: {
+    publica: boolean;
+    privada: boolean;
+  };
+
+  // ========== AGREGAR AL FINAL DE CreateSolicitudDto ==========
+
+  accesos?: Array<{
+    nombre: string;
+  }>;
+
+  canales?: Array<{
+    nombre: string;
+  }>;
+
+  necesidades?: Array<{
+    orden: number;
+    descripcion: string;
+  }>;
 }
 
 /**

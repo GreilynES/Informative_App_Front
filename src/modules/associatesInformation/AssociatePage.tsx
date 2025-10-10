@@ -31,7 +31,7 @@ export default function AssociatesPage() {
       </div>
     );
 
-  const nextStep = () => setStep((s) => Math.min(6, s + 1));
+  const nextStep = () => setStep((s) => Math.min(7, s + 1));
   const prevStep = () => setStep((s) => Math.max(1, s - 1));
 
   return (

@@ -6,9 +6,10 @@ import { Step1 } from "../steps/stepPersonalInformation";
 import { Step2 } from "../steps/stepFincaGeoPropi";
 import { Step3 } from "../steps/stepForrajeRegisto";
 
-import { Step5 } from "../steps/stepDocumentsUpload";
-import { Step6 } from "../steps/stepConfirmation";
+import { Step6 } from "../steps/stepDocumentsUpload";
+import { Step7 } from "../steps/stepConfirmation";
 import { Step4 } from "../steps/stepActividadessCaracteristicas";
+import { Step5 } from "../steps/stepAccessoComercializacion";
 
 interface StepsProps {
   step: number;
@@ -109,15 +110,19 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       }
   
       case 5: {
-        // Documentos
+     return true;
+      }
+  
+      case 6: {
+          // Documentos
         const step5Valid = 
           values.idCopy !== null && values.idCopy !== undefined &&
           values.farmMap !== null && values.farmMap !== undefined;
         
         return step5Valid;
       }
-  
-      case 6: {
+
+      case 7: {
         // Confirmación
         return !!values.acceptTerms;
       }
@@ -176,7 +181,15 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       )}
 
       {step === 5 && (
-        <Step5
+          <Step5
+            form={form}
+            onPrev={prevStep} 
+            onNext={nextStep}
+          />
+        )}
+
+      {step === 6 && (
+        <Step6
           form={form} 
           onPrev={prevStep} 
           onNext={nextStep}
@@ -184,13 +197,13 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
         />
       )}
 
-      {step === 6 && (
-        <Step6
-          form={form} 
-          onPrev={prevStep} 
-          isSubmitting={isSubmitting}
-        />
-      )}
+        {step === 7 && (
+          <Step7
+            form={form} 
+            onPrev={prevStep} 
+            isSubmitting={isSubmitting}
+          />
+        )}
     </>
   );
 }

@@ -98,7 +98,7 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       ...(hatoData.razaPredominante && { razaPredominante: hatoData.razaPredominante }),
     };
 
-    // ✅ CORRECCIÓN: Cambiar "tipoAnimal" y "edadAnios" por "nombre" y "edad"
+    //  Cambiar "tipoAnimal" y "edadAnios" por "nombre" y "edad"
     if (Array.isArray(hatoData.animales) && hatoData.animales.length > 0) {
       payload.animales = hatoData.animales.map((a: any) => ({
         nombre: a.nombre,        // ✅ CORRECTO (era "tipoAnimal")
@@ -145,7 +145,7 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
     }
   }
 
-  // ✅ CORRECCIÓN: Cambiar "tipo" por "nombre" en métodos de riego
+
   const metodosRiego = (values as any).metodosRiego;
   if (Array.isArray(metodosRiego) && metodosRiego.length > 0) {
     const asStrings = normalizeStringList(metodosRiego);
@@ -156,7 +156,6 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
     } else {
       const objetos = metodosRiego
         .filter((m: any) => m?.nombre || m?.tipo)
-        // ✅ CORRECTO: Mapear a "nombre" en lugar de "tipo"
         .map((m: any) => ({ nombre: String(m.nombre ?? m.tipo).trim() }))
         .filter((m: any) => m.nombre.length > 0);
 
@@ -205,6 +204,45 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
     }
   }
 
+// ========== NUEVOS CAMPOS: Accesos ==========
+const viasAcceso = (values as any).viasAcceso;
+if (viasAcceso && Array.isArray(viasAcceso.accesos) && viasAcceso.accesos.length > 0) {
+  payload.accesos = viasAcceso.accesos.map((nombre: string) => ({
+    nombre: nombre.trim(),
+  }));
+  console.log('[Hook] ✅ accesos AGREGADOS:', payload.accesos);
+}
+
+// ========== NUEVOS CAMPOS: Comercialización ==========
+const comercializacion = (values as any).comercializacion;
+if (comercializacion && Array.isArray(comercializacion.canales) && comercializacion.canales.length > 0) {
+  payload.canales = comercializacion.canales.map((nombre: string) => ({
+    nombre: nombre.trim(),
+  }));
+  console.log('[Hook] ✅ canales AGREGADOS:', payload.canales);
+}
+
+// ========== NUEVOS CAMPOS: Necesidades ==========
+const necesidadesObs = (values as any).necesidadesObservaciones;
+if (necesidadesObs) {
+  // Mapear necesidades (solo las que tienen texto)
+  const necesidadesValidas = necesidadesObs.necesidades
+    .map((desc: string, index: number) => ({
+      orden: index + 1,
+      descripcion: desc.trim(),
+    }))
+    .filter((n: any) => n.descripcion.length > 0);
+
+  if (necesidadesValidas.length > 0) {
+    payload.necesidades = necesidadesValidas;
+    console.log('[Hook] ✅ necesidades AGREGADAS:', payload.necesidades);
+  }
+
+  // TODO: Observaciones e interés - agregar al backend si es necesario
+  console.log('[Hook] 📝 Observaciones:', necesidadesObs.observaciones);
+  console.log('[Hook] 📝 Interés:', necesidadesObs.interes);
+}
+
   // ========== NUEVOS CAMPOS: Características Físicas ==========
   const caracteristicasFisicas = (values as any).caracteristicasFisicas;
   if (caracteristicasFisicas) {
@@ -242,9 +280,32 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
     }
   }
 
+  // ========== NUEVOS CAMPOS: Infraestructura y Corriente Eléctrica ==========
+  const infraestructuraDisponible = (values as any).infraestructuraDisponible;
+  if (infraestructuraDisponible) {
+    // 1. Mapear infraestructuras
+    if (Array.isArray(infraestructuraDisponible.infraestructuras) && 
+        infraestructuraDisponible.infraestructuras.length > 0) {
+      payload.infraestructuras = infraestructuraDisponible.infraestructuras.map(
+        (nombre: string) => ({ nombre: nombre.trim() })
+      );
+    }
+
+    // 2. Mapear corriente eléctrica (solo si al menos una está marcada)
+    const corriente = infraestructuraDisponible.corrienteElectrica;
+    if (corriente && (corriente.publica || corriente.privada)) {
+      payload.corrienteElectrica = {
+        publica: Boolean(corriente.publica),
+        privada: Boolean(corriente.privada),
+      };
+    }
+  }
+
   console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
   return payload;
 }
+
+
 
 /**
  * Hook para manejar el formulario de solicitud de asociado
@@ -362,6 +423,18 @@ export function useAssociateApply(onSuccess?: () => void) {
       caracteristicasFisicas: {
         tiposCerca: [] as string[],
         equipos: [] as string[],
+      },
+
+      viasAcceso: {
+        accesos: [] as string[],
+      },
+      comercializacion: {
+        canales: [] as string[],
+      },
+      necesidadesObservaciones: {
+        necesidades: ["", "", "", "", ""] as string[],
+        observaciones: "",
+        interes: "",
       },
     },
     onSubmit: async ({ value, formApi }) => {
