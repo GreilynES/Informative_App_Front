@@ -242,7 +242,7 @@ export function HatoSection({ form }: HatoFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Edad</label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Edad Aproximada</label>
             <input
               type="number"
               value={currentAnimal.edad}
@@ -306,7 +306,7 @@ export function HatoSection({ form }: HatoFormProps) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-medium">Animal</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Edad</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium">Edad Aproximada</th>
                   <th className="px-4 py-3 text-left text-sm font-medium">Cantidad</th>
                   <th className="px-4 py-3 text-center text-sm font-medium">Acción</th>
                 </tr>
