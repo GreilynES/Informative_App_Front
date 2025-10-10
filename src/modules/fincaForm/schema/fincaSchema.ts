@@ -102,44 +102,75 @@ export type HatoGanaderoValues = z.infer<typeof hatoGanaderoSchema>;
 
 // Un forraje
 export const forrajeItemSchema = z.object({
-  // viene de un <select>, pero validamos requerido
   tipoForraje: z
     .string()
     .min(1, "El tipo de forraje es requerido")
     .max(75, "Máximo 75 caracteres"),
 
-  // texto requerido, 75 máx
+  // ✅ Solo letras (incluye tildes/ñ/ü) y espacios
   variedad: z
     .string()
     .min(1, "La variedad es requerida")
     .max(75, "Máximo 75 caracteres"),
 
-  // número > 0 (acepta string y lo convierte)
+  // Coerción robusta para evitar 'expected number, received NaN'
   hectareas: z.preprocess(
-  (v) => {
-    // Permite string/number y evita NaN
-    if (v === "" || v === null || v === undefined) return 0;
-    const n = typeof v === "string" ? Number(v) : Number(v);
-    return Number.isFinite(n) ? n : 0;
-  },
-  z
-    .number()
-    .positive("Las hectáreas deben ser mayores a 0")
-    .max(100000, "Cantidad demasiado alta")
-),
+    (v) => {
+      if (v === "" || v === null || v === undefined) return 0;
+      const n = typeof v === "string" ? Number(v) : Number(v);
+      return Number.isFinite(n) ? n : 0;
+    },
+    z
+      .number()
+      .positive("Las hectáreas deben ser mayores a 0")
+      .max(100000, "Cantidad demasiado alta")
+  ),
 
-
-  // texto requerido, 75 máx
+  // ✅ Solo letras (incluye tildes/ñ/ü) y espacios
   utilizacion: z
     .string()
     .min(1, "La utilización es requerida")
     .max(75, "Máximo 75 caracteres"),
 });
 
-// Lista de forrajes (opcional, por si la usas al enviar todo)
+// (opcional) lista
 export const forrajeListSchema = z
   .array(forrajeItemSchema)
   .min(1, "Debe registrar al menos un tipo de forraje")
   .max(100, "Demasiados registros");
 
 export type ForrajeItemValues = z.infer<typeof forrajeItemSchema>;
+
+/* =========================================================
+   🔹 Fuentes de agua y métodos de riego (Zod + requeridos)
+   ========================================================= */
+
+// Solo letras (incluye tildes/ñ/ü) y espacios
+const soloLetrasRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/;
+
+export const fuenteAguaItemSchema = z.object({
+  nombre: z
+    .string()
+    .min(1, "La fuente de agua es requerida")
+    .max(150, "Máximo 250 caracteres")
+    .regex(soloLetrasRegex, "Solo letras y espacios"),
+});
+
+export const metodoRiegoItemSchema = z.object({
+  tipo: z
+    .string()
+    .min(1, "El método de riego es requerido")
+    .max(150, "Máximo 250 caracteres")
+    .regex(soloLetrasRegex, "Solo letras y espacios"),
+});
+
+// Listas: ahora son REQUERIDAS
+export const fuentesAguaListSchema = z
+  .array(fuenteAguaItemSchema)
+  .min(1, "Debe registrar al menos una fuente de agua")
+  .max(200, "Demasiados elementos");
+
+export const metodosRiegoListSchema = z
+  .array(metodoRiegoItemSchema)
+  .min(1, "Debe registrar al menos un método de riego")
+  .max(200, "Demasiados elementos");
