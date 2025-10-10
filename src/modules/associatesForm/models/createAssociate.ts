@@ -83,6 +83,12 @@ export interface CreateSolicitudDto {
 
   fuentesAgua?: CreateFuenteAguaDto[];
   metodosRiego?: CreateMetodoRiegoDto[];
+
+    actividadesAgropecuarias?: Array<{ idActividad: number; nombre: string }>;
+      equiposEstandar?: Array<{ idFincaEquipo: number; idEquipo: number; cantidad: number }>;
+      otrosEquipos?: Array<{ id: number; nombreEquipo: string; cantidad: number }>;
+      tiposCerca?: Array<{ idTipoCerca: number; viva: boolean; electrica: boolean; pMuerto: boolean }>;
+
 }
 
 /**
@@ -154,6 +160,32 @@ export interface SolicitudResponse {
       };
       fuentesAgua?: CreateFuenteAguaDto[];
       metodosRiego?: CreateMetodoRiegoDto[];
+      // ===== NUEVAS SECCIONES OPCIONALES =====
+
+// Equipos estándar (del catálogo) para la finca principal creada en la solicitud
+equiposEstandar?: Array<{
+  idEquipo: number;   // del catálogo /equipos
+  cantidad: number;
+}>;
+
+// Otros equipos (libres) para esa finca
+otrosEquipos?: Array<{
+  nombreEquipo: string; // texto libre (validado en back)
+  cantidad: number;
+}>;
+
+// Tipos de cerca (pueden venir varias combinaciones; el back deduplica)
+tiposCerca?: Array<{
+  viva: boolean;
+  electrica: boolean;
+  pMuerto: boolean;
+}>;
+
+// Actividades agropecuarias (libres pero deduplicadas por finca en back)
+actividadesAgropecuarias?: Array<{
+  nombre: string;
+}>;
+
     }>;
   };
   propietario?: {
@@ -185,5 +217,35 @@ export interface CreateFuenteAguaDto {
 
 export interface CreateMetodoRiegoDto {
   tipo: string;
+}
+
+export interface CreateActividadDto {
+  idFinca: number;        // lo rellena el backend en la transacción
+  nombre: string;         // p.ej. "Maíz", "Café"
+}
+
+export interface CreateInfraestructuraProduccionDto {
+  idFinca: number;        // lo rellena el backend en la transacción
+  numeroAparatos: number; // "Aparatos" (del boceto)
+  numeroBebederos: number; // "Abrevaderos"
+  numeroSaleros: number;  // "Saladeros"
+}
+
+export interface CreateOtroEquipoDto {
+  idFinca: number;
+  nombreEquipo: string;
+  cantidad: number;
+}
+
+export interface CreateTipoCercaDto {
+  viva: boolean;
+  electrica: boolean;
+  pMuerto: boolean; // poste muerto
+}
+
+export interface CreateFincaEquipoDto {
+  idFinca: number;
+  idEquipo: number;   // del catálogo
+  cantidad: number;
 }
 

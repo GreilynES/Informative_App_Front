@@ -1,16 +1,30 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
-import { type AssociateApplyValues } from "../schemas/associateApply";
+import type { CreateSolicitudDto } from "../models/createAssociate";
 import { createSolicitud, uploadDocuments } from "../services/associatesFormService";
-import { type CreateSolicitudDto } from "../models/createAssociate";
 
-/** Normaliza una lista a strings únicos (trim + sin duplicados, case-insensitive) */
+/* --------------------------- Utils --------------------------- */
+
+function toInt(v: any, min = 0) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return min;
+  const t = Math.trunc(n);
+  return t < min ? min : t;
+}
+
+function toFloat(v: any, min = 0) {
+  const n = parseFloat(String(v ?? "0"));
+  if (!Number.isFinite(n)) return min;
+  return n < min ? min : n;
+}
+
+/** Normaliza lista de strings o objetos {nombre|tipo} (trim + dedup case-insensitive) */
 function normalizeStringList(list: any[]): string[] {
   const base = Array.isArray(list) ? list : [];
   const flat = base
     .map((x) => (typeof x === "string" ? x : (x?.nombre ?? x?.tipo ?? "")))
     .map((s) => String(s || "").trim())
-    .filter((s) => s.length > 0);
+    .filter(Boolean);
 
   const seen = new Set<string>();
   const out: string[] = [];
@@ -24,11 +38,11 @@ function normalizeStringList(list: any[]): string[] {
   return out;
 }
 
-/**
- * Mapea los valores del formulario al formato que espera el backend (PURO)
- */
-function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto {
-  const payload: CreateSolicitudDto = {
+/* -------------------- Payload (100% completo) -------------------- */
+
+export function mapToSolicitudPayload(values: any): CreateSolicitudDto {
+  const payload: any = {
+    // Persona del asociado
     persona: {
       cedula: values.cedula,
       nombre: values.nombre,
@@ -37,259 +51,273 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       fechaNacimiento: values.fechaNacimiento,
       telefono: values.telefono,
       email: values.email,
-      ...(values.direccion && { direccion: values.direccion }),
+      ...(values.direccion?.trim() ? { direccion: values.direccion.trim() } : {}),
     },
+
+    // Datos del asociado
     datosAsociado: {
       viveEnFinca: Boolean(values.viveEnFinca),
-      marcaGanado: values.marcaGanado,
-      CVO: values.CVO,
+      marcaGanado: values.marcaGanado ?? "",
+      CVO: values.CVO ?? "",
     },
+
+    // Finca + geografía
     datosFinca: {
-      nombre: values.nombreFinca,
-      areaHa: parseFloat(values.areaHa),
-      numeroPlano: values.numeroPlano,
+      nombre: values.nombreFinca ?? "",
+      areaHa: toFloat(values.areaHa, 0),
+      numeroPlano: values.numeroPlano ?? "",
       geografia: {
-        provincia: values.provincia,
-        canton: values.canton,
-        distrito: values.distrito,
-        caserio: values.caserio || "",
+        provincia: values.provincia ?? "",
+        canton: values.canton ?? "",
+        distrito: values.distrito ?? "",
+        caserio: values.caserio ?? "",
       },
     },
   };
 
-  // Núcleo familiar opcional
-  if (values.nucleoHombres || values.nucleoMujeres) {
-    const hombres = parseInt(values.nucleoHombres || "0") || 0;
-    const mujeres = parseInt(values.nucleoMujeres || "0") || 0;
-    if (hombres > 0 || mujeres > 0) {
-      payload.nucleoFamiliar = {
-        nucleoHombres: hombres,
-        nucleoMujeres: mujeres,
-      };
-    }
+  // Núcleo familiar (opcional)
+  const hombres = toInt(values.nucleoHombres);
+  const mujeres = toInt(values.nucleoMujeres);
+  if (hombres > 0 || mujeres > 0) {
+    payload.nucleoFamiliar = { nucleoHombres: hombres, nucleoMujeres: mujeres };
   }
 
-  // Propietario (si no es el asociado)
-  const esPropietario = (values as any).esPropietario;
-  if (esPropietario === false) {
+  // Propietario (si NO es el asociado)
+  if (values.esPropietario === false) {
     payload.propietario = {
       persona: {
-        cedula: (values as any).propietarioCedula,
-        nombre: (values as any).propietarioNombre,
-        apellido1: (values as any).propietarioApellido1,
-        apellido2: (values as any).propietarioApellido2,
-        telefono: (values as any).propietarioTelefono,
-        email: (values as any).propietarioEmail,
-        fechaNacimiento: (values as any).propietarioFechaNacimiento,
-        ...((values as any).propietarioDireccion?.trim()
-          ? { direccion: (values as any).propietarioDireccion.trim() }
+        cedula: values.propietarioCedula,
+        nombre: values.propietarioNombre,
+        apellido1: values.propietarioApellido1,
+        apellido2: values.propietarioApellido2,
+        fechaNacimiento: values.propietarioFechaNacimiento,
+        telefono: values.propietarioTelefono,
+        email: values.propietarioEmail,
+        ...(values.propietarioDireccion?.trim()
+          ? { direccion: values.propietarioDireccion.trim() }
           : {}),
       },
     };
   }
 
-  // Hato
-  const hatoData = (values as any).hatoData;
-  if (hatoData) {
+  // Hato + animales (opcional)
+  const hato = values.hatoData;
+  if (hato) {
     payload.hato = {
-      idFinca: 0,
-      tipoExplotacion: hatoData.tipoExplotacion,
-      totalGanado: parseInt(hatoData.totalGanado),
-      ...(hatoData.razaPredominante && { razaPredominante: hatoData.razaPredominante }),
+      idFinca: 0, // backend lo ignora en la transacción
+      tipoExplotacion: hato.tipoExplotacion ?? "",
+      totalGanado: toInt(hato.totalGanado),
+      ...(hato.razaPredominante?.trim()
+        ? { razaPredominante: hato.razaPredominante.trim() }
+        : {}),
     };
 
-    if (Array.isArray(hatoData.animales) && hatoData.animales.length > 0) {
-      payload.animales = hatoData.animales.map((a: any) => ({
-        nombre: a.nombre,
-        edad: parseInt(a.edad),
-        cantidad: parseInt(a.cantidad),
-      }));
+    if (Array.isArray(hato.animales) && hato.animales.length) {
+      const animals = hato.animales
+        .map((a: any) => ({
+          tipoAnimal: String(a?.nombre ?? a?.tipoAnimal ?? "").trim(),
+          edadAnios: toInt(a?.edad ?? a?.edadAnios),
+          cantidad: toInt(a?.cantidad),
+        }))
+        .filter((a: any) => a.tipoAnimal && a.cantidad > 0);
+      if (animals.length) payload.animales = animals;
     }
   }
 
-  // Forrajes
-  const forrajes = (values as any).forrajes;
-  if (Array.isArray(forrajes) && forrajes.length > 0) {
-    const mapeados = forrajes
-      .filter((f: any) => f?.tipoForraje && f?.variedad && f?.utilizacion && Number(f?.hectareas) > 0)
-      .map((f: any) => ({
-        tipoForraje: String(f.tipoForraje).trim(),
-        variedad: String(f.variedad).trim(),
-        hectareas: Number(f.hectareas),
-        utilizacion: String(f.utilizacion).trim(),
-      }));
-    if (mapeados.length > 0) payload.forrajes = mapeados;
+  // Forrajes (opcional)
+  if (Array.isArray(values.forrajes) && values.forrajes.length) {
+    const f = values.forrajes
+      .map((x: any) => ({
+        tipoForraje: String(x?.tipoForraje ?? "").trim(),
+        variedad: String(x?.variedad ?? "").trim(),
+        hectareas: toFloat(x?.hectareas, 0),
+        utilizacion: String(x?.utilizacion ?? "").trim(),
+      }))
+      .filter((x: any) => x.tipoForraje && x.variedad && x.utilizacion && x.hectareas > 0);
+    if (f.length) payload.forrajes = f;
   }
 
-  // Registros productivos
-  const registrosProductivos = (values as any).registrosProductivos;
-  if (registrosProductivos) {
+  // Registros productivos (opcional)
+  const rp = values.registrosProductivos;
+  if (rp && (rp.reproductivos || rp.costosProductivos)) {
     payload.registrosProductivos = {
-      reproductivos: Boolean(registrosProductivos.reproductivos),
-      costosProductivos: Boolean(registrosProductivos.costosProductivos),
+      reproductivos: Boolean(rp.reproductivos),
+      costosProductivos: Boolean(rp.costosProductivos),
     };
   }
 
-  // Fuentes de agua (acepta strings u objetos)
-  const fuentesAgua = (values as any).fuentesAgua;
-  if (Array.isArray(fuentesAgua) && fuentesAgua.length > 0) {
-    const asStrings = normalizeStringList(fuentesAgua);
-    if (asStrings.length > 0) {
-      payload.fuentesAgua = asStrings.map((nombre) => ({ nombre }));
-    } else {
-      const objetos = fuentesAgua
-        .filter((f: any) => f?.nombre)
-        .map((f: any) => ({ nombre: String(f.nombre).trim() }));
-      if ( objetos.length > 0) payload.fuentesAgua = objetos;
-    }
+  // Fuentes de agua (chips / strings)
+  const fuentes = normalizeStringList(values.fuentesAgua);
+  if (fuentes.length) {
+    payload.fuentesAgua = fuentes.map((nombre) => ({ nombre }));
   }
 
-const metodosRiego = (values as any).metodosRiego;
-if (Array.isArray(metodosRiego) && metodosRiego.length > 0) {
-  const asStrings = normalizeStringList(metodosRiego);
-
-  if (asStrings.length > 0) {
-    // ✅ Enviar como { nombre }
-    payload.metodosRiego = asStrings.map((nombre) => ({ nombre, tipo: nombre }));
-  } else {
-    // Acepta objetos con { tipo } o { nombre } y los normaliza a { nombre }
-    const objetos = metodosRiego
-      .filter((m: any) => m?.nombre || m?.tipo)
-      .map((m: any) => ({ nombre: String(m.nombre ?? m.tipo).trim() }))
-      .filter((m: any) => m.nombre.length > 0);
-
-    if (objetos.length > 0) {
-      payload.metodosRiego = objetos.map((m: any) => ({ nombre: m.nombre, tipo: m.nombre })); 
-    }
+  // Métodos de riego (chips / strings) → { tipo }
+  const riego = normalizeStringList(values.metodosRiego);
+  if (riego.length) {
+    payload.metodosRiego = riego.map((tipo) => ({ tipo }));
   }
+
+  /* ==================== BLOQUES NUEVOS ==================== */
+
+  // Actividades agropecuarias (chips texto libre)
+  const acts = normalizeStringList(values.actividadesAgropecuarias);
+  if (acts.length) {
+    payload.actividadesAgropecuarias = acts.map((nombre) => ({ nombre }));
+  }
+
+  // Infraestructura de producción (cantidades)
+  const ip = values.infraestructuraProduccion;
+  if (ip) {
+    payload.infraestructuraProduccion = {
+      numeroAparatos: toInt(ip.numeroAparatos),
+      numeroBebederos: toInt(ip.numeroBebederos),
+      numeroSaleros: toInt(ip.numeroSaleros),
+    };
+  }
+
+  // Tipos de cerca (checkbox simples + “otra” como campo adicional si quieres)
+  const tc = values.tipoCerca ?? {};
+  if (tc.viva || tc.electrica || tc.pMuerto || (tc.otra ?? "").trim()) {
+    // Si tu backend espera arreglo de combinaciones:
+    payload.tiposCerca = [
+      { viva: !!tc.viva, electrica: !!tc.electrica, pMuerto: !!tc.pMuerto },
+    ];
+    // “Otra” (si decides soportarlo en el back como campo separado)
+    if (tc.otra?.trim()) payload.tipoCercaOtra = tc.otra.trim();
+  }
+
+  // Equipos (lista fija + “otro” texto) → lo enviamos como otrosEquipos con cantidad=1
+  const equiposSel: string[] = Array.isArray(values.equiposSeleccionados)
+    ? values.equiposSeleccionados
+    : [];
+  const otroEquipoTxt = String(values.otroEquipoTexto || "").trim();
+  const equipos = [...equiposSel];
+  if (otroEquipoTxt) equipos.push(otroEquipoTxt);
+  if (equipos.length) {
+    payload.otrosEquipos = equipos.map((nombre) => ({
+      nombreEquipo: nombre,
+      cantidad: 1,
+    }));
+  }
+
+  // Documentos (si manejas desde este hook un objeto archivos)
+  // -> el upload real se hace con uploadDocuments tras crear la solicitud
+  // -> aquí solo lo dejamos como referencia en consola si quieres ver qué hay
+  console.log("[useAssociateApply] Payload final:", payload);
+  return payload as CreateSolicitudDto;
 }
 
-  console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
-  return payload;
-}
+/* ---------------------------- Hook ---------------------------- */
 
-/**
- * Hook para manejar el formulario de solicitud de asociado
- */
 export function useAssociateApply(onSuccess?: () => void) {
   const mutation = useMutation({
-    mutationFn: async (values: AssociateApplyValues) => {
-      console.log("[Hook] Iniciando envío de solicitud...");
-
-      // 1) Crear solicitud con TODO el payload
+    mutationFn: async (values: any) => {
       const payload = mapToSolicitudPayload(values);
-      const response = await createSolicitud(payload);
-
-      // 2) ID de la solicitud (soporta ambas formas de respuesta)
+  
+      // 1) Crear solicitud
+      const resp = await createSolicitud(payload);
       const idSolicitud =
-        (response as any)?.data?.idSolicitud ?? (response as any)?.idSolicitud;
-      if (!idSolicitud) {
-        throw new Error("No se recibió el ID de la solicitud");
-      }
-      console.log("[Hook] Solicitud creada con ID:", idSolicitud);
-
-      // 3) Subir documentos (si hay)
+        (resp as any)?.idSolicitud ??
+        (resp as any)?.data?.idSolicitud ??
+        (resp as any)?.data?.data?.idSolicitud;
+  
+      // 2) Subir documentos, si existen (solo los que soporta tu API)
       const cedula = values.idCopy instanceof File ? values.idCopy : undefined;
       const planoFinca = values.farmMap instanceof File ? values.farmMap : undefined;
-
-      if (cedula || planoFinca) {
-        console.log("[Hook] Subiendo documentos...");
-        await uploadDocuments(idSolicitud, { cedula, planoFinca });
-        console.log("[Hook] Documentos subidos exitosamente");
-      } else {
-        console.log("[Hook] No hay archivos para subir");
+  
+      if (idSolicitud && (cedula || planoFinca)) {
+        const docPayload: { cedula?: File; planoFinca?: File } = {};
+        if (cedula) docPayload.cedula = cedula;
+        if (planoFinca) docPayload.planoFinca = planoFinca;
+        await uploadDocuments(idSolicitud, docPayload);
       }
-
-      // ⚠️ NO LLAMAMOS services extra de fuentes/metodos aquí
-      // porque tu backend ya los crea dentro de SolicitudService.create(...)
-
-      return response;
+  
+      return resp;
     },
-    onSuccess: (data) => {
-      console.log("[Hook] Solicitud creada exitosamente:", data);
-      onSuccess?.();
-    },
-    onError: (error: any) => {
-      console.error("[Hook] Error al crear solicitud:", error);
-      console.error("[Hook] Detalles:", error?.response?.data);
-    },
-    onSettled: () => {
-      console.log("[Hook] Proceso finalizado");
+    onSuccess: () => onSuccess?.(),
+    onError: (e: any) => {
+      console.error("[useAssociateApply] Error:", e?.message, e?.response?.data);
     },
   });
+  
 
-  const form = useForm({
-    defaultValues: {
-      // Persona
-      cedula: "",
-      nombre: "",
-      apellido1: "",
-      apellido2: "",
-      fechaNacimiento: "",
-      telefono: "",
-      email: "",
-      direccion: "",
+// En useAssociateApply.ts
+// En la sección de defaultValues del form, asegúrate de que estos campos tengan valores iniciales:
 
-      // Asociado
-      distanciaFinca: "",
-      viveEnFinca: false,
-      marcaGanado: "",
-      CVO: "",
+const form = useForm({
+  defaultValues: {
+    /* -------- Persona -------- */
+    cedula: "",
+    nombre: "",
+    apellido1: "",
+    apellido2: "",
+    fechaNacimiento: "",
+    telefono: "",
+    email: "",
+    direccion: "",
 
-      // Núcleo Familiar (Opcional)
-      nucleoHombres: "",
-      nucleoMujeres: "",
+    /* -------- Asociado -------- */
+    viveEnFinca: false,
+    marcaGanado: "",
+    CVO: "",
+    distanciaFinca: "", // ← ASEGÚRATE DE QUE ESTE CAMPO EXISTA CON VALOR INICIAL
 
-      // Documentos y Términos
-      acceptTerms: false,
-      receiveInfo: false,
-      idCopy: null as File | null,
-      farmDiagnosis: null as File | null,
-      farmMap: null as File | null,
-      otherDocuments: null as File | null,
+    /* -------- Núcleo familiar -------- */
+    nucleoHombres: "",
+    nucleoMujeres: "",
 
-      // Finca
-      nombreFinca: "",
-      areaHa: "",
-      numeroPlano: "",
+    /* -------- Finca -------- */
+    nombreFinca: "",
+    areaHa: "",
+    numeroPlano: "",
 
-      // Geografía
-      provincia: "",
-      canton: "",
-      distrito: "",
-      caserio: "",
+    /* -------- Geografía -------- */
+    provincia: "",
+    canton: "",
+    distrito: "",
+    caserio: "",
 
-      // Propietario
-      esPropietario: true,
-      propietarioCedula: "",
-      propietarioNombre: "",
-      propietarioApellido1: "",
-      propietarioApellido2: "",
-      propietarioTelefono: "",
-      propietarioEmail: "",
-      propietarioDireccion: "",
-      propietarioFechaNacimiento: "",
+    /* -------- Propietario -------- */
+    esPropietario: true,
+    propietarioCedula: "",
+    propietarioNombre: "",
+    propietarioApellido1: "",
+    propietarioApellido2: "",
+    propietarioFechaNacimiento: "",
+    propietarioTelefono: "",
+    propietarioEmail: "",
+    propietarioDireccion: "",
 
-      // Secciones dinámicas
-      hatoData: null as any,               // { tipoExplotacion, totalGanado, razaPredominante, animales: [] }
-      forrajes: [] as any[],               // [{ tipoForraje, variedad, hectareas, utilizacion }]
-      registrosProductivos: null as any,   // { reproductivos: boolean, costosProductivos: boolean }
+    /* -------- Productivo -------- */
+    hatoData: null as any,
+    forrajes: [] as any[],
+    registrosProductivos: null as any,
+    fuentesAgua: [] as any[],
+    metodosRiego: [] as any[],
 
-      // Nuevos
-      fuentesAgua: [] as any[],            // [{ nombre }] o ["Pozo", ...]
-      metodosRiego: [] as any[],           // [{ tipo }]   o ["Aspersión", ...]
+    /* -------- NUEVO: Actividades + Infraestructura -------- */
+    actividadesAgropecuarias: [] as any[],
+    infraestructuraProduccion: {
+      numeroAparatos: 0,
+      numeroBebederos: 0,
+      numeroSaleros: 0,
     },
-    onSubmit: async ({ value, formApi }) => {
-      console.log("[Hook] Submit iniciado");
-      try {
-        await mutation.mutateAsync(value as any);
-        console.log("[Hook] Submit exitoso, reseteando formulario...");
-        formApi.reset();
-      } catch (err) {
-        console.error("[Hook] Submit falló:", err);
-      }
-    },
-  });
+
+    /* -------- NUEVO: Cercas + Equipos (front-only) -------- */
+    tipoCerca: { viva: false, electrica: false, pMuerto: false, otra: "" },
+    equiposSeleccionados: [] as string[],
+    otroEquipoTexto: "",
+
+    /* -------- Documentos -------- */
+    idCopy: null as File | null,
+    farmMap: null as File | null,
+    otherDocuments: [] as File[],
+  },
+  onSubmit: async ({ value, formApi }) => {
+    await mutation.mutateAsync(value);
+  },
+});
 
   return {
     form,

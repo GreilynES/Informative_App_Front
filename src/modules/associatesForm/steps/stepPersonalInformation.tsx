@@ -338,7 +338,7 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
                   <input
                     type="number"
                     min="1"
-                    value={f.state.value}
+                    value={f.state.value || ""}
                     onChange={(e) => {
                       // SOLO permite dígitos y punto decimal, elimina cualquier guion
                       let value = e.target.value.replace(/[^\d.]/g, '');

@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { associateApplySchema } from "../../associatesForm/schemas/associateApply";
 import { Step1 } from "../../associatesForm/steps/stepPersonalInformation";
 import { Step2 } from "../../associatesForm/steps/stepFincaGeoPropi";
-import { Step4 } from "../../associatesForm/steps/stepDocumentsUpload";
-import { Step5  } from "../../associatesForm/steps/stepConfirmation";
+import { Step5 } from "../../associatesForm/steps/stepDocumentsUpload";
+import { Step6 } from "../../associatesForm/steps/stepConfirmation";
 import { Step3 } from "../../associatesForm/steps/stepForrajeRegisto";
+import Step4 from "../steps/stepAgroYEquipos";
 
 interface StepsProps {
   step: number;
@@ -142,8 +143,9 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
 
         return step3Valid;
       }
-  
+
       case 4: {
+        const values = (form as any).state.values;
         const step4Valid = 
           values.idCopy !== null && values.idCopy !== undefined &&
           values.farmMap !== null && values.farmMap !== undefined;
@@ -152,6 +154,14 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       }
   
       case 5: {
+        const step4Valid = 
+          values.idCopy !== null && values.idCopy !== undefined &&
+          values.farmMap !== null && values.farmMap !== undefined;
+        
+        return step4Valid;
+      }
+  
+      case 6: {
         return !!values.acceptTerms;
       }
   
@@ -202,6 +212,14 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
 
       {step === 4 && (
         <Step4
+          form={form}
+          nextStep={nextStep}
+          prevStep={prevStep}
+        />
+      )}
+
+      {step === 5 && (
+        <Step5
           form={form} 
           onPrev={prevStep} 
           onNext={nextStep}
@@ -209,8 +227,8 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
         />
       )}
 
-      {step === 5 && (
-        <Step5
+      {step === 6 && (
+        <Step6
           form={form} 
           onPrev={prevStep} 
           isSubmitting={isSubmitting}
