@@ -1,19 +1,25 @@
 import { z } from "zod";
 import { fincaCompleteSchema } from "../../fincaForm/schema/fincaSchema";
 
-// Schema de persona
+/* ────────────────────────────────────────────────────────────────────────────
+   PERSONA
+──────────────────────────────────────────────────────────────────────────── */
 const personaSchema = z.object({
   cedula: z.string().min(8, "Cédula debe tener al menos 8 caracteres"),
   nombre: z.string().min(1, "El nombre es requerido"),
   apellido1: z.string().min(1, "El primer apellido es requerido"),
   apellido2: z.string().min(1, "El segundo apellido es requerido"),
-  fechaNacimiento: z.string().min(1, "La fecha de nacimiento es requerida, no puede ser una fecha posterior a la actual"),
+  fechaNacimiento: z
+    .string()
+    .min(1, "La fecha de nacimiento es requerida, no puede ser una fecha posterior a la actual"),
   telefono: z.string().min(8, "El teléfono debe tener al menos 8 dígitos"),
   email: z.string().email("Email inválido"),
   direccion: z.string().optional().or(z.literal("")),
 });
 
-// Schema de datos del asociado
+/* ────────────────────────────────────────────────────────────────────────────
+   DATOS ASOCIADO
+──────────────────────────────────────────────────────────────────────────── */
 const datosAsociadoSchema = z.object({
   distanciaFinca: z.string().min(1, "La distancia es requerida"),
   viveEnFinca: z.boolean().default(false),
@@ -21,13 +27,17 @@ const datosAsociadoSchema = z.object({
   CVO: z.string().min(1, "El CVO es requerido"),
 });
 
-// Schema de núcleo familiar (OPCIONAL)
+/* ────────────────────────────────────────────────────────────────────────────
+   NÚCLEO FAMILIAR (opcional)
+──────────────────────────────────────────────────────────────────────────── */
 const nucleoFamiliarSchema = z.object({
   nucleoHombres: z.string().optional().or(z.literal("")),
   nucleoMujeres: z.string().optional().or(z.literal("")),
 });
 
-// Schema de documentos
+/* ────────────────────────────────────────────────────────────────────────────
+   DOCUMENTOS
+──────────────────────────────────────────────────────────────────────────── */
 const documentosSchema = z.object({
   acceptTerms: z.boolean(),
   receiveInfo: z.boolean().default(false),
@@ -37,25 +47,67 @@ const documentosSchema = z.object({
   otherDocuments: z.any().nullable(),
 });
 
-// Schema del propietario con validación condicional
+/* ────────────────────────────────────────────────────────────────────────────
+   PROPIETARIO (condicional)
+──────────────────────────────────────────────────────────────────────────── */
 const propietarioConditionalSchema = z.object({
   esPropietario: z.boolean().default(true),
   propietarioCedula: z.string().optional().or(z.literal("")),
   propietarioNombre: z.string().optional().or(z.literal("")),
   propietarioApellido1: z.string().optional().or(z.literal("")),
   propietarioApellido2: z.string().optional().or(z.literal("")),
-  propietarioTelefono: z.string()
-  .optional()
-  .or(z.literal(""))
-  .refine(
-    (val) => !val || val === "" || val.length >= 8,
-    { message: "El teléfono debe tener al menos 8 dígitos" }
-  ),  propietarioEmail: z.string().optional().or(z.literal("")),
+  propietarioTelefono: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => !val || val === "" || val.length >= 8, {
+      message: "El teléfono debe tener al menos 8 dígitos",
+    }),
+  propietarioEmail: z.string().optional().or(z.literal("")),
   propietarioDireccion: z.string().optional().or(z.literal("")),
   propietarioFechaNacimiento: z.string().optional().or(z.literal("")),
 });
 
-// Schema completo que combina todo
+/* ────────────────────────────────────────────────────────────────────────────
+   ACTIVIDADES / INFRAESTRUCTURA 
+──────────────────────────────────────────────────────────────────────────── */
+export const actividadCultivoSchema = z
+  .string()
+  .min(1, "La actividad es requerida")
+  .max(75, "Máximo 75 caracteres")
+  .regex(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/, "Solo se permiten letras y espacios");
+
+export const actividadesInfraestructuraSchema = z.object({
+  cultivos: z.array(actividadCultivoSchema).default([]),
+  aparatos: z.number().int().nonnegative().optional(),
+  bebederos: z.number().int().nonnegative().optional(),
+  saleros: z.number().int().nonnegative().optional(),
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+CARACTERÍSTICAS FÍSICAS Y EQUIPOS 
+──────────────────────────────────────────────────────────────────────────── */
+export const otroCercaSchema = z
+  .string()
+  .min(1, "El tipo de cerca es requerido")
+  .max(75, "Máximo 75 caracteres")
+  .regex(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/, "Solo se permiten letras y espacios");
+
+export const otroEquipoSchema = z
+  .string()
+  .min(1, "El nombre del equipo es requerido")
+  .max(75, "Máximo 75 caracteres")
+  .regex(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/, "Solo se permiten letras y espacios");
+
+/** Estructura que guardas en el form para este paso */
+export const caracteristicasFisicasSchema = z.object({
+  tiposCerca: z.array(z.string()).default([]),
+  equipos: z.array(z.string()).default([]),
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+   SCHEMA COMPLETO
+──────────────────────────────────────────────────────────────────────────── */
 export const associateApplySchema = z.object({
   ...personaSchema.shape,
   ...datosAsociadoSchema.shape,
@@ -63,26 +115,44 @@ export const associateApplySchema = z.object({
   ...documentosSchema.shape,
   ...fincaCompleteSchema.shape,
   ...propietarioConditionalSchema.shape,
+
+  // Paso 7
+  actividadesInfraestructura: actividadesInfraestructuraSchema.optional(),
+
+  // Paso 8 (nuevo)
+  caracteristicasFisicas: caracteristicasFisicasSchema.optional(),
 });
 
 export type AssociateApplyValues = z.infer<typeof associateApplySchema>;
 
+export const otraInfraestructuraSchema = z
+  .string()
+  .min(1, "La infraestructura es requerida")
+  .max(75, "Máximo 75 caracteres")
+  .regex(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/, "Solo se permiten letras y espacios");
+
+export const infraestructuraDisponibleSchema = z.object({
+  infraestructuras: z.array(z.string()).default([]),
+  corrienteElectrica: z.object({
+    publica: z.boolean().default(false),
+    privada: z.boolean().default(false),
+  }),
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+   FORRAJE 
+──────────────────────────────────────────────────────────────────────────── */
 export const forrajeSchema = z.object({
-  tipoForraje: z
-    .string()
-    .min(1, "El tipo de forraje es requerido"),
-    
+  tipoForraje: z.string().min(1, "El tipo de forraje es requerido"),
   variedad: z
     .string()
     .min(3, "La variedad es requerida (mínimo 3 caracteres)")
     .max(100, "Máximo 100 caracteres"),
-    
-    hectareas: z
+  hectareas: z
     .number()
     .refine((val) => !isNaN(val), { message: "Debe ser un número válido" })
     .positive("Las hectáreas deben ser mayores a 0")
     .max(9999, "Cantidad demasiado alta"),
-    
   utilizacion: z
     .string()
     .min(3, "La utilización es requerida (mínimo 3 caracteres)")
@@ -91,7 +161,6 @@ export const forrajeSchema = z.object({
 
 export type ForrajeValues = z.infer<typeof forrajeSchema>;
 
-// Validación para la lista completa de forrajes
 export const forrajeListSchema = z
   .array(forrajeSchema)
   .min(1, "Debe registrar al menos un tipo de forraje")

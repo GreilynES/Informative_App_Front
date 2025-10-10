@@ -1,5 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
+import { otroCercaSchema, otroEquipoSchema } from "../schemas/associateApply";
+
+
+
 
 interface CaracteristicasFisicasSectionProps {
   form: FormLike;
@@ -10,9 +14,11 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
 
   const [tiposCerca, setTiposCerca] = useState<string[]>(existentes.tiposCerca || []);
   const [otroCerca, setOtroCerca] = useState<string>("");
+  const [otroCercaError, setOtroCercaError] = useState<string | null>(null);
 
   const [equipos, setEquipos] = useState<string[]>(existentes.equipos || []);
   const [otroEquipo, setOtroEquipo] = useState<string>("");
+  const [otroEquipoError, setOtroEquipoError] = useState<string | null>(null);
 
   useEffect(() => {
     (form as any).setFieldValue("caracteristicasFisicas", {
@@ -31,13 +37,24 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
 
   const agregarOtroCerca = () => {
     const trimmed = otroCerca.trim();
-    if (!trimmed) return;
-    if (tiposCerca.includes(trimmed)) {
-      alert("Este tipo de cerca ya fue agregado");
+
+    if (!trimmed) {
+      setOtroCercaError("El tipo de cerca es requerido");
       return;
     }
+    const parsed = otroCercaSchema.safeParse(trimmed);
+    if (!parsed.success) {
+      setOtroCercaError(parsed.error.issues[0]?.message ?? "Valor inválido");
+      return;
+    }
+    if (tiposCerca.includes(trimmed)) {
+      setOtroCercaError("Este tipo de cerca ya fue agregado");
+      return;
+    }
+
     setTiposCerca([...tiposCerca, trimmed]);
     setOtroCerca("");
+    setOtroCercaError(null);
   };
 
   const toggleEquipo = (equipo: string) => {
@@ -50,13 +67,24 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
 
   const agregarOtroEquipo = () => {
     const trimmed = otroEquipo.trim();
-    if (!trimmed) return;
-    if (equipos.includes(trimmed)) {
-      alert("Este equipo ya fue agregado");
+
+    if (!trimmed) {
+      setOtroEquipoError("El nombre del equipo es requerido");
       return;
     }
+    const parsed = otroEquipoSchema.safeParse(trimmed);
+    if (!parsed.success) {
+      setOtroEquipoError(parsed.error.issues[0]?.message ?? "Valor inválido");
+      return;
+    }
+    if (equipos.includes(trimmed)) {
+      setOtroEquipoError("Este equipo ya fue agregado");
+      return;
+    }
+
     setEquipos([...equipos, trimmed]);
     setOtroEquipo("");
+    setOtroEquipoError(null);
   };
 
   return (
@@ -119,20 +147,37 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
               </label>
             </div>
 
-            <div className="flex gap-2 mt-3">
-              <input
-                type="text"
-                value={otroCerca}
-                onChange={(e) => setOtroCerca(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarOtroCerca();
-                  }
-                }}
-                placeholder="Otro tipo de cerca..."
-                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              />
+            {/* OTRO TIPO DE CERCA */}
+            <div className="flex gap-2 mt-3 items-start">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={otroCerca}
+                  onChange={(e) => {
+                    setOtroCerca(e.target.value);
+                    if (otroCercaError) setOtroCercaError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      agregarOtroCerca();
+                    }
+                  }}
+                  placeholder="Otro tipo de cerca..."
+                  maxLength={75}
+                  aria-invalid={!!otroCercaError}
+                  className={[
+                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1",
+                    otroCercaError
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
+                  ].join(" ")}
+                />
+                {otroCercaError && (
+                  <p className="mt-1 text-sm text-red-600">{otroCercaError}</p>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={agregarOtroCerca}
@@ -192,20 +237,37 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
               </div>
             ))}
 
-            <div className="flex gap-2 mt-3">
-              <input
-                type="text"
-                value={otroEquipo}
-                onChange={(e) => setOtroEquipo(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarOtroEquipo();
-                  }
-                }}
-                placeholder="Otro equipo..."
-                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              />
+            {/* OTRO EQUIPO */}
+            <div className="flex gap-2 mt-3 items-start">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={otroEquipo}
+                  onChange={(e) => {
+                    setOtroEquipo(e.target.value);
+                    if (otroEquipoError) setOtroEquipoError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      agregarOtroEquipo();
+                    }
+                  }}
+                  placeholder="Otro equipo..."
+                  maxLength={75}
+                  aria-invalid={!!otroEquipoError}
+                  className={[
+                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1",
+                    otroEquipoError
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
+                  ].join(" ")}
+                />
+                {otroEquipoError && (
+                  <p className="mt-1 text-sm text-red-600">{otroEquipoError}</p>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={agregarOtroEquipo}

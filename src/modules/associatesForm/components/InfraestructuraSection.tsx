@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
+import { otraInfraestructuraSchema } from "../schemas/associateApply";
+
+
 
 interface InfraestructuraSectionProps {
   form: FormLike;
@@ -12,6 +15,9 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
     existentes.infraestructuras || []
   );
   const [otraInfraestructura, setOtraInfraestructura] = useState<string>("");
+
+  
+  const [otraInfraError, setOtraInfraError] = useState<string | null>(null);
 
   const [corrienteElectrica, setCorrienteElectrica] = useState<{
     publica: boolean;
@@ -38,13 +44,29 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
 
   const agregarOtraInfraestructura = () => {
     const trimmed = otraInfraestructura.trim();
-    if (!trimmed) return;
-    if (infraestructuras.includes(trimmed)) {
-      alert("Esta infraestructura ya fue agregada");
+
+    // requerido
+    if (!trimmed) {
+      setOtraInfraError("La infraestructura es requerida");
       return;
     }
+
+   
+    const parsed = otraInfraestructuraSchema.safeParse(trimmed);
+    if (!parsed.success) {
+      setOtraInfraError(parsed.error.issues[0]?.message ?? "Valor inválido");
+      return;
+    }
+
+    // duplicados
+    if (infraestructuras.includes(trimmed)) {
+      setOtraInfraError("Esta infraestructura ya fue agregada");
+      return;
+    }
+
     setInfraestructuras([...infraestructuras, trimmed]);
     setOtraInfraestructura("");
+    setOtraInfraError(null);
   };
 
   const toggleCorriente = (tipo: "publica" | "privada") => {
@@ -98,21 +120,37 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
               </div>
             ))}
 
-            {/* Campo "Otros" con input */}
-            <div className="flex gap-2 mt-3">
-              <input
-                type="text"
-                value={otraInfraestructura}
-                onChange={(e) => setOtraInfraestructura(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarOtraInfraestructura();
-                  }
-                }}
-                placeholder="Otra infraestructura..."
-                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              />
+            {/* Campo "Otra infraestructura" con el mismo estilo de error */}
+            <div className="flex gap-2 mt-3 items-start">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={otraInfraestructura}
+                  onChange={(e) => {
+                    setOtraInfraestructura(e.target.value);
+                    if (otraInfraError) setOtraInfraError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      agregarOtraInfraestructura();
+                    }
+                  }}
+                  placeholder="Otra infraestructura..."
+                  maxLength={75}
+                  aria-invalid={!!otraInfraError}
+                  className={[
+                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1",
+                    otraInfraError
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
+                  ].join(" ")}
+                />
+                {otraInfraError && (
+                  <p className="mt-1 text-sm text-red-600">{otraInfraError}</p>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={agregarOtraInfraestructura}
