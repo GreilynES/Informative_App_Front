@@ -12,51 +12,40 @@ interface Step3Props {
 }
 
 export function Step3({ form, onNext, onPrev }: Step3Props) {
-  const [isValid, setIsValid] = useState(false);
+  const [canProceed, setCanProceed] = useState(false);
 
-  // 🔹 Callback que se pasa a todas las secciones
-  const handleChange = useCallback(() => {
+  // Callback que verifica si Next debe habilitarse
+  const validateStep = useCallback(() => {
     const state = (form as any).state?.values || {};
 
-    // --- Forraje ---
-    const forrajes = state.forrajes || [];
-    const forrajesValidos =
-      forrajes.length > 0 &&
-      forrajes.every(
-        (f: any) =>
-          f.tipoForraje?.trim() &&
-          f.variedad?.trim() &&
-          f.hectareas > 0 &&
-          f.utilizacion?.trim()
-      );
+    // Forraje: al menos uno
+    const hasForraje = Array.isArray(state.forrajes) && state.forrajes.length > 0;
 
-    // --- Registro ---
+    // Registro: al menos uno marcado
     const registros = state.registrosProductivos || {};
-    const registroValido =
+    const hasRegistro =
       registros.reproductivos || registros.costosProductivos || registros.noTiene;
 
-    // --- Fuente de agua ---
-    const fuentes = state.fuentesAgua || [];
-    const riegos = state.metodosRiego || [];
-    const fuentesValidas = fuentes.length > 0;
-    const riegosValidos = riegos.length > 0;
+    // Fuente de agua y riego: al menos uno cada uno
+    const hasFuentes =
+      Array.isArray(state.fuentesAgua) && state.fuentesAgua.length > 0;
+    const hasRiego =
+      Array.isArray(state.metodosRiego) && state.metodosRiego.length > 0;
 
-    const formCompleto =
-      forrajesValidos && registroValido && fuentesValidas && riegosValidos;
-
-    setIsValid(formCompleto);
+    // Next habilitado solo si todos cumplen
+    setCanProceed(hasForraje && hasRegistro && hasFuentes && hasRiego);
   }, [form]);
 
   return (
     <div className="space-y-6">
-      <ForrajeSection form={form} onChange={handleChange} />
-      <RegistroSection form={form} onChange={handleChange} />
-      <FuenteAguaSection form={form} onChange={handleChange} />
+      <ForrajeSection form={form} onChange={validateStep} />
+      <RegistroSection form={form} onChange={validateStep} />
+      <FuenteAguaSection form={form} onChange={validateStep} />
 
       <NavigationButtons
         onPrev={onPrev}
         onNext={onNext}
-        disableNext={!isValid} // 🔹 habilita solo si todo está completo
+        disableNext={!canProceed} // 🔹 solo habilitado si todo es válido
       />
     </div>
   );
