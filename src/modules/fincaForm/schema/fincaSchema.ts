@@ -56,3 +56,44 @@ export type FincaBasicValues = z.infer<typeof fincaBasicSchema>;
 export type GeografiaValues = z.infer<typeof geografiaSchema>;
 export type PropietarioValues = z.infer<typeof propietarioFieldsSchema>;
 export type FincaCompleteValues = z.infer<typeof fincaCompleteSchema>;
+
+//Hato Ganadero 
+
+export const hatoItemSchema = z.object({
+  animal: z
+    .string()
+    .min(1, "El nombre del animal es requerido")
+    .max(75, "Máximo 75 caracteres"),
+
+  edad: z.preprocess(
+    (v) => (typeof v === "string" ? Number(v) : v),
+    z.number().int().min(0, "La edad no puede ser negativa").max(110, "Edad excesiva")
+  ),
+
+  cantidad: z.preprocess(
+    (v) => (typeof v === "string" ? Number(v) : v),
+    z.number().int().min(1, "La cantidad debe ser al menos 1").max(100000, "Cantidad demasiado alta")
+  ),
+});
+
+export const hatoGanaderoSchema = z
+  .object({
+    tipoExplotacion: z
+      .string()
+      .min(1, "Tipo de explotación requerida")
+      .max(75, "Máximo 75 caracteres"),
+
+    razaPredominante: z
+      .string()
+      .max(75, "Máximo 75 caracteres")
+      .optional()
+      .or(z.literal("")),
+
+    hatoItems: z
+      .array(hatoItemSchema)
+      .min(1, "Agrega al menos un registro de animales")
+      .max(200, "Demasiados registros"),
+  });
+
+export type HatoItemValues = z.infer<typeof hatoItemSchema>;
+export type HatoGanaderoValues = z.infer<typeof hatoGanaderoSchema>;
