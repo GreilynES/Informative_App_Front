@@ -104,7 +104,7 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       }
 
       case 4: {
-        // Nuevo paso: Actividades + Características físicas (opcional)
+        // Actividades e infraestructura (opcional)
         return true;
       }
   
@@ -127,17 +127,16 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     }
   };
 
-  // ✅ SOLUCIÓN DEFINITIVA: Polling con intervalo + validación al cambiar de step
   useEffect(() => {
-    // Validación inicial
-    setCanProceed(checkStepValidity());
-
-    // Polling cada 500ms
     const intervalId = setInterval(() => {
       setCanProceed(checkStepValidity());
-    }, 500);
+    }, 300);
 
     return () => clearInterval(intervalId);
+  }, [step]);
+
+  useEffect(() => {
+    setCanProceed(checkStepValidity());
   }, [step]);
 
   return (

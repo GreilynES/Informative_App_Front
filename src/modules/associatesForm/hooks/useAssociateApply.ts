@@ -98,10 +98,11 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       ...(hatoData.razaPredominante && { razaPredominante: hatoData.razaPredominante }),
     };
 
+    // ✅ CORRECCIÓN: Cambiar "tipoAnimal" y "edadAnios" por "nombre" y "edad"
     if (Array.isArray(hatoData.animales) && hatoData.animales.length > 0) {
       payload.animales = hatoData.animales.map((a: any) => ({
-        nombre: a.nombre,
-        edad: parseInt(a.edad),
+        nombre: a.nombre,        // ✅ CORRECTO (era "tipoAnimal")
+        edad: parseInt(a.edad),  // ✅ CORRECTO (era "edadAnios")
         cantidad: parseInt(a.cantidad),
       }));
     }
@@ -144,50 +145,101 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
     }
   }
 
+  // ✅ CORRECCIÓN: Cambiar "tipo" por "nombre" en métodos de riego
   const metodosRiego = (values as any).metodosRiego;
   if (Array.isArray(metodosRiego) && metodosRiego.length > 0) {
     const asStrings = normalizeStringList(metodosRiego);
 
     if (asStrings.length > 0) {
-      payload.metodosRiego = asStrings.map((nombre) => ({ nombre, tipo: nombre }));
+      // ✅ CORRECTO: Usar "nombre" en lugar de "tipo"
+      payload.metodosRiego = asStrings.map((nombre) => ({ nombre }));
     } else {
       const objetos = metodosRiego
         .filter((m: any) => m?.nombre || m?.tipo)
+        // ✅ CORRECTO: Mapear a "nombre" en lugar de "tipo"
         .map((m: any) => ({ nombre: String(m.nombre ?? m.tipo).trim() }))
         .filter((m: any) => m.nombre.length > 0);
 
       if (objetos.length > 0) {
-        payload.metodosRiego = objetos.map((m: any) => ({ nombre: m.nombre, tipo: m.nombre }));
+        payload.metodosRiego = objetos;
       }
     }
   }
 
   // ========== NUEVOS CAMPOS: Actividades e Infraestructura ==========
   const actividadesInfra = (values as any).actividadesInfraestructura;
-  if (actividadesInfra && (
-    (Array.isArray(actividadesInfra.cultivos) && actividadesInfra.cultivos.length > 0) ||
-    actividadesInfra.aparatos > 0 ||
-    actividadesInfra.bebederos > 0 ||
-    actividadesInfra.saleros > 0
-  )) {
-    payload.actividadesInfraestructura = {
-      cultivos: actividadesInfra.cultivos || [],
-      aparatos: actividadesInfra.aparatos || 0,
-      bebederos: actividadesInfra.bebederos || 0,
-      saleros: actividadesInfra.saleros || 0,
-    };
+  if (actividadesInfra) {
+    // 1. Mapear cultivos a actividades agropecuarias
+    if (Array.isArray(actividadesInfra.cultivos) && actividadesInfra.cultivos.length > 0) {
+      payload.actividades = actividadesInfra.cultivos.map((nombre: string) => ({
+        nombre: nombre.trim(),
+      }));
+    }
+
+    // 2. Mapear infraestructura (aparatos, bebederos, saleros) a otrosEquipos
+    const equiposInfra: any[] = [];
+
+    if (actividadesInfra.aparatos > 0) {
+      equiposInfra.push({
+        nombreEquipo: 'Aparatos',
+        cantidad: actividadesInfra.aparatos,
+      });
+    }
+
+    if (actividadesInfra.bebederos > 0) {
+      equiposInfra.push({
+        nombreEquipo: 'Bebederos',
+        cantidad: actividadesInfra.bebederos,
+      });
+    }
+
+    if (actividadesInfra.saleros > 0) {
+      equiposInfra.push({
+        nombreEquipo: 'Saleros',
+        cantidad: actividadesInfra.saleros,
+      });
+    }
+
+    if (equiposInfra.length > 0) {
+      payload.otrosEquipos = [...(payload.otrosEquipos || []), ...equiposInfra];
+    }
   }
 
   // ========== NUEVOS CAMPOS: Características Físicas ==========
   const caracteristicasFisicas = (values as any).caracteristicasFisicas;
-  if (caracteristicasFisicas && (
-    (Array.isArray(caracteristicasFisicas.tiposCerca) && caracteristicasFisicas.tiposCerca.length > 0) ||
-    (Array.isArray(caracteristicasFisicas.equipos) && caracteristicasFisicas.equipos.length > 0)
-  )) {
-    payload.caracteristicasFisicas = {
-      tiposCerca: caracteristicasFisicas.tiposCerca || [],
-      equipos: caracteristicasFisicas.equipos || [],
-    };
+  if (caracteristicasFisicas) {
+    // 1. Mapear tipos de cerca a tipoCerca (estructura booleana)
+    if (Array.isArray(caracteristicasFisicas.tiposCerca) && caracteristicasFisicas.tiposCerca.length > 0) {
+      payload.tipoCerca = {
+        viva: caracteristicasFisicas.tiposCerca.includes('Viva'),
+        electrica: caracteristicasFisicas.tiposCerca.includes('Eléctrica'),
+        pMuerto: caracteristicasFisicas.tiposCerca.includes('P. muerto'),
+      };
+    }
+
+    // 2. Mapear equipos a otrosEquipos
+    if (Array.isArray(caracteristicasFisicas.equipos) && caracteristicasFisicas.equipos.length > 0) {
+      const mapeoEquipos: Record<string, string> = {
+        'Bomba de agua': 'Motobomba',
+        'Tractor': 'Tractor',
+        'Carreta': 'Carreta',
+        'Motosierra': 'Motosierra',
+        'Picadora eléctrica': 'Picadora eléctrica',
+        'Picadora de combustible': 'Picadora de combustible',
+        'Tanque de ordeño': 'Tanque de ordeño',
+      };
+
+      const equiposValidos = caracteristicasFisicas.equipos
+        .filter((eq: string) => mapeoEquipos[eq])
+        .map((nombreEquipo: string) => ({
+          nombreEquipo: mapeoEquipos[nombreEquipo],
+          cantidad: 1,
+        }));
+
+      if (equiposValidos.length > 0) {
+        payload.otrosEquipos = [...(payload.otrosEquipos || []), ...equiposValidos];
+      }
+    }
   }
 
   console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));

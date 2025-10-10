@@ -58,9 +58,10 @@ export interface CreateSolicitudDto {
     razaPredominante?: string;
   };
 
+  // ✅ CORRECCIÓN: Cambiar "tipoAnimal" y "edadAnios" por "nombre" y "edad"
   animales?: Array<{
-    tipoAnimal: string;
-    edadAnios: number;
+    nombre: string;      // ✅ CORRECTO (era "tipoAnimal")
+    edad: number;        // ✅ CORRECTO (era "edadAnios")
     cantidad: number;
   }>;
 
@@ -76,20 +77,30 @@ export interface CreateSolicitudDto {
     costosProductivos: boolean;
   };
 
-  fuentesAgua?: CreateFuenteAguaDto[];
-  metodosRiego?: CreateMetodoRiegoDto[];
+  fuentesAgua?: Array<{
+    nombre: string;
+  }>;
 
-  // ========== NUEVOS CAMPOS ==========
-  actividadesInfraestructura?: {
-    cultivos: string[];
-    aparatos: number;
-    bebederos: number;
-    saleros: number;
-  };
+  // ✅ CORRECCIÓN: Cambiar "tipo" por "nombre"
+  metodosRiego?: Array<{
+    nombre: string;  // ✅ CORRECTO (era "tipo")
+  }>;
 
-  caracteristicasFisicas?: {
-    tiposCerca: string[];
-    equipos: string[];
+  // ========== NUEVOS CAMPOS PARA STEP 4 ==========
+  
+  actividades?: Array<{
+    nombre: string;
+  }>;
+
+  otrosEquipos?: Array<{
+    nombreEquipo: string;
+    cantidad: number;
+  }>;
+
+  tipoCerca?: {
+    viva: boolean;
+    electrica: boolean;
+    pMuerto: boolean;
   };
 }
 
@@ -143,8 +154,8 @@ export interface SolicitudResponse {
         razaPredominante?: string;
         animales?: Array<{
           idAnimal: number;
-          tipoAnimal: string;
-          edadAnios: number;
+          nombre: string;      // ✅ CORRECTO
+          edad: number;        // ✅ CORRECTO
           cantidad: number;
         }>;
       };
@@ -160,17 +171,23 @@ export interface SolicitudResponse {
         reproductivos: boolean;
         costosProductivos: boolean;
       };
-      fuentesAgua?: CreateFuenteAguaDto[];
-      metodosRiego?: CreateMetodoRiegoDto[];
-      actividadesInfraestructura?: {
-        cultivos: string[];
-        aparatos: number;
-        bebederos: number;
-        saleros: number;
-      };
-      caracteristicasFisicas?: {
-        tiposCerca: string[];
-        equipos: string[];
+      fuentesAgua?: Array<{
+        nombre: string;
+      }>;
+      metodosRiego?: Array<{
+        nombre: string;  // ✅ CORRECTO
+      }>;
+      actividades?: Array<{
+        nombre: string;
+      }>;
+      otrosEquipos?: Array<{
+        nombreEquipo: string;
+        cantidad: number;
+      }>;
+      tipoCerca?: {
+        viva: boolean;
+        electrica: boolean;
+        pMuerto: boolean;
       };
     }>;
   };
@@ -202,6 +219,5 @@ export interface CreateFuenteAguaDto {
 }
 
 export interface CreateMetodoRiegoDto {
-  tipo: string;
-  nombre: string;
+  nombre: string;  // ✅ CORRECTO (era "tipo")
 }
