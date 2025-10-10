@@ -1,4 +1,7 @@
+import { useEffect, useRef } from "react";
 import type { FieldLike, FormLike } from "../../../shared/types/form-lite";
+import { showLoading, stopLoadingWithSuccess } from "../../utils/alerts";
+
 
 export function TermsAndSubmit({
   form,
@@ -9,6 +12,25 @@ export function TermsAndSubmit({
   isSubmitting?: boolean;
   prevStep: () => void;
 }) {
+  const wasSubmittingRef = useRef(false);
+  useEffect(() => {
+    if (isSubmitting && !wasSubmittingRef.current) {
+      wasSubmittingRef.current = true;
+      showLoading("Enviando solicitud...");
+    }
+    if (!isSubmitting && wasSubmittingRef.current) {
+      wasSubmittingRef.current = false;
+      stopLoadingWithSuccess("Solicitud enviada correctamente.");
+    }
+  }, [isSubmitting]);
+
+
+  const handleSubmitClick = () => {
+    if (!isSubmitting && form.state?.values?.acceptTerms) {
+      showLoading("Enviando solicitud...");
+    }
+  };
+
   const err =
     form.state?.errors?.acceptTerms || form.state?.meta?.errors?.acceptTerms?.[0]?.message;
 
@@ -57,6 +79,7 @@ export function TermsAndSubmit({
         </button>
         <button
           type="submit"
+          onClick={handleSubmitClick}  
           disabled={isSubmitting || !form.state.values.acceptTerms}
           className="px-6 py-2 rounded bg-[#708C3E] text-white shadow hover:opacity-95 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
