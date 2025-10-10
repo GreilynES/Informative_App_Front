@@ -1,58 +1,64 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 
 interface RegistroSectionProps {
   form: FormLike;
+  onChange?: () => void;
 }
 
-export function RegistroSection({ form }: RegistroSectionProps) {
+export function RegistroSection({ form, onChange }: RegistroSectionProps) {
   const registrosExistentes = (form as any).state?.values?.registrosProductivos;
 
-  const [formValues, setFormValues] = React.useState({
+  const [formValues, setFormValues] = useState({
     reproductivos: Boolean(registrosExistentes?.reproductivos) || false,
     costosProductivos: Boolean(registrosExistentes?.costosProductivos) || false,
+    noTiene: Boolean(registrosExistentes?.noTiene) || false,
   });
 
-  // Asegura objeto válido al montar
-  React.useEffect(() => {
+  // Inicializa el form global si no hay valores
+  useEffect(() => {
     if (!registrosExistentes) {
       (form as any).setFieldValue("registrosProductivos", {
         reproductivos: false,
         costosProductivos: false,
+        noTiene: false,
       });
     } else {
       setFormValues({
         reproductivos: Boolean(registrosExistentes.reproductivos),
         costosProductivos: Boolean(registrosExistentes.costosProductivos),
+        noTiene: Boolean(registrosExistentes.noTiene),
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sincroniza con form global
-  React.useEffect(() => {
-    (form as any).setFieldValue("registrosProductivos", {
-      reproductivos: Boolean(formValues.reproductivos),
-      costosProductivos: Boolean(formValues.costosProductivos),
-    });
-  }, [formValues, form]);
+  // Sincroniza con form solo si hay alguna selección válida
+  useEffect(() => {
+    const hasValue =
+      formValues.reproductivos || formValues.costosProductivos || formValues.noTiene;
+    if (hasValue) {
+      (form as any).setFieldValue("registrosProductivos", formValues);
+    }
+    onChange?.();
+  }, [formValues, form, onChange]);
 
-  const handleCheckboxChange = (field: "reproductivos" | "costosProductivos") => {
-    const newValues = { ...formValues, [field]: !formValues[field] };
+  // Manejadores de checkboxes
+  const toggleRegistro = (field: "reproductivos" | "costosProductivos") => {
+    const newValues = {
+      ...formValues,
+      [field]: !formValues[field],
+      noTiene: false, // 🔹 Nunca “No hay” junto a otros
+    };
     setFormValues(newValues);
-    console.log("[RegistroSection] Registros actualizados:", newValues);
   };
 
   const handleNoTiene = () => {
-    if (formValues.reproductivos || formValues.costosProductivos) {
-      const newValues = { reproductivos: false, costosProductivos: false };
-      setFormValues(newValues);
-      (form as any).setFieldValue("registrosProductivos", newValues);
-      console.log("[RegistroSection] Registros desactivados:", newValues);
-    }
+    setFormValues({
+      reproductivos: false,
+      costosProductivos: false,
+      noTiene: true,
+    });
   };
-
-  const noTiene = !formValues.reproductivos && !formValues.costosProductivos;
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -79,7 +85,7 @@ export function RegistroSection({ form }: RegistroSectionProps) {
                 id="registrosReproductivos"
                 type="checkbox"
                 checked={formValues.reproductivos}
-                onChange={() => handleCheckboxChange("reproductivos")}
+                onChange={() => toggleRegistro("reproductivos")}
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
               />
@@ -93,7 +99,7 @@ export function RegistroSection({ form }: RegistroSectionProps) {
                 id="registrosCostos"
                 type="checkbox"
                 checked={formValues.costosProductivos}
-                onChange={() => handleCheckboxChange("costosProductivos")}
+                onChange={() => toggleRegistro("costosProductivos")}
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
               />
@@ -106,7 +112,7 @@ export function RegistroSection({ form }: RegistroSectionProps) {
               <input
                 id="noTieneRegistros"
                 type="checkbox"
-                checked={noTiene}
+                checked={formValues.noTiene}
                 onChange={handleNoTiene}
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
@@ -117,7 +123,7 @@ export function RegistroSection({ form }: RegistroSectionProps) {
             </div>
 
             <p className="text-xs text-gray-500 mt-2">
-              Puedes seleccionar una o ambas opciones. “No, no hay” desmarca las anteriores.
+              No puede seleccionar “No hay” junto con otros registros.
             </p>
           </div>
         </div>

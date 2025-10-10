@@ -84,6 +84,31 @@ export const actividadesInfraestructuraSchema = z.object({
   saleros: z.number().int().nonnegative().optional(),
 });
 
+export const viasAccesoSchema = z.object({
+  /** Lista de vías (p.ej. "Externas", "Internas" o “Otras…”) */
+  accesos: z.array(z.string().min(1, "Texto vacío")).default([]),
+});
+
+export const comercializacionSchema = z.object({
+  /** Lista de canales (p.ej. "Subastas", "Carnicerías", etc.) */
+  canales: z.array(z.string().min(1, "Texto vacío")).default([]),
+});
+
+export const necesidadesObservacionesSchema = z.object({
+  /**
+   * 5 casillas de necesidad/mejora (strings ≤ 255).
+   * Regla del paso exige: al menos UNA con texto no vacío.
+   */
+  necesidades: z
+    .array(z.string().max(255, "Máximo 255 caracteres"))
+    .length(5, "Debes mantener 5 casillas")
+    .default(["", "", "", "", ""]),
+  /** Campo libre opcional (≤ 500) */
+  observaciones: z.string().max(500, "Máximo 500 caracteres").optional().or(z.literal("")),
+  /** Campo libre opcional (≤ 255) */
+  interes: z.string().max(255, "Máximo 255 caracteres").optional().or(z.literal("")),
+});
+
 /* ────────────────────────────────────────────────────────────────────────────
 CARACTERÍSTICAS FÍSICAS Y EQUIPOS 
 ──────────────────────────────────────────────────────────────────────────── */
@@ -121,8 +146,13 @@ export const associateApplySchema = z.object({
 
   // Paso 8 (nuevo)
   caracteristicasFisicas: caracteristicasFisicasSchema.optional(),
+
+  
 });
 
+export type ViasAcceso = z.infer<typeof viasAccesoSchema>;
+export type Comercializacion = z.infer<typeof comercializacionSchema>;
+export type NecesidadesObservaciones = z.infer<typeof necesidadesObservacionesSchema>;
 export type AssociateApplyValues = z.infer<typeof associateApplySchema>;
 
 export const otraInfraestructuraSchema = z
@@ -165,3 +195,12 @@ export const forrajeListSchema = z
   .array(forrajeSchema)
   .min(1, "Debe registrar al menos un tipo de forraje")
   .max(10, "Se pueden registrar hasta 10 tipos de forraje");
+
+export const forrajeItemSchema = z.object({
+    tipoForraje: z.string().nonempty("Campo obligatorio"),
+    variedad: z.string().nonempty("Campo obligatorio"),
+    hectareas: z
+      .number()
+      .gt(0, "Debe ser mayor a 0"),
+    utilizacion: z.string().nonempty("Campo obligatorio"),
+  });

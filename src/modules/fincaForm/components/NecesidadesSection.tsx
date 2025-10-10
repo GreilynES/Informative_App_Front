@@ -11,36 +11,28 @@ export function NecesidadesSection({ form }: NecesidadesSectionProps) {
   const [necesidades, setNecesidades] = useState<string[]>(
     existentes.necesidades || ["", "", "", "", ""]
   );
-  const [observaciones, setObservaciones] = useState<string>(
-    existentes.observaciones || ""
-  );
-  const [interes, setInteres] = useState<string>(existentes.interes || "");
 
   useEffect(() => {
-    console.log('[NecesidadesSection] 🔄 Actualizando formulario:', {
-      necesidades,
-      observaciones,
-      interes,
-    });
-
     (form as any).setFieldValue("necesidadesObservaciones", {
       necesidades,
-      observaciones,
-      interes,
     });
-  }, [necesidades, observaciones, interes, form]);
+  }, [necesidades, form]);
 
   const handleNecesidadChange = (index: number, value: string) => {
-    const nuevasNecesidades = [...necesidades];
-    nuevasNecesidades[index] = value;
-    setNecesidades(nuevasNecesidades);
+    const v = value.length > 255 ? value.slice(0, 255) : value;
+    setNecesidades((prev) => {
+      const next = prev.slice();
+      next[index] = v;
+      return next;
+    });
   };
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-        </div>
+      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+        12
+      </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">
           Necesidades y Observaciones
         </h3>
@@ -54,7 +46,7 @@ export function NecesidadesSection({ form }: NecesidadesSectionProps) {
           </label>
 
           <div className="space-y-3">
-            {[1, 2, 3].map((num) => (
+            {[1, 2, 3, 4, 5].map((num) => (
               <div key={num}>
                 <label className="block text-xs text-gray-500 mb-1">
                   Necesidad/Mejora {num}:
@@ -63,7 +55,7 @@ export function NecesidadesSection({ form }: NecesidadesSectionProps) {
                   type="text"
                   value={necesidades[num - 1]}
                   onChange={(e) => handleNecesidadChange(num - 1, e.target.value)}
-                  placeholder={`Ingrese la necesidad/mejora ${num}...`}
+                  placeholder={`Ingrese la necesidad/mejora ${num}.`}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   maxLength={255}
                 />

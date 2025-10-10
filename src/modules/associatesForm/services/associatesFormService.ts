@@ -119,3 +119,41 @@ export async function uploadDocuments(
     throw err;
   }
 }
+
+/* =========================================================
+   NUEVOS HELPERS: verificación de unicidad (cédula / email)
+   Convención:
+   - 200 => existe
+   - 404 => no existe
+   - otros => se propaga error (para no enmascarar problemas)
+   Ajusta las rutas a las de tu back si difieren.
+========================================================= */
+
+
+  export async function existsCedula(cedula: string): Promise<boolean> {
+    const v = (cedula ?? "").trim();
+    if (!v) return false;
+    try {
+      await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
+      return true; // 200 => existe
+    } catch (err: any) {
+      const st = err?.response?.status;
+      if (st === 404) return false; // 404 => no existe
+      console.warn("[existsCedula] verificación no concluyente:", st, err?.message);
+      return false; // en error de red/500 => NO bloquees al usuario
+    }
+  }
+ 
+  export async function existsEmail(email: string): Promise<boolean> {
+    const v = (email ?? "").trim();
+    if (!v) return false;
+    try {
+      await apiConfig.get(`/personas/email/${encodeURIComponent(v)}`);
+      return true;
+    } catch (err: any) {
+      const st = err?.response?.status;
+      if (st === 404) return false;
+      console.warn("[existsEmail] verificación no concluyente:", st, err?.message);
+      return false;
+    }
+  }

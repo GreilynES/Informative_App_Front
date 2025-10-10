@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 
+
 interface AccesoSectionProps {
   form: FormLike;
 }
@@ -12,40 +13,39 @@ export function AccesoSection({ form }: AccesoSectionProps) {
   const [otroAcceso, setOtroAcceso] = useState<string>("");
 
   useEffect(() => {
-    console.log('[AccesoSection] 🔄 Actualizando formulario:', { accesos });
-    
-    (form as any).setFieldValue("viasAcceso", {
-      accesos,
-    });
+    // Sincroniza con el form cada vez que cambie el estado local
+    (form as any).setFieldValue("viasAcceso", { accesos });
   }, [accesos, form]);
 
   const toggleAcceso = (acceso: string) => {
-    if (accesos.includes(acceso)) {
-      setAccesos(accesos.filter((a) => a !== acceso));
-    } else {
-      setAccesos([...accesos, acceso]);
-    }
+    setAccesos((prev) =>
+      prev.includes(acceso) ? prev.filter((a) => a !== acceso) : [...prev, acceso]
+    );
   };
 
   const agregarOtroAcceso = () => {
-    const trimmed = otroAcceso.trim();
+    const trimmed = (otroAcceso ?? "").trim();
     if (!trimmed) return;
-    if (accesos.includes(trimmed)) {
+    if (trimmed.length > 75) {
+      alert("El texto es muy largo (máx. 75 caracteres).");
+      return;
+    }
+    const exists = accesos.some((a) => a.toLowerCase() === trimmed.toLowerCase());
+    if (exists) {
       alert("Este tipo de acceso ya fue agregado");
       return;
     }
-    setAccesos([...accesos, trimmed]);
+    setAccesos((prev) => [...prev, trimmed]);
     setOtroAcceso("");
   };
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-        </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">
-          Vías de Acceso
-        </h3>
+      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+  10
+</div>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Vías de Acceso</h3>
       </div>
 
       <div className="p-6 space-y-4">
@@ -70,7 +70,7 @@ export function AccesoSection({ form }: AccesoSectionProps) {
             </div>
           ))}
 
-          {/* Campo "Otras" con input */}
+          {/* Campo "Otras" */}
           <div className="flex gap-2 mt-3">
             <input
               type="text"
@@ -82,8 +82,9 @@ export function AccesoSection({ form }: AccesoSectionProps) {
                   agregarOtroAcceso();
                 }
               }}
-              placeholder="Otras vías de acceso..."
+              placeholder="Otras vías de acceso."
               className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              maxLength={75}
             />
             <button
               type="button"

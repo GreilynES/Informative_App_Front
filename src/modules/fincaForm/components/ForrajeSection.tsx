@@ -14,6 +14,7 @@ function FieldError({ msg }: { msg?: string }) {
 
 interface ForrajeSectionProps {
   form: FormLike;
+  onChange?: () => void; // 🔹 callback opcional para habilitar botón
 }
 
 // Tipo local: garantiza que `utilizacion` sea string (evita TS “possibly undefined”)
@@ -21,7 +22,7 @@ type ForrajeDraft = Omit<ForrajeItem, "id" | "idForraje"> & {
   utilizacion: string;
 };
 
-export function ForrajeSection({ form }: ForrajeSectionProps) {
+export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
   const forrajesExistentes = (form as any).state?.values?.forrajes || [];
 
   const [forrajes, setForrajes] = React.useState<ForrajeItem[]>(forrajesExistentes);
@@ -46,7 +47,8 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
   // Sincroniza con el form global
   useEffect(() => {
     (form as any).setFieldValue("forrajes", forrajes);
-  }, [forrajes, form]);
+    onChange?.(); // 🔹 notifica cambio
+  }, [forrajes, form, onChange]);
 
   // ---- Helpers ----
   const validateDraft = (draft: ForrajeDraft) => {
@@ -100,12 +102,14 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
 
     setErrors({});
     setError(null);
+    onChange?.(); // 🔹 notifica cambio
     console.log("[ForrajeSection] Forraje agregado:", nuevoForraje);
   };
 
   const eliminarForraje = (id: number | undefined) => {
     if (!id) return;
     setForrajes((prev) => prev.filter((f) => f.id !== id));
+    onChange?.(); // 🔹 notifica cambio
     console.log("[ForrajeSection] Forraje eliminado:", id);
   };
 
@@ -125,7 +129,7 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
 
       <div className="p-6 space-y-4">
         <p className="text-sm text-gray-600">
-          Agrega cada forraje utilizado. Puedes registrar múltiples entradas.
+          Agrega cada forraje utilizado. Puedes registrar múltiples entradas. *
         </p>
 
         {error && (
@@ -159,7 +163,7 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
             <FieldError msg={errors.tipoForraje} />
           </div>
 
-          {/* Variedad (solo letras) */}
+          {/* Variedad */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Variedad *
@@ -189,6 +193,7 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
               type="number"
               step="0.01"
               min="0"
+              placeholder="0.00"
               value={currentForraje.hectareas || ""}
               onChange={(e) =>
                 setCurrentForraje({
@@ -196,14 +201,13 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
                   hectareas: parseFloat(e.target.value) || 0,
                 })
               }
-              // pasamos string al validador para evitar NaN
               onBlur={(e) => onBlurField("hectareas", e.target.value)}
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
             />
             <FieldError msg={errors.hectareas} />
           </div>
 
-          {/* Utilización (solo letras) */}
+          {/* Utilización */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Utilización *
@@ -224,7 +228,7 @@ export function ForrajeSection({ form }: ForrajeSectionProps) {
             <FieldError msg={errors.utilizacion} />
           </div>
 
-          {/* Botón (alineado con inputs) */}
+          {/* Botón */}
           <div className="flex flex-col">
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1 invisible">
               Acción

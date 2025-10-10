@@ -12,40 +12,38 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
   const [otroCanal, setOtroCanal] = useState<string>("");
 
   useEffect(() => {
-    console.log('[ComercializacionSection] 🔄 Actualizando formulario:', { canales });
-    
-    (form as any).setFieldValue("comercializacion", {
-      canales,
-    });
+    (form as any).setFieldValue("comercializacion", { canales });
   }, [canales, form]);
 
   const toggleCanal = (canal: string) => {
-    if (canales.includes(canal)) {
-      setCanales(canales.filter((c) => c !== canal));
-    } else {
-      setCanales([...canales, canal]);
-    }
+    setCanales((prev) =>
+      prev.includes(canal) ? prev.filter((c) => c !== canal) : [...prev, canal]
+    );
   };
 
   const agregarOtroCanal = () => {
-    const trimmed = otroCanal.trim();
+    const trimmed = (otroCanal ?? "").trim();
     if (!trimmed) return;
-    if (canales.includes(trimmed)) {
+    if (trimmed.length > 75) {
+      alert("El texto es muy largo (máx. 75 caracteres).");
+      return;
+    }
+    const exists = canales.some((c) => c.toLowerCase() === trimmed.toLowerCase());
+    if (exists) {
       alert("Este canal ya fue agregado");
       return;
     }
-    setCanales([...canales, trimmed]);
+    setCanales((prev) => [...prev, trimmed]);
     setOtroCanal("");
   };
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-        </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">
-          Comercialización
-        </h3>
+      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+        11
+      </div>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Comercialización</h3>
       </div>
 
       <div className="p-6 space-y-4">
@@ -70,7 +68,7 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
             </div>
           ))}
 
-          {/* Campo "Otras" con input */}
+          {/* Campo "Otras" */}
           <div className="flex gap-2 mt-3">
             <input
               type="text"
@@ -82,8 +80,9 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
                   agregarOtroCanal();
                 }
               }}
-              placeholder="Otro canal de comercialización..."
+              placeholder="Otro canal de comercialización."
               className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              maxLength={75}
             />
             <button
               type="button"
@@ -96,9 +95,7 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
 
           {canales.length > 0 && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-xs text-green-800 font-medium mb-2">
-                Canales seleccionados:
-              </p>
+              <p className="text-xs text-green-800 font-medium mb-2">Canales seleccionados:</p>
               <div className="flex flex-wrap gap-2">
                 {canales.map((canal, idx) => (
                   <span

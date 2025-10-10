@@ -37,6 +37,15 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
     setShowModal(!warned);
   }, []);
 
+
+  function toErrMsg(err: unknown): string | undefined {
+    if (!err) return undefined;
+    if (typeof err === "string") return err;
+    // TanStack puede guardar Error u objetos
+    const anyErr = err as any;
+    return anyErr?.message ?? String(anyErr ?? "");
+  }
+
   function handleClose() {
     setIsVisible(false);
     setTimeout(() => {
@@ -111,6 +120,7 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
                   {f.state.meta.errors?.length > 0 && (
                     <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
                   )}
+                  
                 </div>
               )}
             </form.Field>
