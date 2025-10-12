@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 import { actividadCultivoSchema } from "../schemas/associateApply";
 
-
 interface ActividadesInfraestructuraSectionProps {
   form: FormLike;
 }
@@ -14,36 +13,33 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
   const [cultivo, setCultivo] = useState<string>("");
   const [cultivoError, setCultivoError] = useState<string | null>(null);
 
-  const [aparatos, setAparatos] = useState<number>(existentes.aparatos || 0);
-  const [bebederos, setBebederos] = useState<number>(existentes.bebederos || 0);
-  const [saleros, setSaleros] = useState<number>(existentes.saleros || 0);
+  const [aparatos, setAparatos] = useState<string>(existentes.aparatos?.toString() || "0");
+  const [bebederos, setBebederos] = useState<string>(existentes.bebederos?.toString() || "0");
+  const [saleros, setSaleros] = useState<string>(existentes.saleros?.toString() || "0");
 
   useEffect(() => {
     (form as any).setFieldValue("actividadesInfraestructura", {
       cultivos: actividades,
-      aparatos,
-      bebederos,
-      saleros,
+      aparatos: parseInt(aparatos, 10) || 0,
+      bebederos: parseInt(bebederos, 10) || 0,
+      saleros: parseInt(saleros, 10) || 0,
     });
   }, [actividades, aparatos, bebederos, saleros, form]);
 
   const agregarActividad = () => {
     const trimmed = cultivo.trim();
 
-    // requerido
     if (!trimmed) {
       setCultivoError("La actividad es requerida");
       return;
     }
 
-    // Zod: solo letras/espacios y máx. 75
     const parsed = actividadCultivoSchema.safeParse(trimmed);
     if (!parsed.success) {
       setCultivoError(parsed.error.issues[0]?.message ?? "Actividad inválida");
       return;
     }
 
-    // evitar duplicados
     if (actividades.includes(trimmed)) {
       setCultivoError("Esta actividad ya fue agregada");
       return;
@@ -51,11 +47,27 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
 
     setActividades([...actividades, trimmed]);
     setCultivo("");
-    setCultivoError(null); // limpiar error al agregar correctamente
+    setCultivoError(null);
   };
 
   const eliminarActividad = (item: string) => {
     setActividades(actividades.filter((a) => a !== item));
+  };
+
+  // ✅ Función helper para manejar inputs numéricos
+  const handleNumericInput = (value: string, setter: (val: string) => void) => {
+    // Permitir solo números
+    const cleaned = value.replace(/\D/g, "");
+    
+    // Si está vacío, poner "0"
+    if (cleaned === "") {
+      setter("0");
+      return;
+    }
+
+    // Remover ceros a la izquierda
+    const parsed = parseInt(cleaned, 10);
+    setter(parsed.toString());
   };
 
   return (
@@ -75,7 +87,6 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
             ¿Qué cultivos o actividades tiene en su finca?
           </label>
 
-          {/* Contenedor en fila, pero el input va en una columna para poder poner el error debajo */}
           <div className="flex gap-2 items-start">
             <div className="flex-1">
               <input
@@ -83,7 +94,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
                 value={cultivo}
                 onChange={(e) => {
                   setCultivo(e.target.value);
-                  if (cultivoError) setCultivoError(null); // limpiar error al teclear
+                  if (cultivoError) setCultivoError(null);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -142,49 +153,56 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
           </label>
 
           <div className="grid md:grid-cols-3 gap-4">
+            {/* ✅ Aparatos */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                 Aparatos
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={aparatos}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setAparatos(isNaN(val) || val < 0 ? 0 : val);
+                onChange={(e) => handleNumericInput(e.target.value, setAparatos)}
+                onFocus={(e) => {
+                  // Seleccionar todo al hacer foco para fácil reemplazo
+                  e.target.select();
                 }}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
             </div>
 
+            {/* ✅ Bebederos */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                 Bebederos
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={bebederos}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setBebederos(isNaN(val) || val < 0 ? 0 : val);
+                onChange={(e) => handleNumericInput(e.target.value, setBebederos)}
+                onFocus={(e) => {
+                  e.target.select();
                 }}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
             </div>
 
+            {/* ✅ Saleros */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                 Saleros
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={saleros}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value, 10);
-                  setSaleros(isNaN(val) || val < 0 ? 0 : val);
+                onChange={(e) => handleNumericInput(e.target.value, setSaleros)}
+                onFocus={(e) => {
+                  e.target.select();
                 }}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
