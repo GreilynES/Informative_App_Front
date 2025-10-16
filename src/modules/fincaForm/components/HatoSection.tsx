@@ -9,7 +9,7 @@ interface HatoFormProps {
 }
 
 /** Tipos locales para evitar 'any' */
-type Row = { id?: string; nombre: string; edad: string; cantidad: string };
+type Row = { id?: string; nombre: string; cantidad: string };
 type HatoLocalState = {
   idFinca: number;
   tipoExplotacion: string;
@@ -33,40 +33,58 @@ export function HatoSection({ form }: HatoFormProps) {
     | HatoLocalState
     | undefined;
 
+  const normalizaAnimales = (animales: any[] | undefined): Row[] =>
+    Array.isArray(animales)
+      ? animales.map((a) => ({
+          id: a?.id,
+          nombre: a?.nombre ?? a?.animal ?? "",
+          cantidad: a?.cantidad != null ? String(a.cantidad) : "",
+        }))
+      : [];
+
   const [formValues, setFormValues] = React.useState<HatoLocalState>(
-    hatoDataExistente || {
-      idFinca: 0,
-      tipoExplotacion: "",
-      totalGanado: 0,
-      razaPredominante: "",
-      animales: [],
-    }
+    hatoDataExistente
+      ? {
+          idFinca: hatoDataExistente.idFinca ?? 0,
+          tipoExplotacion: hatoDataExistente.tipoExplotacion ?? "",
+          totalGanado: Number(hatoDataExistente.totalGanado ?? 0),
+          razaPredominante: hatoDataExistente.razaPredominante ?? "",
+          animales: normalizaAnimales(hatoDataExistente.animales),
+        }
+      : {
+          idFinca: 0,
+          tipoExplotacion: "",
+          totalGanado: 0,
+          razaPredominante: "",
+          animales: [],
+        }
   );
 
   const [currentAnimal, setCurrentAnimal] = React.useState<Row>({
     nombre: "",
-    edad: "",
     cantidad: "",
   });
 
   // Errores por campo (texto rojo)
   const [tipoExplotacionError, setTipoExplotacionError] = React.useState<string>("");
   const [razaError, setRazaError] = React.useState<string>("");
-  const [rowErrors, setRowErrors] = React.useState<{ nombre?: string; edad?: string; cantidad?: string }>({});
+  const [rowErrors, setRowErrors] = React.useState<{ nombre?: string; cantidad?: string }>({});
 
   // Helpers (validan usando SOLO el schema)
   const schemaInputBase = () => ({
-    tipoExplotacion: formValues.tipoExplotacion,             // ← sin enum
+    tipoExplotacion: formValues.tipoExplotacion, // ← sin enum
     razaPredominante: formValues.razaPredominante || "",
     totalHato: formValues.totalGanado,
     hatoItems: (formValues.animales ?? []).map((a: Row) => ({
       animal: a.nombre?.trim() || "",
-      edad: a.edad === "" ? (a.edad as unknown as number) : Number(a.edad),
-      cantidad: a.cantidad === "" ? (a.cantidad as unknown as number) : Number(a.cantidad),
+      cantidad:
+        a.cantidad === "" ? (a.cantidad as unknown as number) : Number(a.cantidad),
     })),
   });
 
-  const validateFieldWithSchema = (partial: Partial<ReturnType<typeof schemaInputBase>>) => {
+  const validateFieldWithSchema = (
+    partial: Partial<ReturnType<typeof schemaInputBase>>
+  ) => {
     const parsed = hatoGanaderoSchema.safeParse({ ...schemaInputBase(), ...partial });
     return parsed;
   };
@@ -91,8 +109,8 @@ export function HatoSection({ form }: HatoFormProps) {
       hatoItems: [
         {
           animal: row.nombre?.trim() || "",
-          edad: row.edad === "" ? (row.edad as unknown as number) : Number(row.edad),
-          cantidad: row.cantidad === "" ? (row.cantidad as unknown as number) : Number(row.cantidad),
+          cantidad:
+            row.cantidad === "" ? (row.cantidad as unknown as number) : Number(row.cantidad),
         },
       ],
     };
@@ -100,24 +118,27 @@ export function HatoSection({ form }: HatoFormProps) {
     const parsed = hatoGanaderoSchema.safeParse(candidate);
     if (parsed.success) return {};
 
-    const errs: { nombre?: string; edad?: string; cantidad?: string } = {};
+    const errs: { nombre?: string; cantidad?: string } = {};
     for (const issue of parsed.error.issues) {
       if (issue.path[0] === "hatoItems" && issue.path[1] === 0) {
         const field = issue.path[2];
-        if (field === "animal") errs.nombre = issue.message;         // ← máx 75 aplicado
-        if (field === "edad") errs.edad = issue.message;
+        if (field === "animal") errs.nombre = issue.message; // ← máx 75 aplicado
         if (field === "cantidad") errs.cantidad = issue.message;
       }
     }
-    if (!row.nombre?.trim() && !errs.nombre) errs.nombre = "El nombre del animal es requerido";
-    if (row.edad === "" && !errs.edad) errs.edad = "La edad es requerida";
-    if (row.cantidad === "" && !errs.cantidad) errs.cantidad = "La cantidad es requerida";
+    if (!row.nombre?.trim() && !errs.nombre)
+      errs.nombre = "El nombre del animal es requerido";
+    if (row.cantidad === "" && !errs.cantidad)
+      errs.cantidad = "La cantidad es requerida";
     return errs;
   };
 
   // Calcula total automáticamente
   useEffect(() => {
-    const total = (formValues.animales || []).reduce((sum: number, a: Row) => sum + (parseInt(a.cantidad) || 0), 0);
+    const total = (formValues.animales || []).reduce(
+      (sum: number, a: Row) => sum + (parseInt(a.cantidad) || 0),
+      0
+    );
     if (total !== formValues.totalGanado) {
       setFormValues((prev) => ({ ...prev, totalGanado: total }));
     }
@@ -142,7 +163,6 @@ export function HatoSection({ form }: HatoFormProps) {
     const nuevo: Row = {
       id: Date.now().toString(),
       nombre: currentAnimal.nombre.trim(),
-      edad: currentAnimal.edad,
       cantidad: currentAnimal.cantidad,
     };
 
@@ -151,7 +171,7 @@ export function HatoSection({ form }: HatoFormProps) {
       animales: [...(prev.animales || []), nuevo],
     }));
 
-    setCurrentAnimal({ nombre: "", edad: "", cantidad: "" });
+    setCurrentAnimal({ nombre: "", cantidad: "" });
     setRowErrors({});
   };
 
@@ -171,7 +191,9 @@ export function HatoSection({ form }: HatoFormProps) {
             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Descripción del hato ganadero</h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">
+          Descripción del hato ganadero
+        </h3>
       </div>
 
       {/* Body */}
@@ -189,7 +211,9 @@ export function HatoSection({ form }: HatoFormProps) {
                 setFormValues({ ...formValues, tipoExplotacion: e.target.value });
                 if (tipoExplotacionError) setTipoExplotacionError("");
               }}
-              onBlur={(e) => setTipoExplotacionError(validateTipoExplotacion(e.target.value))}
+              onBlur={(e) =>
+                setTipoExplotacionError(validateTipoExplotacion(e.target.value))
+              }
               placeholder="Intensivo, extensivo o mixto"
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               maxLength={75}
@@ -198,7 +222,9 @@ export function HatoSection({ form }: HatoFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Raza predominante</label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Raza predominante
+            </label>
             <input
               type="text"
               value={formValues.razaPredominante || ""}
@@ -215,23 +241,24 @@ export function HatoSection({ form }: HatoFormProps) {
           </div>
         </div>
 
-        {/* Sección agregar animales */}
-        <p className="text-sm text-gray-600">
-          Los números de hembras y machos hacen referencia a la edad en años de los animales.
-        </p>
-
         <div className="grid md:grid-cols-4 gap-4 items-end">
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Animal</label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Animal
+            </label>
             <input
               type="text"
               value={currentAnimal.nombre}
               onChange={(e) => {
                 setCurrentAnimal({ ...currentAnimal, nombre: e.target.value });
-                if (rowErrors.nombre) setRowErrors((er) => ({ ...er, nombre: undefined }));
+                if (rowErrors.nombre)
+                  setRowErrors((er) => ({ ...er, nombre: undefined }));
               }}
               onBlur={(e) => {
-                const errs = validateCurrentRowWithSchema({ ...currentAnimal, nombre: e.target.value });
+                const errs = validateCurrentRowWithSchema({
+                  ...currentAnimal,
+                  nombre: e.target.value,
+                });
                 setRowErrors((er) => ({ ...er, nombre: errs.nombre }));
               }}
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
@@ -242,36 +269,22 @@ export function HatoSection({ form }: HatoFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Edad Aproximada</label>
-            <input
-              type="number"
-              value={currentAnimal.edad}
-              onChange={(e) => {
-                setCurrentAnimal({ ...currentAnimal, edad: e.target.value });
-                if (rowErrors.edad) setRowErrors((er) => ({ ...er, edad: undefined }));
-              }}
-              onBlur={(e) => {
-                const errs = validateCurrentRowWithSchema({ ...currentAnimal, edad: e.target.value });
-                setRowErrors((er) => ({ ...er, edad: errs.edad }));
-              }}
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              placeholder="Años"
-              min="0"
-            />
-            <FieldError msg={rowErrors.edad} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cantidad</label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Cantidad
+            </label>
             <input
               type="number"
               value={currentAnimal.cantidad}
               onChange={(e) => {
                 setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value });
-                if (rowErrors.cantidad) setRowErrors((er) => ({ ...er, cantidad: undefined }));
+                if (rowErrors.cantidad)
+                  setRowErrors((er) => ({ ...er, cantidad: undefined }));
               }}
               onBlur={(e) => {
-                const errs = validateCurrentRowWithSchema({ ...currentAnimal, cantidad: e.target.value });
+                const errs = validateCurrentRowWithSchema({
+                  ...currentAnimal,
+                  cantidad: e.target.value,
+                });
                 setRowErrors((er) => ({ ...er, cantidad: errs.cantidad }));
               }}
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
@@ -281,22 +294,21 @@ export function HatoSection({ form }: HatoFormProps) {
             <FieldError msg={rowErrors.cantidad} />
           </div>
 
-<div className="flex flex-col">
+          <div className="flex flex-col">
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1 invisible">
+              Acción
+            </label>
 
-  <label className="block text-sm font-medium text-[#4A4A4A] mb-1 invisible">
-    Acción
-  </label>
+            <button
+              type="button"
+              onClick={agregarAnimal}
+              className="w-full px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+            >
+              Agregar
+            </button>
 
-  <button
-    type="button"
-    onClick={agregarAnimal}
-    className="w-full px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-  >
-    Agregar
-  </button>
-
-  <div className="h-5" />
-</div>
+            <div className="h-5" />
+          </div>
         </div>
 
         {/* Tabla animales */}
@@ -306,17 +318,26 @@ export function HatoSection({ form }: HatoFormProps) {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-sm font-medium">Animal</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium">Edad Aproximada</th>
                   <th className="px-4 py-3 text-left text-sm font-medium">Cantidad</th>
                   <th className="px-4 py-3 text-center text-sm font-medium">Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {formValues.animales.map((animal: Row, idx: number) => (
-                  <tr key={animal.id || idx} className={idx !== formValues.animales.length - 1 ? "border-b border-[#CFCFCF]" : ""}>
-                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.nombre}</td>
-                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.edad}</td>
-                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.cantidad}</td>
+                  <tr
+                    key={animal.id || idx}
+                    className={
+                      idx !== formValues.animales.length - 1
+                        ? "border-b border-[#CFCFCF]"
+                        : ""
+                    }
+                  >
+                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">
+                      {animal.nombre}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">
+                      {animal.cantidad}
+                    </td>
                     <td className="px-4 py-3 text-center">
                       <button
                         type="button"
@@ -346,7 +367,8 @@ export function HatoSection({ form }: HatoFormProps) {
             placeholder="Se calcula automáticamente"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Este valor se calcula automáticamente sumando las cantidades de animales ingresados.
+            Este valor se calcula automáticamente sumando las cantidades de animales
+            ingresados.
           </p>
         </div>
       </div>

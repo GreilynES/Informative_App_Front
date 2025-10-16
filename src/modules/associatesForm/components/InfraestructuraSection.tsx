@@ -102,8 +102,6 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
               "Abrevadero",
               "Cargadero",
               "Bodega",
-              "Techo",
-              "Piso",
             ].map((infra) => (
               <div key={infra} className="flex items-center gap-3">
                 <input
