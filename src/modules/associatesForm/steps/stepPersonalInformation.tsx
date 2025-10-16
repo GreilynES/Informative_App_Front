@@ -31,20 +31,23 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
   const [showModal, setShowModal] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
+const toISO = (d: Date) => {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const todayDate = new Date();
+const adultCutoff = new Date(todayDate);        // hoy - 18 años
+adultCutoff.setFullYear(adultCutoff.getFullYear() - 18);
+const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
+
   useEffect(() => {
     // Solo lo muestra si no existe el flag en localStorage
     const warned = localStorage.getItem("showModalAviso");
     setShowModal(!warned);
   }, []);
-
-
-  function toErrMsg(err: unknown): string | undefined {
-    if (!err) return undefined;
-    if (typeof err === "string") return err;
-    // TanStack puede guardar Error u objetos
-    const anyErr = err as any;
-    return anyErr?.message ?? String(anyErr ?? "");
-  }
 
   function handleClose() {
     setIsVisible(false);
@@ -199,40 +202,37 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
             validators={{ onChange: ({ value }: any) => validateField("fechaNacimiento", value) }}
           >
             {(f: any) => {
-              const today = new Date();
-              const year = today.getFullYear();
-              const month = String(today.getMonth() + 1).padStart(2, '0');
-              const day = String(today.getDate()).padStart(2, '0');
-              const maxDate = `${year}-${month}-${day}`;
               
               return (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
-                  <input
-                    type="date"
-                    required
-                    value={f.state.value}
-                    onChange={(e) => {
-                      const inputDate = e.target.value;
-                      if (!inputDate) {
-                        // Campo obligatorio
-                        f.handleChange("");
-                      } else if (inputDate > maxDate) {
-                        // No permitir fechas posteriores a hoy ingresadas manualmente
-                        f.handleChange(today);
-                        
-                      } else {
-                        f.handleChange(inputDate);
-                      }
-                    }}
-                    onBlur={f.handleBlur}
-                    max={maxDate}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
-                  )}
-                </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Fecha de Nacimiento *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={f.state.value}
+                      onChange={(e) => {
+                        const inputDate = e.target.value;
+                        if (!inputDate) {
+                          // Campo obligatorio
+                          f.handleChange("");
+                        } else if (inputDate > adultMaxDate) {
+                          f.handleChange(adultMaxDate);
+                        } else {
+                          f.handleChange(inputDate);
+                        }
+                      }}
+                      onBlur={f.handleBlur}
+                      // Límite superior: exactamente 18 años atrás desde hoy
+                      max={adultMaxDate}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    />
+                    {f.state.meta.errors?.length > 0 && (
+                      <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                    )}
+                  </div>
+
               );
             }}
           </form.Field>
@@ -338,70 +338,95 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
 
         <div className="p-6 space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
-            <form.Field 
-              name="distanciaFinca"
-              validators={{ onChange: ({ value }: any) => validateField("distanciaFinca", value) }}
-            >
-              {(f: any) => (
-                <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Distancia a la finca (km) *</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={f.state.value}
-                    onChange={(e) => {
-                      // SOLO permite dígitos y punto decimal, elimina cualquier guion
-                      let value = e.target.value.replace(/[^\d.]/g, '');
+            
 
-                      // Evita múltiples puntos decimales
-                      const parts = value.split('.');
-                      const filtered = parts.length > 2 
-                        ? parts[0] + '.' + parts.slice(1).join('') 
-                        : value;
+{/* ✅ Checkbox marcado por defecto (uno solo) */}
+<form.Field name="viveEnFinca">
+  {(f: any) => (
+    <div className="flex items-center gap-3 mt-1">
+      <input
+        id="viveEnFinca"
+        type="checkbox"
+        checked={f.state.value ?? true} // default: true
+        onChange={(e) => {
+          f.handleChange(e.target.checked);
+          // si vuelve a marcar, limpia distancia
+          if (e.target.checked && f.form?.setFieldValue) {
+            f.form.setFieldValue("distanciaFinca", "");
+          }
+        }}
+        onBlur={f.handleBlur}
+        className="w-4 h-4 rounded"
+        style={{ accentColor: "#708C3E" }}
+      />
+      <label htmlFor="viveEnFinca" className="text-sm text-[#4A4A4A]">
+        ¿Vive en la finca?
+      </label>
+    </div>
+  )}
+</form.Field>
 
-                      // Evita ingresar cero como primer dígito (solo permite números mayores a cero)
-                      if (filtered === "" || filtered === "0" || parseFloat(filtered) === 0) {
-                        f.handleChange(""); // vacía el campo si se intenta ingresar cero
-                        return;
-                      }
+{/* ✅ Listener: solo muestra distancia cuando viveEnFinca === false */}
+<form.Field name="viveEnFinca">
+  {(v: any) => {
+    const viveEnFinca = (v.state.value ?? true) as boolean;
+    if (viveEnFinca) return null; // solo cuando está DESMARCADO
 
-                      f.handleChange(filtered);
-                    }}
-                    onBlur={f.handleBlur}
-                    placeholder="Ej: 12.50"
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
-                    onKeyDown={(e) => {
-                      // Previene ingreso de guion (-), e, y cero como primer dígito
-                      if (e.key === "-" || e.key === "e" || (e.key === "0" && !f.state.value)) {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
-                  )}
-                </div>
-              )}
-            </form.Field>
+    return (
+      <form.Field
+        name="distanciaFinca"
+        validators={{
+          onChange: ({ value }: any) => validateField("distanciaFinca", value),
+        }}
+      >
+        {(f: any) => (
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Distancia de su residencia a la finca (km) *
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={f.state.value}
+              onChange={(e) => {
+                // Solo dígitos y punto, sin guion
+                let value = e.target.value.replace(/[^\d.]/g, "");
+                const parts = value.split(".");
+                const filtered =
+                  parts.length > 2
+                    ? parts[0] + "." + parts.slice(1).join("")
+                    : value;
 
-            <form.Field name="viveEnFinca">
-              {(f: any) => (
-                <div className="flex items-center gap-3 mt-1">
-                  <input
-                    id="viveEnFinca"
-                    type="checkbox"
-                    checked={!!f.state.value}
-                    onChange={(e) => f.handleChange(e.target.checked)}
-                    onBlur={f.handleBlur}
-                    className="w-4 h-4 rounded "
-                    style={{ accentColor: '#708C3E' }}
-                  />
-                  <label htmlFor="viveEnFinca" className="text-sm text-[#4A4A4A]">
-                    ¿Vive en la finca?
-                  </label>
-                </div>
-              )}
-            </form.Field>
+                // Rechaza 0 o vacío (debe ser > 0)
+                if (filtered === "" || filtered === "0" || parseFloat(filtered) === 0) {
+                  f.handleChange("");
+                  return;
+                }
+
+                f.handleChange(filtered);
+              }}
+              onBlur={f.handleBlur}
+              placeholder="Ej: 12.50"
+              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+              onKeyDown={(e) => {
+                // Bloquea '-', 'e' y 0 como primer dígito
+                if (e.key === "-" || e.key === "e" || (e.key === "0" && !f.state.value)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+            {f.state.meta.errors?.length > 0 && (
+              <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+            )}
+          </div>
+        )}
+      </form.Field>
+    );
+  }}
+</form.Field>
+
+
+
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">

@@ -101,7 +101,7 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
       <div className="p-6 space-y-6">
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            ¿Su finca posee cerca? Seleccione el tipo:
+            ¿Qué tipo de cerca posee su finca? Seleccione el tipo:
           </label>
 
           <div className="space-y-2">
@@ -214,9 +214,9 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
 
           <div className="space-y-2">
             {[
-              "Tractor",
+              "Tractor de espalda",
               "Bomba de agua",
-              "Carreta",
+              "Camión ganadero",
               "Motosierra",
               "Picadora eléctrica",
               "Picadora de combustible",

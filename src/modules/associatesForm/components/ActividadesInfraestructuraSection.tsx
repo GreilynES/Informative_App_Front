@@ -149,14 +149,14 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
 
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            ¿Qué tipo de infraestructura y equipo para la producción posee? Escriba la cantidad
+            ¿Qué tipo de equipo para la producción posee? Escriba la cantidad
           </label>
 
           <div className="grid md:grid-cols-3 gap-4">
             {/* ✅ Aparatos */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                Aparatos
+                Apartos
               </label>
               <input
                 type="text"

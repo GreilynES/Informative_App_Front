@@ -1,5 +1,3 @@
-// src/modules/associatesForm/steps/stepAccesoComercializacion.tsx
-
 import { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 import { AccesoSection } from "../../fincaForm/components/AccesoSection";

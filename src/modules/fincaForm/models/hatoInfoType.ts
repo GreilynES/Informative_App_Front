@@ -9,7 +9,6 @@ export interface CreateHatoDto {
   export interface CreateAnimalDto {
     idHato: number;
     tipoAnimal: string;
-    edadAnios: number;
     cantidad: number;
   }
   
@@ -26,7 +25,6 @@ export interface CreateHatoDto {
   export interface Animal {
     idAnimal: number;
     tipoAnimal: string;
-    edadAnios: number;
     cantidad: number;
     idHato: number;
     createdAt: string;
