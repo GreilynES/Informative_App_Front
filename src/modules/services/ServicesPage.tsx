@@ -53,7 +53,7 @@ export default function ServicesPage() {
               className={`flex flex-nowrap gap-6 transition-transform duration-700 ease-in-out ${originalLength <= 3 ? "justify-center" : ""}`}
               style={{ transform: `translateX(${getTranslateX()}%)` }}
             >
-              {infiniteServices.map((service, index) => (
+              {infiniteServices.map((service: { id: any }, index: any) => (
                 <div
                   key={`${service.id}-${index}`}
                   className="flex-none"

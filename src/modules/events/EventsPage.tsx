@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import { AnimatedEventWrapper } from "../../shared/animations/EventChange"
 import type { EventData } from "./models/EventType"
-import { useEventRealtime, useEventsSubastaFirst } from "./hooks/useEvents"
+import { useEventsSubastaFirst } from "./hooks/useEvents" // ← IMPORTANTE: Este import
 
 export default function EventsPage() {
-  // Ahora el hook ya devuelve la lista con “Subasta” primero
-  const { events, isLoading, applyRealtime } = useEventsSubastaFirst()
+  // ✅ Ahora useEventsSubastaFirst usa TanStack Query
+  const { events, isLoading } = useEventsSubastaFirst()
 
   const [rtEvents, setRtEvents] = useState<EventData[]>([])
   const [currentEvent, setCurrentEvent] = useState(0)
@@ -16,18 +16,13 @@ export default function EventsPage() {
   useEffect(() => {
     if (!seeded.current && events.length > 0) {
       setRtEvents(events)
-      setCurrentEvent(0) // ya que subasta va de primera
+      setCurrentEvent(0)
       seeded.current = true
     } else if (seeded.current) {
       setRtEvents(events)
       setCurrentEvent((idx) => Math.min(idx, events.length - 1))
     }
   }, [events])
-
-  // Realtime: delega al hook el ordenamiento y reflejamos el resultado localmente
-  useEventRealtime<EventData>((payload: any) => {
-    applyRealtime(payload)
-  })
 
   const nextEvent = () => {
     if (rtEvents.length === 0) return
