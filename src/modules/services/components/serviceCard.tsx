@@ -5,7 +5,7 @@ export function ServicesCard({ service, openModal }: any) {
       <div className="bg-white rounded-b-2xl flex flex-col min-h-[318px] break-words leading-relaxed max-h-[318px] px-6 py-8 p-6 md:p-8 max-h-[70vh] overflow-auto">
         <h3 className="text-xl font-semibold text-[#2E321B] mb-3 break-words whitespace-normal">{service.title}</h3>
         <div className="text-[#2E321B] text-base leading-relaxed whitespace-pre-wrap break-all">
-            {service.modalDescription}
+            {service.cardDescription}
           </div>
           <button
               onClick={() =>

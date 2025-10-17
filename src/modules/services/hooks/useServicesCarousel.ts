@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react"
-import { getInformativeServices } from "../services/servicesInformativeService"
-import type { Service } from "../models/ServicesType"
-import { socket as socketPublic } from "../../../shared/lib/socket"
+import { useServices } from "./useServices"
 
 export function useServicesCarousel() {
-  const [services, setServices] = useState<Service[]>([])
+  const { services, isLoading } = useServices()
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
@@ -13,90 +11,33 @@ export function useServicesCarousel() {
 
   const infiniteServices = useMemo(() => {
     if (originalLength === 0) return []
+    if (originalLength <= cardsPerSlide) return services
 
-    // If we have 3 or fewer services, don't create infinite scroll
-    if (originalLength <= cardsPerSlide) {
-      return services
-    }
-
-    // Only create infinite scroll for more than 3 services
-    const prefix = services.slice(-cardsPerSlide) // 3 del final
-    const suffix = services.slice(0, cardsPerSlide) // 3 del inicio
+    const prefix = services.slice(-cardsPerSlide)
+    const suffix = services.slice(0, cardsPerSlide)
     return [...prefix, ...services, ...suffix]
-  }, [services, originalLength])
+  }, [services, originalLength, cardsPerSlide])
 
-  // Cargar datos
   useEffect(() => {
-    async function fetchData() {
-      const data = await getInformativeServices()
-      setServices(data)
-      if (data.length > cardsPerSlide) {
-        setCurrentSlide(cardsPerSlide)
-      } else {
-        setCurrentSlide(0)
-      }
+    if (originalLength > cardsPerSlide && currentSlide === 0) {
+      setCurrentSlide(cardsPerSlide)
+    } else if (originalLength <= cardsPerSlide) {
+      setCurrentSlide(0)
     }
-    fetchData()
-  }, [])
-
-  // Realtime (crear/actualizar/eliminar)
-  useEffect(() => {
-    const handler = (p: {
-      action: "created" | "updated" | "deleted"
-      data?: Service
-      id?: number | string
-    }) => {
-      if (p.action === "created" && p.data) {
-        setServices((prev) => {
-          const newServices = [p.data!, ...prev]
-          if (prev.length <= cardsPerSlide && newServices.length > cardsPerSlide) {
-            setCurrentSlide(cardsPerSlide)
-          }
-          return newServices
-        })
-      }
-      if (p.action === "updated" && p.data) {
-        setServices((prev) => prev.map((s) => (s.id === p.data!.id ? p.data! : s)))
-      }
-      if (p.action === "deleted" && p.id != null) {
-        const idNum = Number(p.id)
-        setServices((prev) => {
-          const newServices = prev.filter((s) => s.id !== idNum)
-          if (prev.length > cardsPerSlide && newServices.length <= cardsPerSlide) {
-            setCurrentSlide(0)
-          } else if (newServices.length > cardsPerSlide) {
-            setCurrentSlide((s) => Math.max(cardsPerSlide, s))
-          }
-          return newServices
-        })
-      }
-    }
-
-    socketPublic.on("service:updated", handler)
-    return () => {
-      socketPublic.off("service:updated", handler)
-    }
-  }, [])
+  }, [originalLength, currentSlide, cardsPerSlide])
 
   const goToPrev = () => {
-    if (isTransitioning || originalLength === 0) return
-    // Don't navigate if we have 3 or fewer services
-    if (originalLength <= cardsPerSlide) return
-
+    if (isTransitioning || originalLength === 0 || originalLength <= cardsPerSlide) return
     setIsTransitioning(true)
     setCurrentSlide((prev) => prev - 1)
   }
 
   const goToNext = () => {
-    if (isTransitioning || originalLength === 0) return
-    // Don't navigate if we have 3 or fewer services
-    if (originalLength <= cardsPerSlide) return
-
+    if (isTransitioning || originalLength === 0 || originalLength <= cardsPerSlide) return
     setIsTransitioning(true)
     setCurrentSlide((prev) => prev + 1)
   }
 
-  // Fin de animación + corrección silenciosa de bordes (sin animar el "salto")
   useEffect(() => {
     if (!isTransitioning) return
     if (originalLength <= cardsPerSlide) {
@@ -106,10 +47,8 @@ export function useServicesCarousel() {
 
     const timer = setTimeout(() => {
       setIsTransitioning(false)
-
-      const baseLen = originalLength
       const leftBound = cardsPerSlide
-      const rightBound = cardsPerSlide + baseLen - 1
+      const rightBound = cardsPerSlide + originalLength - 1
 
       if (currentSlide < leftBound) {
         setCurrentSlide(rightBound)
@@ -118,12 +57,10 @@ export function useServicesCarousel() {
       }
     }, 700)
     return () => clearTimeout(timer)
-  }, [currentSlide, isTransitioning, originalLength])
+  }, [currentSlide, isTransitioning, originalLength, cardsPerSlide])
 
   const getRealSlideIndex = () => {
-    if (originalLength === 0) return 0
-    if (originalLength <= cardsPerSlide) return 0
-
+    if (originalLength === 0 || originalLength <= cardsPerSlide) return 0
     const offset = currentSlide - cardsPerSlide
     return ((offset % originalLength) + originalLength) % originalLength
   }
@@ -134,16 +71,15 @@ export function useServicesCarousel() {
   }
 
   const getTotalSlides = () => {
-    if (originalLength === 0) return 0
-    if (originalLength <= cardsPerSlide) return 1
+    if (originalLength === 0 || originalLength <= cardsPerSlide) return 1
     return originalLength
   }
 
   const getCardWidth = () => {
     if (originalLength === 0) return "100%"
     if (originalLength === 1) return "100%"
-    if (originalLength === 2) return "calc(50% - 12px)" // Account for gap
-    return "calc((100% - 48px) / 3)" // Original 3-card layout
+    if (originalLength === 2) return "calc(50% - 12px)"
+    return "calc((100% - 48px) / 3)"
   }
 
   return {
@@ -158,6 +94,7 @@ export function useServicesCarousel() {
     cardsPerSlide,
     infiniteServices,
     getTotalSlides,
-    getCardWidth, // Added new function
+    getCardWidth,
+    isLoading,
   }
 }

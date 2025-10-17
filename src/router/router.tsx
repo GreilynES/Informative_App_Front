@@ -1,4 +1,4 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import {createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from '../App'
 import AssociatesPage from '../modules/associatesInformation/AssociatePage'
 import EventsPage from '../modules/events/EventsPage'
@@ -13,6 +13,9 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: HomePage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    section: search.section as string | undefined,
+  }),
 })
 
 const associatesRoute = createRoute({
