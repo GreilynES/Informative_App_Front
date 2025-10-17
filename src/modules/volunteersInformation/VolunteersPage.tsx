@@ -1,5 +1,6 @@
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
-import { Stepper } from "../associatesForm/components/Stepper";
+import { Stepper } from "../volunteersForm/components/Stepper";
+
 import { Steps } from "../volunteersForm/components/Steps";
 import { TermsAndSubmit } from "../volunteersForm/components/TermsAndSubmit";
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm";

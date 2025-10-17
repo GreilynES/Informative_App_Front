@@ -21,12 +21,21 @@ export function RequirementsSection({ requirements, showForm, setShowForm }: Req
 
       {!showForm && (
         <div className="text-center mt-10">
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
-          >
-            Desplegar formulario
-          </button>
+          <div className="inline-flex gap-20">
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
+            >
+              Desplegar Formulario Para Organización
+            </button>
+
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
+            >
+              Desplegar Formulario Para Individual
+            </button>
+          </div>
         </div>
       )}
     </div>
