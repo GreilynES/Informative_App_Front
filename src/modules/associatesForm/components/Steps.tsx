@@ -1,6 +1,6 @@
 import type { FormLike } from "../../../shared/types/form-lite";
 import { ZodError } from "zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { associateApplySchema } from "../schemas/associateApply";
 import { Step1 } from "../steps/stepPersonalInformation";
 import { Step2 } from "../steps/stepFincaGeoPropi";
@@ -23,6 +23,9 @@ interface StepsProps {
 export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: StepsProps) {
   const [, bump] = useState(0);
 
+  
+  const formTopRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const anyForm = form as any;
     if (typeof anyForm?.subscribe === "function") {
@@ -31,15 +34,13 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     }
   }, [form]);
 
-  
   useEffect(() => {
     const anyForm = form as any;
-    if (typeof anyForm?.subscribe === "function") return; 
+    if (typeof anyForm?.subscribe === "function") return;
     const id = setInterval(() => bump((x) => x + 1), 250);
     return () => clearInterval(id);
   }, [form]);
 
- 
   const getValues = () => {
     const anyForm = form as any;
     if (anyForm?.state?.values && typeof anyForm.state.values === "object") return anyForm.state.values;
@@ -55,7 +56,6 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     return {} as Record<string, any>;
   };
 
-  
   const validateField = (name: string, value: any) => {
     try {
       const fieldSchema = (associateApplySchema as any)?.shape?.[name];
@@ -69,13 +69,11 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     }
   };
 
-  
   const checkStepValidity = (values: any) => {
     switch (step) {
       case 1: {
         const vive = (values.viveEnFinca ?? true) as boolean;
 
-        
         const distanciaOk = vive
           ? true
           : (() => {
@@ -170,9 +168,8 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     }
   };
 
-  
   const values = getValues();
-  
+
   const fingerprint = useMemo(() => {
     try {
       return JSON.stringify(values, (_k, v) => {
@@ -184,18 +181,33 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     } catch {
       return String(Date.now());
     }
-    
-  }, [values]); 
+  }, [values]);
 
   const canProceed = useMemo(() => checkStepValidity(values), [step, fingerprint]);
 
+  
+  const scrollToFormTop = () => {
+    formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+  };
+
+  const goNext = () => {
+    nextStep();
+    requestAnimationFrame(scrollToFormTop);
+  };
+
+  const goPrev = () => {
+    prevStep();
+    requestAnimationFrame(scrollToFormTop);
+  };
+ 
+
   return (
-    <>
+    <div ref={formTopRef} className="scroll-mt-[120px]">
       {step === 1 && (
         <Step1
           form={form}
           lookup={lookup}
-          onNext={nextStep}
+          onNext={goNext}            
           canProceed={canProceed}
         />
       )}
@@ -203,8 +215,8 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       {step === 2 && (
         <Step2
           form={form}
-          onNext={nextStep}
-          onPrev={prevStep}
+          onNext={goNext}            
+          onPrev={goPrev}            
           canProceed={canProceed}
         />
       )}
@@ -212,32 +224,32 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       {step === 3 && (
         <Step3
           form={form}
-          onPrev={prevStep}
-          onNext={nextStep}
+          onPrev={goPrev}
+          onNext={goNext}
         />
       )}
 
       {step === 4 && (
         <Step4
           form={form}
-          onPrev={prevStep}
-          onNext={nextStep}
+          onPrev={goPrev}
+          onNext={goNext}
         />
       )}
 
       {step === 5 && (
         <Step5
           form={form}
-          onPrev={prevStep}
-          onNext={nextStep}
+          onPrev={goPrev}
+          onNext={goNext}
         />
       )}
 
       {step === 6 && (
         <Step6
           form={form}
-          onPrev={prevStep}
-          onNext={nextStep}
+          onPrev={goPrev}
+          onNext={goNext}
           canProceed={canProceed}
         />
       )}
@@ -245,10 +257,10 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       {step === 7 && (
         <Step7
           form={form}
-          onPrev={prevStep}
+          onPrev={goPrev}
           isSubmitting={isSubmitting}
         />
       )}
-    </>
+    </div>
   );
 }
