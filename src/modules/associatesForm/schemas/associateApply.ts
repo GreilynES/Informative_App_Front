@@ -21,11 +21,14 @@ const personaSchema = z.object({
    DATOS ASOCIADO
 ──────────────────────────────────────────────────────────────────────────── */
 const datosAsociadoSchema = z.object({
-  distanciaFinca: z.string().min(1, "La distancia es requerida"),
-  viveEnFinca: z.boolean().default(false),
+  distanciaFinca: z
+    .union([z.string(), z.number()])   // acepta número o string
+    .optional(),
+  viveEnFinca: z.boolean().default(true), // <-- antes estaba en false
   marcaGanado: z.string().min(1, "La marca de ganado es requerida"),
   CVO: z.string().min(1, "El CVO es requerido"),
 });
+
 
 /* ────────────────────────────────────────────────────────────────────────────
    NÚCLEO FAMILIAR (opcional)
@@ -85,20 +88,15 @@ export const actividadesInfraestructuraSchema = z.object({
 });
 
 export const viasAccesoSchema = z.object({
-  /** Lista de vías (p.ej. "Externas", "Internas" o “Otras…”) */
   accesos: z.array(z.string().min(1, "Texto vacío")).default([]),
 });
 
 export const comercializacionSchema = z.object({
-  /** Lista de canales (p.ej. "Subastas", "Carnicerías", etc.) */
   canales: z.array(z.string().min(1, "Texto vacío")).default([]),
 });
 
 export const necesidadesObservacionesSchema = z.object({
-  /**
-   * 5 casillas de necesidad/mejora (strings ≤ 255).
-   * Regla del paso exige: al menos UNA con texto no vacío.
-   */
+ 
   necesidades: z
     .array(z.string().max(255, "Máximo 255 caracteres"))
     .length(5, "Debes mantener 5 casillas")
@@ -133,22 +131,46 @@ export const caracteristicasFisicasSchema = z.object({
 /* ────────────────────────────────────────────────────────────────────────────
    SCHEMA COMPLETO
 ──────────────────────────────────────────────────────────────────────────── */
-export const associateApplySchema = z.object({
-  ...personaSchema.shape,
-  ...datosAsociadoSchema.shape,
-  ...nucleoFamiliarSchema.shape,
-  ...documentosSchema.shape,
-  ...fincaCompleteSchema.shape,
-  ...propietarioConditionalSchema.shape,
+export const associateApplySchema = z
+  .object({
+    ...personaSchema.shape,
+    ...datosAsociadoSchema.shape,
+    ...nucleoFamiliarSchema.shape,
+    ...documentosSchema.shape,
+    ...fincaCompleteSchema.shape,
+    ...propietarioConditionalSchema.shape,
+    actividadesInfraestructura: actividadesInfraestructuraSchema.optional(),
+    caracteristicasFisicas: caracteristicasFisicasSchema.optional(),
+  })
+  .superRefine((val, ctx) => {
+    // Solo exige distancia cuando NO vive en la finca
+    if (val.viveEnFinca === false) {
+      const raw = val.distanciaFinca;
 
-  // Paso 7
-  actividadesInfraestructura: actividadesInfraestructuraSchema.optional(),
+      // Normaliza a string para evaluar vacío y para convertir a número
+      const asText =
+        raw === undefined || raw === null ? "" : typeof raw === "number" ? String(raw) : String(raw);
+      const trimmed = asText.trim();
 
-  // Paso 8 (nuevo)
-  caracteristicasFisicas: caracteristicasFisicasSchema.optional(),
+      if (!trimmed) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["distanciaFinca"],
+          message: "La distancia es requerida cuando no vive en la finca",
+        });
+      } else {
+        const num = Number(trimmed);
+        if (Number.isNaN(num) || num <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["distanciaFinca"],
+            message: "Ingrese una distancia válida mayor a 0",
+          });
+        }
+      }
+    }
+  });
 
-  
-});
 
 export type ViasAcceso = z.infer<typeof viasAccesoSchema>;
 export type Comercializacion = z.infer<typeof comercializacionSchema>;

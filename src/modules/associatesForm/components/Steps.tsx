@@ -1,6 +1,6 @@
 import type { FormLike } from "../../../shared/types/form-lite";
-import { ZodError } from "zod"; 
-import { useState, useEffect } from "react";
+import { ZodError } from "zod";
+import { useEffect, useMemo, useState } from "react";
 import { associateApplySchema } from "../schemas/associateApply";
 import { Step1 } from "../steps/stepPersonalInformation";
 import { Step2 } from "../steps/stepFincaGeoPropi";
@@ -21,14 +21,45 @@ interface StepsProps {
 }
 
 export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: StepsProps) {
-  const [canProceed, setCanProceed] = useState(false);
+  const [, bump] = useState(0);
 
+  useEffect(() => {
+    const anyForm = form as any;
+    if (typeof anyForm?.subscribe === "function") {
+      const unsub = anyForm.subscribe(() => bump((x) => x + 1));
+      return () => { try { unsub && unsub(); } catch {} };
+    }
+  }, [form]);
+
+  
+  useEffect(() => {
+    const anyForm = form as any;
+    if (typeof anyForm?.subscribe === "function") return; 
+    const id = setInterval(() => bump((x) => x + 1), 250);
+    return () => clearInterval(id);
+  }, [form]);
+
+ 
+  const getValues = () => {
+    const anyForm = form as any;
+    if (anyForm?.state?.values && typeof anyForm.state.values === "object") return anyForm.state.values;
+    if (anyForm?.values && typeof anyForm.values === "object") return anyForm.values;
+    if (typeof anyForm?.getValues === "function") {
+      const v = anyForm.getValues();
+      if (v && typeof v === "object") return v;
+    }
+    if (typeof anyForm?.getState === "function") {
+      const st = anyForm.getState?.();
+      if (st?.values && typeof st.values === "object") return st.values;
+    }
+    return {} as Record<string, any>;
+  };
+
+  
   const validateField = (name: string, value: any) => {
     try {
-      const fieldSchema = (associateApplySchema.shape as any)[name];
-      if (fieldSchema) {
-        fieldSchema.parse(value);
-      }
+      const fieldSchema = (associateApplySchema as any)?.shape?.[name];
+      if (fieldSchema) fieldSchema.parse(value);
       return undefined;
     } catch (error) {
       if (error instanceof ZodError) {
@@ -38,127 +69,141 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     }
   };
 
-  const checkStepValidity = () => {
-    const values = (form as any).state.values;
   
+  const checkStepValidity = (values: any) => {
     switch (step) {
       case 1: {
-        const step1Valid = 
-          values.cedula && values.cedula.length >= 8 &&
-          values.nombre && values.nombre.length >= 1 &&
-          values.apellido1 && values.apellido1.length >= 1 &&
-          values.apellido2 && values.apellido2.length >= 1 &&
-          values.fechaNacimiento && values.fechaNacimiento.length > 0 &&
-          values.telefono && values.telefono.length >= 8 &&
-          values.email && values.email.length >= 1 &&
-          values.distanciaFinca && values.distanciaFinca.length >= 1 &&
-          values.marcaGanado && values.marcaGanado.length >= 1 &&
-          values.CVO && values.CVO.length >= 1;
+        const vive = (values.viveEnFinca ?? true) as boolean;
+
         
-        if (!step1Valid) return false;
-        
-        return !validateField("cedula", values.cedula) &&
-               !validateField("nombre", values.nombre) &&
-               !validateField("apellido1", values.apellido1) &&
-               !validateField("apellido2", values.apellido2) &&
-               !validateField("fechaNacimiento", values.fechaNacimiento) &&
-               !validateField("telefono", values.telefono) &&
-               !validateField("email", values.email) &&
-               !validateField("distanciaFinca", values.distanciaFinca) &&
-               !validateField("marcaGanado", values.marcaGanado) &&
-               !validateField("CVO", values.CVO);
+        const distanciaOk = vive
+          ? true
+          : (() => {
+              const raw = values.distanciaFinca;
+              const txt = raw == null ? "" : String(raw).trim();
+              if (!txt) return false;
+              const n = Number(txt.replace(",", "."));
+              return Number.isFinite(n) && n > 0;
+            })();
+
+        const baseOk =
+          (values.cedula?.length ?? 0) >= 8 &&
+          (values.nombre?.length ?? 0) >= 1 &&
+          (values.apellido1?.length ?? 0) >= 1 &&
+          (values.apellido2?.length ?? 0) >= 1 &&
+          !!values.fechaNacimiento &&
+          (values.telefono?.length ?? 0) >= 8 &&
+          !!values.email &&
+          (values.marcaGanado?.length ?? 0) >= 1 &&
+          (values.CVO?.length ?? 0) >= 1;
+
+        if (!baseOk || !distanciaOk) return false;
+
+        const toValidate: Array<[string, any]> = [
+          ["cedula", values.cedula],
+          ["nombre", values.nombre],
+          ["apellido1", values.apellido1],
+          ["apellido2", values.apellido2],
+          ["fechaNacimiento", values.fechaNacimiento],
+          ["telefono", values.telefono],
+          ["email", values.email],
+          ["marcaGanado", values.marcaGanado],
+          ["CVO", values.CVO],
+        ];
+        if (!vive) toValidate.push(["distanciaFinca", values.distanciaFinca]);
+
+        const anyError = toValidate.some(([n, v]) => !!validateField(n, v));
+        return !anyError;
       }
-  
+
       case 2: {
-        const fincaValid = 
-          values.nombreFinca && values.nombreFinca.length >= 1 &&
-          values.areaHa && values.areaHa.length >= 1 &&
-          values.numeroPlano && values.numeroPlano.length >= 1;
-      
-        const geografiaValid = 
-          values.provincia && values.provincia.length >= 1 &&
-          values.canton && values.canton.length >= 1 &&
-          values.distrito && values.distrito.length >= 1;
-      
+        const areaOk =
+          values.areaHa !== null && values.areaHa !== undefined && String(values.areaHa).trim() !== "";
+
+        const fincaValid =
+          (values.nombreFinca?.length ?? 0) >= 1 &&
+          areaOk &&
+          (values.numeroPlano?.length ?? 0) >= 1;
+
+        const geografiaValid =
+          (values.provincia?.length ?? 0) >= 1 &&
+          (values.canton?.length ?? 0) >= 1 &&
+          (values.distrito?.length ?? 0) >= 1;
+
         let propietarioValid = true;
-        
         if (values.esPropietario === false) {
           propietarioValid = !!(
-            values.propietarioCedula && values.propietarioCedula.length >= 8 &&
-            values.propietarioNombre && values.propietarioNombre.length >= 1 &&
-            values.propietarioApellido1 && values.propietarioApellido1.length >= 1 &&
-            values.propietarioApellido2 && values.propietarioApellido2.length >= 1 &&
-            values.propietarioTelefono && values.propietarioTelefono.length >= 8 &&
-            values.propietarioEmail && values.propietarioEmail.length >= 1 &&
-            values.propietarioFechaNacimiento && values.propietarioFechaNacimiento.length > 0
+            (values.propietarioCedula?.length ?? 0) >= 8 &&
+            (values.propietarioNombre?.length ?? 0) >= 1 &&
+            (values.propietarioApellido1?.length ?? 0) >= 1 &&
+            (values.propietarioApellido2?.length ?? 0) >= 1 &&
+            (values.propietarioTelefono?.length ?? 0) >= 8 &&
+            (values.propietarioEmail?.length ?? 0) >= 1 &&
+            !!values.propietarioFechaNacimiento
           );
         }
-        
         return fincaValid && geografiaValid && propietarioValid;
       }
 
       case 3: {
-        const hasForrajes = values.forrajes && values.forrajes.length > 0;
-        const hasRegistros = values.registrosProductivos !== null;
-        
+        const hasForrajes = Array.isArray(values.forrajes) && values.forrajes.length > 0;
+        const hasRegistros = values.registrosProductivos != null;
         return hasForrajes && hasRegistros;
       }
 
-      case 4: {
-        // Actividades e infraestructura (opcional)
+      case 4:
+      case 5:
         return true;
-      }
-  
-      case 5: {
-     return true;
-      }
-  
+
       case 6: {
-          // Documentos
-        const step5Valid = 
+        const docsOk =
           values.idCopy !== null && values.idCopy !== undefined &&
           values.farmMap !== null && values.farmMap !== undefined;
-        
-        return step5Valid;
+        return docsOk;
       }
 
-      case 7: {
-        // Confirmación
+      case 7:
         return !!values.acceptTerms;
-      }
-  
+
       default:
         return false;
     }
   };
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCanProceed(checkStepValidity());
-    }, 300);
+  
+  const values = getValues();
+  
+  const fingerprint = useMemo(() => {
+    try {
+      return JSON.stringify(values, (_k, v) => {
+        if (v instanceof File) return { __file: true, name: v.name, size: v.size, type: v.type };
+        if (v instanceof Date) return v.toISOString();
+        if (typeof v === "function") return undefined;
+        return v;
+      });
+    } catch {
+      return String(Date.now());
+    }
+    
+  }, [values]); 
 
-    return () => clearInterval(intervalId);
-  }, [step]);
-
-  useEffect(() => {
-    setCanProceed(checkStepValidity());
-  }, [step]);
+  const canProceed = useMemo(() => checkStepValidity(values), [step, fingerprint]);
 
   return (
     <>
       {step === 1 && (
-        <Step1 
-          form={form} 
-          lookup={lookup} 
-          onNext={nextStep} 
+        <Step1
+          form={form}
+          lookup={lookup}
+          onNext={nextStep}
           canProceed={canProceed}
         />
       )}
 
       {step === 2 && (
-        <Step2 
-          form={form} 
-          onNext={nextStep} 
+        <Step2
+          form={form}
+          onNext={nextStep}
           onPrev={prevStep}
           canProceed={canProceed}
         />
@@ -167,7 +212,7 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       {step === 3 && (
         <Step3
           form={form}
-          onPrev={prevStep} 
+          onPrev={prevStep}
           onNext={nextStep}
         />
       )}
@@ -175,35 +220,35 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       {step === 4 && (
         <Step4
           form={form}
-          onPrev={prevStep} 
+          onPrev={prevStep}
           onNext={nextStep}
         />
       )}
 
       {step === 5 && (
-          <Step5
-            form={form}
-            onPrev={prevStep} 
-            onNext={nextStep}
-          />
-        )}
+        <Step5
+          form={form}
+          onPrev={prevStep}
+          onNext={nextStep}
+        />
+      )}
 
       {step === 6 && (
         <Step6
-          form={form} 
-          onPrev={prevStep} 
+          form={form}
+          onPrev={prevStep}
           onNext={nextStep}
           canProceed={canProceed}
         />
       )}
 
-        {step === 7 && (
-          <Step7
-            form={form} 
-            onPrev={prevStep} 
-            isSubmitting={isSubmitting}
-          />
-        )}
+      {step === 7 && (
+        <Step7
+          form={form}
+          onPrev={prevStep}
+          isSubmitting={isSubmitting}
+        />
+      )}
     </>
   );
 }
