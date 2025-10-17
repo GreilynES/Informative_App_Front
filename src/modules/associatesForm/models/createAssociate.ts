@@ -1,8 +1,3 @@
-// src/modules/associatesForm/models/createAssociate.ts
-
-/**
- * DTO para crear una solicitud completa
- */
 export interface CreateSolicitudDto {
   persona: {
     cedula: string;
@@ -16,9 +11,10 @@ export interface CreateSolicitudDto {
   };
   
   datosAsociado: {
-    viveEnFinca: boolean;
+    viveEnFinca?: boolean;
     marcaGanado: string;
     CVO: string;
+    distanciaFinca?: number | string;
   };
   
   datosFinca: {
@@ -151,8 +147,8 @@ export interface SolicitudResponse {
   asociado: {
     idAsociado: number;
     persona: any;
-    distanciaFinca: number | null;
-    viveEnFinca: boolean;
+    distanciaFinca?: number | null;
+    viveEnFinca?: boolean;
     marcaGanado: string;
     CVO: string;
     estado: boolean;
