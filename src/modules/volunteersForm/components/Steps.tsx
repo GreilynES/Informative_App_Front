@@ -22,14 +22,15 @@ export function Steps({
   isStepValid,
   lookup,
 }: StepsProps) {
+  // ⬇️ Mantengo tu lógica exacta: adelanta 2 pasos
   const goFromCombinedToVolunteering = () => {
-    nextStep(); 
-    nextStep(); 
+    nextStep();
+    nextStep();
   };
 
   return (
     <>
-      {/* Paso 1: Información Personal, Información de Contacto */}
+      {/* Paso 1: Información Personal + Contacto */}
       {step === 1 && (
         <StepPersonalInformation
           formData={formData}
@@ -124,7 +125,7 @@ export function Steps({
         </div>
       )}
 
-      {/* Paso 3: Confirmación */}
+      {/* Paso 3 (PENÚLTIMO): Confirmación */}
       {step === 3 && (
         <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
           <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
@@ -158,7 +159,21 @@ export function Steps({
             </div>
           </div>
 
+          {/* Aquí sí dejamos "Siguiente" para pasar al ÚLTIMO paso */}
           <div className="text-center mt-6">
+            <NavigationButtons onPrev={prevStep} onNext={nextStep} />
+          </div>
+        </div>
+      )}
+
+      {/* Paso 4 (ÚLTIMO): Cierre / Envío */}
+      {step === 4 && (
+        <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] text-center">
+          <h2 className="text-3xl font-bold text-[#708C3E] mb-4">¡Solicitud enviada!</h2>
+          <p className="text-[#4A4A4A] max-w-2xl mx-auto">
+            Gracias por aplicar al voluntariado. Hemos recibido tu información y nos pondremos en contacto contigo por correo o teléfono.
+          </p>
+          <div className="mt-8">
             <NavigationButtons onPrev={prevStep} showNext={false} />
           </div>
         </div>
