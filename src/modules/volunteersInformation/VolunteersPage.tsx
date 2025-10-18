@@ -1,13 +1,15 @@
+// src/modules/volunteersInformation/VolunteersPage.tsx
+
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
 import { Stepper } from "../volunteersForm/components/Stepper";
-
-import { Steps } from "../volunteersForm/components/Steps";
 import { TermsAndSubmit } from "../volunteersForm/components/TermsAndSubmit";
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm";
+import { useVolunteerApply } from "../volunteersForm/hooks/useVolunteerApply";
 import { BenefitsSection } from "./components/BenefitsSection";
 import { HeaderSection } from "./components/HeaderSection";
-import { RequirementsSection } from "./components/RequerimentsSection";
 import { useVolunteersPage } from "./hooks/useVolunteersPage";
+import { RequirementsSection } from "./components/RequerimentsSection";
+import { Steps } from "../volunteersForm/components/Steps";
 
 export default function VolunteersPage() {
   const {
@@ -18,12 +20,17 @@ export default function VolunteersPage() {
     prevStep,
     showForm,
     setShowForm,
+    tipoSolicitante,
+    setTipoSolicitante,
     handleInputChange,
     isStepValid,
-  } = useVolunteersForm()
-  const { lookup } = useCedulaLookup()
-  const { data, loading, error, reload } = useVolunteersPage()
+  } = useVolunteersForm();
 
+  const { lookup } = useCedulaLookup();
+  const { data, loading, error, reload } = useVolunteersPage();
+
+  // ✅ Hook para Organización
+  const { form: formOrganizacion, isLoading: isSubmittingOrg } = useVolunteerApply();
 
   if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
   if (error || !data) return (
@@ -36,9 +43,9 @@ export default function VolunteersPage() {
   );
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-  }
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
@@ -50,14 +57,14 @@ export default function VolunteersPage() {
           requirements={[...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text)}
           showForm={showForm}
           setShowForm={setShowForm}
+          setTipoSolicitante={setTipoSolicitante}
         />
       </div>
 
       {showForm && (
         <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
           <div className="max-w-4xl mx-auto">
-
-            <Stepper step={step} />
+            <Stepper step={step} tipoSolicitante={tipoSolicitante} />
 
             <form onSubmit={handleSubmit} className="space-y-8">
               <Steps
@@ -69,9 +76,12 @@ export default function VolunteersPage() {
                 prevStep={prevStep}
                 isStepValid={isStepValid}
                 lookup={lookup}
+                tipoSolicitante={tipoSolicitante}
+                form={tipoSolicitante === 'ORGANIZACION' ? (formOrganizacion as any) : undefined}  // ✅ Cast explícito
+                isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : false}
               />
 
-              {step === 5 && (
+              {step === 5 && tipoSolicitante === 'INDIVIDUAL' && (
                 <TermsAndSubmit
                   formData={formData}
                   handleInputChange={handleInputChange}
@@ -83,5 +93,5 @@ export default function VolunteersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

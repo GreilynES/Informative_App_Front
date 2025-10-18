@@ -19,6 +19,8 @@ export type VolunteersFormData = {
   receiveInfo: boolean
 }
 
+export type Form = any; // Tipo permisivo para ambos formularios
+
 export const initialVolunteersFormData: VolunteersFormData = {
   idNumber: "",
   name: "",
