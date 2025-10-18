@@ -1,11 +1,10 @@
-// src/modules/volunteersForm/steps/Steps.tsx
-
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
 import { OrganizacionSection } from "../components/OrganizacionSection";
 import { RepresentanteSection } from "../components/RepresentanteSection";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { useMemo } from "react";
 import { DisponibilidadAreasSection } from "../components/DisponibilidadAreasSection";
+import { MotivacionHabilidadesSection } from "../components/MotivacionHabilidadesSection"; // ✅ NUEVO
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 
 const SKIP_VALIDATION_ORG = true;
@@ -14,7 +13,7 @@ interface StepsProps {
   step: number;
   formData?: VolunteersFormData;
   setFormData?: (data: VolunteersFormData) => void;
- handleInputChange?: (field: string, value: any) => void;
+  handleInputChange?: (field: string, value: any) => void;
   nextStep: () => void;
   prevStep: () => void;
   isStepValid?: () => boolean;
@@ -75,8 +74,24 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 3: Confirmación */}
+        {/* ✅ NUEVO: Paso 3: Motivación, Habilidades y Experiencia */}
         {step === 3 && (
+          <div className="space-y-6">
+            <MotivacionHabilidadesSection
+              formData={formData!}
+              handleInputChange={handleInputChange!}
+            />
+
+            <NavigationButtons
+              onPrev={prevStep}
+              onNext={nextStep}
+              disableNext={false}
+            />
+          </div>
+        )}
+
+        {/* Paso 4: Confirmación */}
+        {step === 4 && (
           <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
             <h2 className="text-3xl font-bold text-[#708C3E] text-center mb-6">
               Confirmación de Solicitud
@@ -131,6 +146,25 @@ export function Steps({
                   </ul>
                 </div>
               )}
+
+              {/* ✅ NUEVO: Motivación, Habilidades y Experiencia */}
+              <div>
+                <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Motivación y Habilidades</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Motivación:</p>
+                    <p className="text-sm text-gray-700">{formData!.motivation || "No especificado"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Habilidades:</p>
+                    <p className="text-sm text-gray-700">{formData!.volunteeringType || "No especificado"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Experiencia Previa:</p>
+                    <p className="text-sm text-gray-700">{formData!.previousExperience || "No especificado"}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="text-center mt-6">
@@ -169,8 +203,8 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 4: Enviado */}
-        {step === 4 && (
+        {/* Paso 5: Enviado */}
+        {step === 5 && (
           <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] text-center">
             <h2 className="text-3xl font-bold text-[#708C3E] mb-4">¡Solicitud enviada!</h2>
             <p className="text-[#4A4A4A] max-w-2xl mx-auto">
