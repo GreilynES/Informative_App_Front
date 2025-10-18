@@ -2,7 +2,6 @@
 
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
 import { Stepper } from "../volunteersForm/components/Stepper";
-import { TermsAndSubmit } from "../volunteersForm/components/TermsAndSubmit";
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm";
 import { useVolunteerApply } from "../volunteersForm/hooks/useVolunteerApply";
 import { useVolunteerIndividual } from "../volunteersForm/hooks/useVolunteerIndividual";
@@ -11,7 +10,6 @@ import { HeaderSection } from "./components/HeaderSection";
 import { useVolunteersPage } from "./hooks/useVolunteersPage";
 import { RequirementsSection } from "./components/RequerimentsSection";
 import { Steps } from "../volunteersForm/components/Steps";
-
 
 export default function VolunteersPage() {
   const {
@@ -26,17 +24,27 @@ export default function VolunteersPage() {
     setTipoSolicitante,
     handleInputChange,
     isStepValid,
+    files,
+    setFiles,
   } = useVolunteersForm();
 
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useVolunteersPage();
 
-  // Hook para Organización
-  const { form: formOrganizacion, isLoading: isSubmittingOrg } = useVolunteerApply();
+  // ✅ Hook para organizaciones
+  const { 
+    form: formOrganizacion, 
+    isLoading: isSubmittingOrg,
+    submitWithFiles: submitOrganizacion,
+  } = useVolunteerApply(() => {
+    console.log("✅ Solicitud de organización enviada con éxito");
+    nextStep();
+  });
 
-  // Hook para Individual
+  // ✅ Hook para individuales
   const { submitIndividual, isLoading: isSubmittingInd } = useVolunteerIndividual(() => {
     console.log("✅ Solicitud individual enviada con éxito");
+    nextStep();
   });
 
   if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
@@ -56,11 +64,46 @@ export default function VolunteersPage() {
 
   const formToUse = tipoSolicitante === 'ORGANIZACION' ? formOrganizacion : undefined;
 
+  // ✅ Wrapper para envío de Individual con archivos
   const handleSubmitIndividual = tipoSolicitante === 'INDIVIDUAL' 
     ? async (data: any) => {
-        await submitIndividual(data);
+        console.log("[Page] Enviando individual con files:", files);
+        await submitIndividual({ 
+          formData: data, 
+          files: {
+            cv: files.cv || undefined,
+            cedula: files.cedula || undefined,
+            carta: files.carta || undefined,
+          }
+        });
       }
     : undefined;
+
+  // ✅ Wrapper para envío de Organización con archivos
+  const handleSubmitOrganizacion = tipoSolicitante === 'ORGANIZACION'
+    ? async () => {
+        const values = formOrganizacion.state.values;
+        console.log("[Page] Enviando organización con files:", files);
+        console.log("[Page] Values:", values);
+        
+        try {
+          await submitOrganizacion({ 
+            values, 
+            files: {
+              cv: files.cv || undefined,
+              cedula: files.cedula || undefined,
+              carta: files.carta || undefined,
+            }
+          });
+        } catch (error) {
+          console.error("[Page] Error al enviar organización:", error);
+        }
+      }
+    : undefined;
+
+  const handleInputChangeWrapper = (field: string, value: any) => {
+    handleInputChange(field, value);
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
@@ -87,7 +130,7 @@ export default function VolunteersPage() {
                   step={step}
                   formData={formData}
                   setFormData={setFormData}
-                  handleInputChange={handleInputChange as any} // ✅ CAST temporal
+                  handleInputChange={handleInputChangeWrapper}
                   nextStep={nextStep}
                   prevStep={prevStep}
                   isStepValid={isStepValid}
@@ -96,15 +139,10 @@ export default function VolunteersPage() {
                   form={formToUse}
                   isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : isSubmittingInd}
                   submitIndividual={handleSubmitIndividual}
+                  submitOrganizacion={handleSubmitOrganizacion} // ✅ PASAR LA FUNCIÓN
+                  files={files}
+                  setFiles={setFiles}
                 />
-
-                {step === 5 && tipoSolicitante === 'INDIVIDUAL' && (
-                  <TermsAndSubmit
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    prevStep={prevStep}
-                  />
-                )}
               </form>
             ) : (
               <div className="bg-white rounded-xl p-6 text-center">

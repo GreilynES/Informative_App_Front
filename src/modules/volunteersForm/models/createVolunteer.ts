@@ -63,13 +63,24 @@ export interface CreateSolicitudVoluntarioDto {
   }>;
 }
 
+// ✅ Tipo de respuesta corregido según lo que devuelve el backend
 export interface SolicitudVoluntarioResponse {
-  idSolicitud: number;
+  idSolicitudVoluntariado: number; // ✅ Nombre correcto del campo
   tipoSolicitante: string;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   fechaSolicitud: string;
-  organizacion?: any;
+  fechaResolucion?: string | null;
+  motivo?: string | null;
+  formData?: {
+    cv: string[];
+    cedula: string[];
+    carta: string[];
+  } | null;
+  cvUrlTemp?: string | null;
+  cedulaUrlTemp?: string | null;
+  cartaUrlTemp?: string | null;
+  createdAt: string;
+  updatedAt: string;
   voluntario?: any;
-  disponibilidades?: any[];
-  areasInteres?: any[];
+  organizacion?: any;
 }
