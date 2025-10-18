@@ -1,5 +1,3 @@
-// src/modules/volunteersForm/steps/Steps.tsx
-
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
 import { OrganizacionSection } from "../components/OrganizacionSection";
 import { RepresentanteSection } from "../components/RepresentanteSection";
@@ -116,8 +114,6 @@ export function Steps({
             />
           </div>
         )}
-
-       // src/modules/volunteersForm/steps/Steps.tsx
 
         {/* Paso 5: Confirmación */}
         {step === 5 && (
