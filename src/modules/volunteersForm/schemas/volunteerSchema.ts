@@ -11,13 +11,23 @@ const isAdult = (isoDate: string) => {
   return age >= 16;
 };
 
+// helper: validar fechas (no anteriores a hoy)
+const isFutureOrToday = (isoDate: string) => {
+  if (!isoDate) return false;
+  const selected = new Date(isoDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  selected.setHours(0, 0, 0, 0);
+  return selected >= today;
+};
+
 // ========== PERSONA (también para el representante) ==========
 const personaSchema = z.object({
   cedula: z
     .string()
     .trim()
-    .min(8, "Cédula debe tener al menos 8 caracteres") 
-    .max(60, "Máximo 60 caracteres"), 
+    .min(8, "Cédula debe tener al menos 8 caracteres")
+    .max(60, "Máximo 60 caracteres"),
   nombre: z
     .string()
     .trim()
@@ -36,15 +46,15 @@ const personaSchema = z.object({
   telefono: z
     .string()
     .trim()
-    .min(8, "El teléfono debe tener al menos 8 caracteres") 
-    .max(20, "Máximo 20 caracteres"), 
+    .min(8, "El teléfono debe tener al menos 8 caracteres")
+    .max(20, "Máximo 20 caracteres"),
   email: z.string().trim().toLowerCase().email("Email inválido"),
 
   // AHORA OBLIGATORIA + MAYOR DE 16 AÑOS
   fechaNacimiento: z
     .string()
     .min(1, "La fecha de nacimiento es requerida")
-    .refine(isAdult, "Debes ser mayor de 16 años"), 
+    .refine(isAdult, "Debes ser mayor de 16 años"),
 
   // Opcionales
   direccion: z.string().trim().max(200, "Máximo 200 caracteres").optional(),
@@ -55,6 +65,42 @@ const personaSchema = z.object({
 const representanteSchema = z.object({
   persona: personaSchema,
   cargo: z.string().trim().min(1, "El cargo es requerido"),
+});
+
+// ========== DISPONIBILIDAD ==========
+const disponibilidadSchema = z
+  .object({
+    fechaInicio: z
+      .string()
+      .trim()
+      .min(1, "Fecha de inicio requerida")
+      .refine(isFutureOrToday, "La fecha de inicio no puede ser anterior a hoy"),
+    fechaFin: z
+      .string()
+      .trim()
+      .min(1, "Fecha de fin requerida")
+      .refine(isFutureOrToday, "La fecha de fin no puede ser anterior a hoy"),
+    dias: z
+      .array(z.string())
+      .min(1, "Seleccione al menos un día disponible"),
+    horarios: z
+      .array(z.string())
+      .min(1, "Seleccione al menos un horario preferido"),
+  })
+  .refine(
+    (data) => {
+      if (!data.fechaInicio || !data.fechaFin) return true;
+      return new Date(data.fechaFin) >= new Date(data.fechaInicio);
+    },
+    {
+      message: "La fecha de fin no puede ser anterior a la de inicio",
+      path: ["fechaFin"],
+    }
+  );
+
+// ========== ÁREAS DE INTERÉS ==========
+const areaInteresSchema = z.object({
+  nombreArea: z.string().trim().min(1, "El área no puede estar vacía"),
 });
 
 // ========== ORGANIZACIÓN ==========
@@ -69,40 +115,34 @@ const organizacionSchema = z.object({
   telefono: z
     .string()
     .trim()
-    .min(8, "El teléfono debe tener al menos 8 caracteres") 
+    .min(8, "El teléfono debe tener al menos 8 caracteres")
     .max(20, "Máximo 20 caracteres"),
   email: z.string().trim().toLowerCase().email("Email institucional inválido"),
-  tipoOrganizacion: z.string().trim().min(1, "El tipo de organización es requerido"),
+  tipoOrganizacion: z
+    .string()
+    .trim()
+    .min(1, "El tipo de organización es requerido"),
 
-  // Representante (obligatorio)
   representante: representanteSchema,
 
-  // Opcionales
   razonesSociales: z
     .array(
       z.object({
-        razonSocial: z.string().trim().min(1, "La razón social no puede estar vacía"),
+        razonSocial: z
+          .string()
+          .trim()
+          .min(1, "La razón social no puede estar vacía"),
       })
     )
     .optional(),
 
-  disponibilidades: z
-    .array(
-      z.object({
-        fechaInicio: z.string().trim().min(1, "Fecha de inicio requerida"),
-        fechaFin: z.string().trim().min(1, "Fecha de fin requerida"),
-        dias: z.array(z.string()).min(1, "Seleccione al menos un día"),
-        horario: z.string().trim().min(1, "El horario es requerido"),
-      })
-    )
-    .optional(),
+  // aplica nuevas validaciones de fechas y checkboxes
+  disponibilidades: z.array(disponibilidadSchema).optional(),
 
+  // debe marcar al menos 1 área
   areasInteres: z
-    .array(
-      z.object({
-        nombreArea: z.string().trim().min(1, "El área no puede estar vacía"),
-      })
-    )
+    .array(areaInteresSchema)
+    .min(1, "Seleccione al menos un área de interés")
     .optional(),
 });
 
@@ -112,4 +152,6 @@ export const volunteerOrganizacionSchema = z.object({
   organizacion: organizacionSchema,
 });
 
-export type VolunteerOrganizacionValues = z.infer<typeof volunteerOrganizacionSchema>;
+export type VolunteerOrganizacionValues = z.infer<
+  typeof volunteerOrganizacionSchema
+>;
