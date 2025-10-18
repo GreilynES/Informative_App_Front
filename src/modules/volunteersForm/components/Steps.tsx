@@ -5,17 +5,16 @@ import { OrganizacionSection } from "../components/OrganizacionSection";
 import { RepresentanteSection } from "../components/RepresentanteSection";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { useMemo } from "react";
+import { DisponibilidadAreasSection } from "../components/DisponibilidadAreasSection";
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 
-
-// ✅ CONSTANTE PARA DESARROLLO
-const SKIP_VALIDATION_ORG = true; // Cambiar a false cuando quieras validación real
+const SKIP_VALIDATION_ORG = true;
 
 interface StepsProps {
   step: number;
   formData?: VolunteersFormData;
   setFormData?: (data: VolunteersFormData) => void;
-  handleInputChange?: (field: keyof VolunteersFormData, value: string | boolean) => void;
+ handleInputChange?: (field: string, value: any) => void;
   nextStep: () => void;
   prevStep: () => void;
   isStepValid?: () => boolean;
@@ -44,7 +43,6 @@ export function Steps({
   if (tipoSolicitante === 'INDIVIDUAL') {
     const goFromCombinedToVolunteering = () => {
       nextStep();
-      nextStep();
     };
 
     return (
@@ -60,86 +58,19 @@ export function Steps({
           />
         )}
 
-        {/* Paso 2: Información de Voluntariado */}
+        {/* Paso 2: Disponibilidad y Áreas de Interés */}
         {step === 2 && (
-          <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-            <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
-              <h3 className="text-lg font-semibold text-[#708C3E]">Información de Voluntariado</h3>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Tipo de Voluntariado *</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Eventos, Logística, Campo..."
-                    value={formData!.volunteeringType}
-                    onChange={(e) => handleInputChange!("volunteeringType", e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Disponibilidad *</label>
-                  <input
-                    type="text"
-                    placeholder="Días/Horas disponibles"
-                    value={formData!.availability}
-                    onChange={(e) => handleInputChange!("availability", e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  />
-                </div>
-              </div>
+          <div className="space-y-6">
+            <DisponibilidadAreasSection
+              formData={formData}
+              handleInputChange={handleInputChange}
+              tipoSolicitante="INDIVIDUAL"
+            />
 
-              <div>
-                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Experiencia Previa</label>
-                <textarea
-                  placeholder="Describe brevemente tu experiencia como voluntario/a (opcional)"
-                  value={formData!.previousExperience}
-                  onChange={(e) => handleInputChange!("previousExperience", e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Motivación</label>
-                <textarea
-                  placeholder="¿Por qué te gustaría ser voluntario/a?"
-                  value={formData!.motivation}
-                  onChange={(e) => handleInputChange!("motivation", e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData!.acceptTerms}
-                    onChange={(e) => handleInputChange!("acceptTerms", e.target.checked)}
-                    className="rounded border-[#CFCFCF] text-[#708C3E] focus:ring-[#6F8C1F]"
-                  />
-                  <span className="text-sm text-[#4A4A4A]">Acepto términos y condiciones *</span>
-                </label>
-                <label className="inline-flex items-center gap-2 block">
-                  <input
-                    type="checkbox"
-                    checked={formData!.receiveInfo}
-                    onChange={(e) => handleInputChange!("receiveInfo", e.target.checked)}
-                    className="rounded border-[#CFCFCF] text-[#708C3E] focus:ring-[#6F8C1F]"
-                  />
-                  <span className="text-sm text-[#4A4A4A]">Deseo recibir información y noticias</span>
-                </label>
-              </div>
-            </div>
             <NavigationButtons
               onPrev={prevStep}
               onNext={nextStep}
-              disableNext={!isStepValid!()}
+              disableNext={false}
             />
           </div>
         )}
@@ -147,34 +78,59 @@ export function Steps({
         {/* Paso 3: Confirmación */}
         {step === 3 && (
           <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
-            <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
+            <h2 className="text-3xl font-bold text-[#708C3E] text-center mb-6">
+              Confirmación de Solicitud
+            </h2>
 
-            <div className="space-y-6 text-[#4A4A4A] mt-6">
+            <div className="space-y-6 text-[#4A4A4A]">
+              {/* Datos Personales */}
               <div>
-                <h3 className="text-lg font-semibold text-[#708C3E]">Datos Personales</h3>
-                <p><span className="text-sm text-gray-500">Nombre:</span> {formData!.name}</p>
-                <p><span className="text-sm text-gray-500">Primer Apellido:</span> {formData!.lastName1}</p>
-                <p><span className="text-sm text-gray-500">Segundo Apellido:</span> {formData!.lastName2}</p>
-                <p><span className="text-sm text-gray-500">Cédula:</span> {formData!.idNumber}</p>
-                <p><span className="text-sm text-gray-500">Fecha de Nacimiento:</span> {formData!.birthDate}</p>
+                <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Datos Personales</h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <p><span className="text-sm text-gray-500">Nombre:</span> {formData!.name}</p>
+                  <p><span className="text-sm text-gray-500">Primer Apellido:</span> {formData!.lastName1}</p>
+                  <p><span className="text-sm text-gray-500">Segundo Apellido:</span> {formData!.lastName2}</p>
+                  <p><span className="text-sm text-gray-500">Cédula:</span> {formData!.idNumber}</p>
+                  <p><span className="text-sm text-gray-500">Fecha de Nacimiento:</span> {formData!.birthDate}</p>
+                  <p><span className="text-sm text-gray-500">Nacionalidad:</span> {formData!.nacionalidad || "No especificado"}</p>
+                </div>
               </div>
 
+              {/* Contacto */}
               <div>
-                <h3 className="text-lg font-semibold text-[#708C3E]">Contacto</h3>
-                <p><span className="text-sm text-gray-500">Teléfono:</span> {formData!.phone}</p>
-                <p><span className="text-sm text-gray-500">Email:</span> {formData!.email}</p>
-                <p><span className="text-sm text-gray-500">Dirección:</span> {formData!.address || "No especificado"}</p>
+                <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Contacto</h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  <p><span className="text-sm text-gray-500">Teléfono:</span> {formData!.phone}</p>
+                  <p><span className="text-sm text-gray-500">Email:</span> {formData!.email}</p>
+                  <p className="md:col-span-2"><span className="text-sm text-gray-500">Dirección:</span> {formData!.address || "No especificado"}</p>
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold text-[#708C3E]">Voluntariado</h3>
-                <p><span className="text-sm text-gray-500">Tipo de Voluntariado:</span> {formData!.volunteeringType}</p>
-                <p><span className="text-sm text-gray-500">Disponibilidad:</span> {formData!.availability}</p>
-                <p><span className="text-sm text-gray-500">Experiencia Previa:</span> {formData!.previousExperience || "No especificado"}</p>
-                <p><span className="text-sm text-gray-500">Motivación:</span> {formData!.motivation || "No especificado"}</p>
-                <p><span className="text-sm text-gray-500">Acepta Términos:</span> {formData!.acceptTerms ? "Sí" : "No"}</p>
-                <p><span className="text-sm text-gray-500">Recibir Información:</span> {formData!.receiveInfo ? "Sí" : "No"}</p>
-              </div>
+              {/* Disponibilidad */}
+              {formData!.disponibilidades && formData!.disponibilidades.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Disponibilidad</h3>
+                  {formData!.disponibilidades.map((disp, idx) => (
+                    <div key={idx} className="mb-3">
+                      <p><span className="text-sm text-gray-500">Periodo:</span> {disp.fechaInicio} - {disp.fechaFin}</p>
+                      <p><span className="text-sm text-gray-500">Días:</span> {disp.dias.join(', ') || "No especificado"}</p>
+                      <p><span className="text-sm text-gray-500">Horarios:</span> {disp.horarios.join(', ') || "No especificado"}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Áreas de Interés */}
+              {formData!.areasInteres && formData!.areasInteres.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Áreas de Interés</h3>
+                  <ul className="list-disc list-inside">
+                    {formData!.areasInteres.map((area, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{area.nombreArea}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div className="text-center mt-6">
@@ -220,9 +176,6 @@ export function Steps({
             <p className="text-[#4A4A4A] max-w-2xl mx-auto">
               Gracias por aplicar al voluntariado. Hemos recibido tu información y nos pondremos en contacto contigo por correo o teléfono.
             </p>
-            <div className="mt-8">
-              <NavigationButtons onPrev={prevStep} showNext={false} />
-            </div>
           </div>
         )}
       </>
@@ -249,10 +202,8 @@ export function Steps({
     const values = getValues();
 
     const checkStepValidity = (currentStep: number, values: any) => {
-      // ✅ MODO DESARROLLO: Permitir siempre avanzar
       if (SKIP_VALIDATION_ORG) return true;
 
-      // ✅ VALIDACIÓN REAL (se activa cuando SKIP_VALIDATION_ORG = false)
       switch (currentStep) {
         case 1: {
           const org = values.organizacion || {};
@@ -341,28 +292,13 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 2: Disponibilidad */}
+        {/* Paso 2: Disponibilidad y Áreas de Interés */}
         {step === 2 && (
-          <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-            <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-                2
-              </div>
-              <h3 className="text-lg font-semibold text-[#708C3E]">
-                Disponibilidad y Áreas de Interés
-              </h3>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <p className="text-gray-600">
-                Esta sección se completará próximamente con:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 space-y-2">
-                <li>Razones sociales / Objetivos</li>
-                <li>Horarios de disponibilidad</li>
-                <li>Áreas de interés</li>
-              </ul>
-            </div>
+          <div className="space-y-6">
+            <DisponibilidadAreasSection
+              form={form}
+              tipoSolicitante="ORGANIZACION"
+            />
 
             <NavigationButtons
               onPrev={prevStep}
@@ -381,42 +317,23 @@ export function Steps({
               </h2>
 
               <div className="space-y-6 text-[#4A4A4A]">
+                {/* Datos de la Organización */}
                 <div>
                   <h3 className="text-lg font-semibold text-[#708C3E] mb-3">
                     Datos de la Organización
                   </h3>
                   <div className="grid md:grid-cols-2 gap-3">
-                    <p>
-                      <span className="text-sm text-gray-500">Nombre:</span>{" "}
-                      {values.organizacion?.nombre || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Cédula Jurídica:</span>{" "}
-                      {values.organizacion?.cedulaJuridica || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Tipo:</span>{" "}
-                      {values.organizacion?.tipoOrganizacion || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">N° Voluntarios:</span>{" "}
-                      {values.organizacion?.numeroVoluntarios || "N/A"}
-                    </p>
-                    <p className="md:col-span-2">
-                      <span className="text-sm text-gray-500">Dirección:</span>{" "}
-                      {values.organizacion?.direccion || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Teléfono:</span>{" "}
-                      {values.organizacion?.telefono || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Email:</span>{" "}
-                      {values.organizacion?.email || "N/A"}
-                    </p>
+                    <p><span className="text-sm text-gray-500">Nombre:</span> {values.organizacion?.nombre || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Cédula Jurídica:</span> {values.organizacion?.cedulaJuridica || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Tipo:</span> {values.organizacion?.tipoOrganizacion || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">N° Voluntarios:</span> {values.organizacion?.numeroVoluntarios || "N/A"}</p>
+                    <p className="md:col-span-2"><span className="text-sm text-gray-500">Dirección:</span> {values.organizacion?.direccion || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Teléfono:</span> {values.organizacion?.telefono || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Email:</span> {values.organizacion?.email || "N/A"}</p>
                   </div>
                 </div>
 
+                {/* Representante */}
                 <div>
                   <h3 className="text-lg font-semibold text-[#708C3E] mb-3">
                     Representante / Persona de Contacto
@@ -428,24 +345,48 @@ export function Steps({
                         values.organizacion?.representante?.persona?.apellido1 || ""
                       } ${values.organizacion?.representante?.persona?.apellido2 || ""}`}
                     </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Cédula:</span>{" "}
-                      {values.organizacion?.representante?.persona?.cedula || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Cargo:</span>{" "}
-                      {values.organizacion?.representante?.cargo || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Teléfono:</span>{" "}
-                      {values.organizacion?.representante?.persona?.telefono || "N/A"}
-                    </p>
-                    <p className="md:col-span-2">
-                      <span className="text-sm text-gray-500">Email:</span>{" "}
-                      {values.organizacion?.representante?.persona?.email || "N/A"}
-                    </p>
+                    <p><span className="text-sm text-gray-500">Cédula:</span> {values.organizacion?.representante?.persona?.cedula || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Cargo:</span> {values.organizacion?.representante?.cargo || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Teléfono:</span> {values.organizacion?.representante?.persona?.telefono || "N/A"}</p>
+                    <p className="md:col-span-2"><span className="text-sm text-gray-500">Email:</span> {values.organizacion?.representante?.persona?.email || "N/A"}</p>
                   </div>
                 </div>
+
+                {/* Razón Social */}
+                {values.organizacion?.razonesSociales && values.organizacion.razonesSociales.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Razón Social</h3>
+                    <p className="text-sm text-gray-700">
+                      {values.organizacion.razonesSociales[0]?.razonSocial || "No especificado"}
+                    </p>
+                  </div>
+                )}
+
+                {/* Disponibilidad */}
+                {values.organizacion?.disponibilidades && values.organizacion.disponibilidades.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Disponibilidad</h3>
+                    {values.organizacion.disponibilidades.map((disp: any, idx: number) => (
+                      <div key={idx} className="mb-3">
+                        <p><span className="text-sm text-gray-500">Periodo:</span> {disp.fechaInicio} - {disp.fechaFin}</p>
+                        <p><span className="text-sm text-gray-500">Días:</span> {disp.dias?.join(', ') || "No especificado"}</p>
+                        <p><span className="text-sm text-gray-500">Horarios:</span> {disp.horarios?.join(', ') || "No especificado"}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Áreas de Interés */}
+                {values.organizacion?.areasInteres && values.organizacion.areasInteres.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Áreas de Interés</h3>
+                    <ul className="list-disc list-inside">
+                      {values.organizacion.areasInteres.map((area: any, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700">{area.nombreArea}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -5,12 +5,10 @@ import { useForm } from "@tanstack/react-form";
 import { createSolicitudVoluntario } from "../services/volunteerFormService";
 import type { CreateSolicitudVoluntarioDto } from "../models/createVolunteer";
 
-/**
- * Mapea los valores del formulario al formato del backend
- */
 function mapToSolicitudPayload(values: any): CreateSolicitudVoluntarioDto {
   const payload: CreateSolicitudVoluntarioDto = {
     tipoSolicitante: 'ORGANIZACION',
+    
     organizacion: {
       cedulaJuridica: values.organizacion.cedulaJuridica,
       nombre: values.organizacion.nombre,
@@ -19,9 +17,11 @@ function mapToSolicitudPayload(values: any): CreateSolicitudVoluntarioDto {
       telefono: values.organizacion.telefono,
       email: values.organizacion.email,
       tipoOrganizacion: values.organizacion.tipoOrganizacion,
+    },
 
-      // ✅ CORRECCIÓN: Enviar como array de representantes
-      representantes: values.organizacion.representante ? [{
+    // ✅ Representantes en nivel raíz
+    ...(values.organizacion.representante && {
+      representantes: [{
         persona: {
           cedula: values.organizacion.representante.persona.cedula,
           nombre: values.organizacion.representante.persona.nombre,
@@ -37,32 +37,33 @@ function mapToSolicitudPayload(values: any): CreateSolicitudVoluntarioDto {
           }),
         },
         cargo: values.organizacion.representante.cargo,
-      }] : [],
-    },
+      }],
+    }),
+    
+    // ✅ Razones sociales en nivel raíz
+    ...(values.organizacion.razonesSociales?.length > 0 && {
+      razonesSociales: values.organizacion.razonesSociales.map((r: any) => ({
+        razonSocial: r.razonSocial || r,
+      })),
+    }),
+
+    // ✅ Disponibilidades en nivel raíz
+    ...(values.organizacion.disponibilidades?.length > 0 && {
+      disponibilidades: values.organizacion.disponibilidades,
+    }),
+
+    // ✅ Áreas de interés en nivel raíz
+    ...(values.organizacion.areasInteres?.length > 0 && {
+      areasInteres: values.organizacion.areasInteres.map((a: any) => ({
+        nombreArea: a.nombreArea || a,
+      })),
+    }),
   };
-
-  // Razones sociales (opcional)
-  if (values.organizacion.razonesSociales?.length > 0) {
-    payload.organizacion!.razonesSociales = values.organizacion.razonesSociales;
-  }
-
-  // Disponibilidades (opcional)
-  if (values.organizacion.disponibilidades?.length > 0) {
-    payload.organizacion!.disponibilidades = values.organizacion.disponibilidades;
-  }
-
-  // Áreas de interés (opcional)
-  if (values.organizacion.areasInteres?.length > 0) {
-    payload.organizacion!.areasInteres = values.organizacion.areasInteres;
-  }
 
   console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
   return payload;
 }
 
-/**
- * Hook para manejar el formulario de solicitud de voluntario (ORGANIZACIÓN)
- */
 export function useVolunteerApply(onSuccess?: () => void) {
   const mutation = useMutation({
     mutationFn: async (values: any) => {
@@ -112,7 +113,12 @@ export function useVolunteerApply(onSuccess?: () => void) {
         },
         
         razonesSociales: [] as Array<{ razonSocial: string }>,
-        disponibilidades: [] as any[],
+        disponibilidades: [] as Array<{
+          fechaInicio: string;
+          fechaFin: string;
+          dias: string[];
+          horarios: string[];
+        }>,
         areasInteres: [] as Array<{ nombreArea: string }>,
       },
     },

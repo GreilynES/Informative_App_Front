@@ -9,7 +9,7 @@ function mapToIndividualPayload(formData: VolunteersFormData): CreateSolicitudVo
   const payload: CreateSolicitudVoluntarioDto = {
     tipoSolicitante: 'INDIVIDUAL',
     
-    voluntario: {  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
+    voluntario: {
       persona: {
         cedula: formData.idNumber,
         nombre: formData.name,
@@ -24,10 +24,16 @@ function mapToIndividualPayload(formData: VolunteersFormData): CreateSolicitudVo
       habilidades: formData.volunteeringType?.trim() || "Por definir",
       experiencia: formData.previousExperience?.trim() || "Sin experiencia previa",
       nacionalidad: formData.nacionalidad?.trim() || "Costarricense",
-      
-      disponibilidades: [],
-      areasInteres: [],
     },
+    
+    // ✅ CAMBIO: Mover disponibilidades y áreas al nivel raíz
+    ...(formData.disponibilidades && formData.disponibilidades.length > 0 && {
+      disponibilidades: formData.disponibilidades,
+    }),
+    
+    ...(formData.areasInteres && formData.areasInteres.length > 0 && {
+      areasInteres: formData.areasInteres,
+    }),
   };
 
   console.log("[Hook Individual] Payload final:", JSON.stringify(payload, null, 2));

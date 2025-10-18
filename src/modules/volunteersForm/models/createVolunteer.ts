@@ -12,39 +12,28 @@ export interface CreateSolicitudVoluntarioDto {
     telefono: string;
     email: string;
     tipoOrganizacion: string;
-    
-    representantes?: Array<{
-      persona: {
-        cedula: string;
-        nombre: string;
-        apellido1: string;
-        apellido2: string;
-        telefono: string;
-        email: string;
-        fechaNacimiento?: string;
-        direccion?: string;
-      };
-      cargo: string;
-    }>;
-    
-    razonesSociales?: Array<{
-      razonSocial: string;
-    }>;
-    
-    disponibilidades?: Array<{
-      fechaInicio: string;
-      fechaFin: string;
-      dias: string[];
-      horario: string;
-    }>;
-    
-    areasInteres?: Array<{
-      nombreArea: string;
-    }>;
   };
 
+  representantes?: Array<{
+    persona: {
+      cedula: string;
+      nombre: string;
+      apellido1: string;
+      apellido2: string;
+      telefono: string;
+      email: string;
+      fechaNacimiento?: string;
+      direccion?: string;
+    };
+    cargo: string;
+  }>;
+  
+  razonesSociales?: Array<{
+    razonSocial: string;
+  }>;
+
   // ========== Datos de INDIVIDUAL ==========
-  voluntario?: {  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
+  voluntario?: {
     persona: {
       cedula: string;
       nombre: string;
@@ -59,18 +48,19 @@ export interface CreateSolicitudVoluntarioDto {
     habilidades: string;
     experiencia: string;
     nacionalidad: string;
-    
-    disponibilidades?: Array<{
-      fechaInicio: string;
-      fechaFin: string;
-      dias: string[];
-      horario: string;
-    }>;
-    
-    areasInteres?: Array<{
-      nombreArea: string;
-    }>;
   };
+
+  // ========== Campos compartidos (nivel raíz) ==========
+  disponibilidades?: Array<{
+    fechaInicio: string;
+    fechaFin: string;
+    dias: string[];
+    horarios: string[];
+  }>;
+  
+  areasInteres?: Array<{
+    nombreArea: string;
+  }>;
 }
 
 export interface SolicitudVoluntarioResponse {
@@ -79,5 +69,7 @@ export interface SolicitudVoluntarioResponse {
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   fechaSolicitud: string;
   organizacion?: any;
-  voluntario?: any;  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
+  voluntario?: any;
+  disponibilidades?: any[];
+  areasInteres?: any[];
 }

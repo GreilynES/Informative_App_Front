@@ -12,6 +12,7 @@ import { useVolunteersPage } from "./hooks/useVolunteersPage";
 import { RequirementsSection } from "./components/RequerimentsSection";
 import { Steps } from "../volunteersForm/components/Steps";
 
+
 export default function VolunteersPage() {
   const {
     formData,
@@ -55,7 +56,6 @@ export default function VolunteersPage() {
 
   const formToUse = tipoSolicitante === 'ORGANIZACION' ? formOrganizacion : undefined;
 
-  // ✅ Wrapper para adaptar el tipo de submitIndividual
   const handleSubmitIndividual = tipoSolicitante === 'INDIVIDUAL' 
     ? async (data: any) => {
         await submitIndividual(data);
@@ -87,7 +87,7 @@ export default function VolunteersPage() {
                   step={step}
                   formData={formData}
                   setFormData={setFormData}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleInputChange as any} // ✅ CAST temporal
                   nextStep={nextStep}
                   prevStep={prevStep}
                   isStepValid={isStepValid}
@@ -95,7 +95,7 @@ export default function VolunteersPage() {
                   tipoSolicitante={tipoSolicitante}
                   form={formToUse}
                   isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : isSubmittingInd}
-                  submitIndividual={handleSubmitIndividual} // ✅ Usar el wrapper
+                  submitIndividual={handleSubmitIndividual}
                 />
 
                 {step === 5 && tipoSolicitante === 'INDIVIDUAL' && (
