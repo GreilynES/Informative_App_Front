@@ -1,36 +1,68 @@
-import { useState } from "react"
-import { initialVolunteersFormData, type VolunteersFormData } from "../../volunteersInformation/models/VolunteersType"
+// src/modules/volunteersForm/hooks/useVolunteersForm.ts
+
+import { useState } from "react";
+import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
+
+const SKIP_VALIDATION_INDIVIDUAL = true;
+
 export function useVolunteersForm() {
-  const [formData, setFormData] = useState<VolunteersFormData>(initialVolunteersFormData)
-  const [showForm, setShowForm] = useState(false)
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1);
+  const [showForm, setShowForm] = useState(false);
+  const [tipoSolicitante, setTipoSolicitante] = useState<'INDIVIDUAL' | 'ORGANIZACION'>('INDIVIDUAL');
 
-  const nextStep = () => setStep((prev) => prev + 1)
-  const prevStep = () => setStep((prev) => Math.max(1, prev - 1))
+  const [formData, setFormData] = useState<VolunteersFormData>({
+    name: "",
+    lastName1: "",
+    lastName2: "",
+    idNumber: "",
+    birthDate: "",
+    phone: "",
+    email: "",
+    address: "",
+    community: "",
+    volunteeringType: "",
+    availability: "",
+    previousExperience: "",
+    motivation: "",
+    acceptTerms: false,
+    receiveInfo: false,
+    nacionalidad: "", // ✅ NUEVO CAMPO
+  });
 
-  const handleInputChange = (field: keyof VolunteersFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  const nextStep = () => setStep((prev) => prev + 1);
+  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const handleInputChange = (
+    field: keyof VolunteersFormData,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const isStepValid = () => {
-    if (step === 1) {
-      return (
-        formData.idNumber.trim() !== "" &&
-        formData.name.trim() !== "" &&
-        formData.lastName1.trim() !== "" &&
-        formData.lastName2.trim() !== "" &&
-        formData.birthDate.trim() !== ""
-      )
+    if (SKIP_VALIDATION_INDIVIDUAL) return true;
+
+    switch (step) {
+      case 1:
+        return (
+          formData.name.trim() !== "" &&
+          formData.lastName1.trim() !== "" &&
+          formData.lastName2.trim() !== "" &&
+          formData.idNumber.trim() !== "" &&
+          formData.birthDate.trim() !== "" &&
+          formData.phone.trim() !== "" &&
+          formData.email.trim() !== ""
+        );
+      case 2:
+        return (
+          formData.volunteeringType.trim() !== "" &&
+          formData.availability.trim() !== "" &&
+          formData.acceptTerms
+        );
+      default:
+        return true;
     }
-    if (step === 2) {
-      return (
-        formData.phone.trim() !== "" &&
-        formData.email.trim() !== "" &&
-        formData.community.trim() !== ""
-      )
-    }
-    return true // pasos 3–5 no son obligatorios para avanzar
-  }
+  };
 
   return {
     formData,
@@ -40,7 +72,9 @@ export function useVolunteersForm() {
     prevStep,
     showForm,
     setShowForm,
+    tipoSolicitante,
+    setTipoSolicitante,
     handleInputChange,
     isStepValid,
-  }
+  };
 }

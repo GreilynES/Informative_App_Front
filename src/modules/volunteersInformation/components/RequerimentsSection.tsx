@@ -1,12 +1,33 @@
+// src/modules/volunteersInformation/components/RequirementsSection.tsx
+
 import { CheckCircle } from "lucide-react";
 
 interface RequirementsSectionProps {
   requirements: string[];
   showForm: boolean;
   setShowForm: (show: boolean) => void;
+  setTipoSolicitante: (tipo: 'INDIVIDUAL' | 'ORGANIZACION') => void; // ✅ NUEVO
 }
 
-export function RequirementsSection({ requirements, showForm, setShowForm }: RequirementsSectionProps) {
+export function RequirementsSection({ 
+  requirements, 
+  showForm, 
+  setShowForm,
+  setTipoSolicitante  // ✅ NUEVO
+}: RequirementsSectionProps) {
+  
+  // ✅ Handler para Organización
+  const handleOrganizacion = () => {
+    setTipoSolicitante('ORGANIZACION');
+    setShowForm(true);
+  };
+
+  // ✅ Handler para Individual
+  const handleIndividual = () => {
+    setTipoSolicitante('INDIVIDUAL');
+    setShowForm(true);
+  };
+
   return (
     <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] max-w-6xl mx-auto mb-16">
       <h2 className="text-3xl font-bold text-[#708C3E] text-center mb-8">Requisitos</h2>
@@ -21,12 +42,21 @@ export function RequirementsSection({ requirements, showForm, setShowForm }: Req
 
       {!showForm && (
         <div className="text-center mt-10">
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
-          >
-            Desplegar formulario
-          </button>
+          <div className="inline-flex gap-20">
+            <button
+              onClick={handleOrganizacion}  // ✅ ACTUALIZADO
+              className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
+            >
+              Desplegar Formulario Para Organización
+            </button>
+
+            <button
+              onClick={handleIndividual}  // ✅ ACTUALIZADO
+              className="bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-md font-medium px-6 py-3 text-lg transition"
+            >
+              Desplegar Formulario Para Individual
+            </button>
+          </div>
         </div>
       )}
     </div>

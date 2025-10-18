@@ -1,12 +1,16 @@
+// src/modules/volunteersInformation/VolunteersPage.tsx
+
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
-import { Stepper } from "../associatesForm/components/Stepper";
-import { Steps } from "../volunteersForm/components/Steps";
+import { Stepper } from "../volunteersForm/components/Stepper";
 import { TermsAndSubmit } from "../volunteersForm/components/TermsAndSubmit";
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm";
+import { useVolunteerApply } from "../volunteersForm/hooks/useVolunteerApply";
+import { useVolunteerIndividual } from "../volunteersForm/hooks/useVolunteerIndividual";
 import { BenefitsSection } from "./components/BenefitsSection";
 import { HeaderSection } from "./components/HeaderSection";
-import { RequirementsSection } from "./components/RequerimentsSection";
 import { useVolunteersPage } from "./hooks/useVolunteersPage";
+import { RequirementsSection } from "./components/RequerimentsSection";
+import { Steps } from "../volunteersForm/components/Steps";
 
 export default function VolunteersPage() {
   const {
@@ -17,12 +21,22 @@ export default function VolunteersPage() {
     prevStep,
     showForm,
     setShowForm,
+    tipoSolicitante,
+    setTipoSolicitante,
     handleInputChange,
     isStepValid,
-  } = useVolunteersForm()
-  const { lookup } = useCedulaLookup()
-  const { data, loading, error, reload } = useVolunteersPage()
+  } = useVolunteersForm();
 
+  const { lookup } = useCedulaLookup();
+  const { data, loading, error, reload } = useVolunteersPage();
+
+  // Hook para Organización
+  const { form: formOrganizacion, isLoading: isSubmittingOrg } = useVolunteerApply();
+
+  // Hook para Individual
+  const { submitIndividual, isLoading: isSubmittingInd } = useVolunteerIndividual(() => {
+    console.log("✅ Solicitud individual enviada con éxito");
+  });
 
   if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
   if (error || !data) return (
@@ -35,9 +49,18 @@ export default function VolunteersPage() {
   );
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-  }
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+  };
+
+  const formToUse = tipoSolicitante === 'ORGANIZACION' ? formOrganizacion : undefined;
+
+  // ✅ Wrapper para adaptar el tipo de submitIndividual
+  const handleSubmitIndividual = tipoSolicitante === 'INDIVIDUAL' 
+    ? async (data: any) => {
+        await submitIndividual(data);
+      }
+    : undefined;
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
@@ -49,38 +72,48 @@ export default function VolunteersPage() {
           requirements={[...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text)}
           showForm={showForm}
           setShowForm={setShowForm}
+          setTipoSolicitante={setTipoSolicitante}
         />
       </div>
 
       {showForm && (
         <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
           <div className="max-w-4xl mx-auto">
+            <Stepper step={step} tipoSolicitante={tipoSolicitante} />
 
-            <Stepper step={step} />
-
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <Steps
-                step={step}
-                formData={formData}
-                setFormData={setFormData}
-                handleInputChange={handleInputChange}
-                nextStep={nextStep}
-                prevStep={prevStep}
-                isStepValid={isStepValid}
-                lookup={lookup}
-              />
-
-              {step === 5 && (
-                <TermsAndSubmit
+            {(tipoSolicitante === 'INDIVIDUAL' || (tipoSolicitante === 'ORGANIZACION' && formOrganizacion)) ? (
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <Steps
+                  step={step}
                   formData={formData}
+                  setFormData={setFormData}
                   handleInputChange={handleInputChange}
+                  nextStep={nextStep}
                   prevStep={prevStep}
+                  isStepValid={isStepValid}
+                  lookup={lookup}
+                  tipoSolicitante={tipoSolicitante}
+                  form={formToUse}
+                  isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : isSubmittingInd}
+                  submitIndividual={handleSubmitIndividual} // ✅ Usar el wrapper
                 />
-              )}
-            </form>
+
+                {step === 5 && tipoSolicitante === 'INDIVIDUAL' && (
+                  <TermsAndSubmit
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    prevStep={prevStep}
+                  />
+                )}
+              </form>
+            ) : (
+              <div className="bg-white rounded-xl p-6 text-center">
+                <p className="text-gray-600">Cargando formulario...</p>
+              </div>
+            )}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

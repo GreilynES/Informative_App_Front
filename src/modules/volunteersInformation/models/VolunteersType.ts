@@ -1,23 +1,28 @@
+// src/modules/volunteersInformation/models/VolunteersType.ts
+
 export type VolunteersFormData = {
-  idNumber: string
-  name: string
-  lastName1: string
-  lastName2: string
-  birthDate: string
+  idNumber: string;
+  name: string;
+  lastName1: string;
+  lastName2: string;
+  birthDate: string;
 
-  phone: string
-  email: string
-  address: string
-  community: string
+  phone: string;
+  email: string;
+  address: string;
+  community: string;
 
-
-  volunteeringType: string
-  availability: string
-  previousExperience: string
-  motivation: string
-  acceptTerms: boolean
-  receiveInfo: boolean
+  volunteeringType: string;
+  availability: string;
+  previousExperience: string;
+  motivation: string;
+  acceptTerms: boolean;
+  receiveInfo: boolean;
+  
+  nacionalidad?: string; // ✅ NUEVO CAMPO
 }
+
+export type Form = any;
 
 export const initialVolunteersFormData: VolunteersFormData = {
   idNumber: "",
@@ -37,4 +42,6 @@ export const initialVolunteersFormData: VolunteersFormData = {
   motivation: "",
   acceptTerms: false,
   receiveInfo: false,
+  
+  nacionalidad: "", 
 }
