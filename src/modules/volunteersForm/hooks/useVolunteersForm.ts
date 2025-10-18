@@ -3,11 +3,11 @@
 import { useState } from "react";
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
 
+const SKIP_VALIDATION_INDIVIDUAL = true;
+
 export function useVolunteersForm() {
   const [step, setStep] = useState(1);
   const [showForm, setShowForm] = useState(false);
-  
-  // ✅ NUEVO: Estado para tipo de solicitante
   const [tipoSolicitante, setTipoSolicitante] = useState<'INDIVIDUAL' | 'ORGANIZACION'>('INDIVIDUAL');
 
   const [formData, setFormData] = useState<VolunteersFormData>({
@@ -26,6 +26,7 @@ export function useVolunteersForm() {
     motivation: "",
     acceptTerms: false,
     receiveInfo: false,
+    nacionalidad: "", // ✅ NUEVO CAMPO
   });
 
   const nextStep = () => setStep((prev) => prev + 1);
@@ -39,6 +40,8 @@ export function useVolunteersForm() {
   };
 
   const isStepValid = () => {
+    if (SKIP_VALIDATION_INDIVIDUAL) return true;
+
     switch (step) {
       case 1:
         return (
@@ -48,8 +51,7 @@ export function useVolunteersForm() {
           formData.idNumber.trim() !== "" &&
           formData.birthDate.trim() !== "" &&
           formData.phone.trim() !== "" &&
-          formData.email.trim() !== "" &&
-          formData.community.trim() !== ""
+          formData.email.trim() !== ""
         );
       case 2:
         return (
@@ -70,8 +72,8 @@ export function useVolunteersForm() {
     prevStep,
     showForm,
     setShowForm,
-    tipoSolicitante,        // ✅ NUEVO
-    setTipoSolicitante,     // ✅ NUEVO
+    tipoSolicitante,
+    setTipoSolicitante,
     handleInputChange,
     isStepValid,
   };

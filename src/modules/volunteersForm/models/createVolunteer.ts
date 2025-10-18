@@ -3,7 +3,7 @@
 export interface CreateSolicitudVoluntarioDto {
   tipoSolicitante: 'ORGANIZACION' | 'INDIVIDUAL';
   
-  // Datos de la organización
+  // ========== Datos de ORGANIZACIÓN ==========
   organizacion?: {
     cedulaJuridica: string;
     nombre: string;
@@ -13,7 +13,6 @@ export interface CreateSolicitudVoluntarioDto {
     email: string;
     tipoOrganizacion: string;
     
-    // ✅ CORRECCIÓN: Array de representantes (no objeto único)
     representantes?: Array<{
       persona: {
         cedula: string;
@@ -28,7 +27,6 @@ export interface CreateSolicitudVoluntarioDto {
       cargo: string;
     }>;
     
-    // Arrays opcionales
     razonesSociales?: Array<{
       razonSocial: string;
     }>;
@@ -44,8 +42,36 @@ export interface CreateSolicitudVoluntarioDto {
       nombreArea: string;
     }>;
   };
-}
 
+  // ========== Datos de INDIVIDUAL ==========
+  voluntario?: {  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
+    persona: {
+      cedula: string;
+      nombre: string;
+      apellido1: string;
+      apellido2: string;
+      fechaNacimiento: string;
+      telefono: string;
+      email: string;
+      direccion?: string;
+    };
+    motivacion: string;
+    habilidades: string;
+    experiencia: string;
+    nacionalidad: string;
+    
+    disponibilidades?: Array<{
+      fechaInicio: string;
+      fechaFin: string;
+      dias: string[];
+      horario: string;
+    }>;
+    
+    areasInteres?: Array<{
+      nombreArea: string;
+    }>;
+  };
+}
 
 export interface SolicitudVoluntarioResponse {
   idSolicitud: number;
@@ -53,5 +79,5 @@ export interface SolicitudVoluntarioResponse {
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   fechaSolicitud: string;
   organizacion?: any;
-  // ... resto de campos
+  voluntario?: any;  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
 }

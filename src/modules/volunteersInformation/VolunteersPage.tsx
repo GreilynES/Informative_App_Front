@@ -5,6 +5,7 @@ import { Stepper } from "../volunteersForm/components/Stepper";
 import { TermsAndSubmit } from "../volunteersForm/components/TermsAndSubmit";
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm";
 import { useVolunteerApply } from "../volunteersForm/hooks/useVolunteerApply";
+import { useVolunteerIndividual } from "../volunteersForm/hooks/useVolunteerIndividual";
 import { BenefitsSection } from "./components/BenefitsSection";
 import { HeaderSection } from "./components/HeaderSection";
 import { useVolunteersPage } from "./hooks/useVolunteersPage";
@@ -29,8 +30,13 @@ export default function VolunteersPage() {
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useVolunteersPage();
 
-  // ✅ Hook para Organización
+  // Hook para Organización
   const { form: formOrganizacion, isLoading: isSubmittingOrg } = useVolunteerApply();
+
+  // Hook para Individual
+  const { submitIndividual, isLoading: isSubmittingInd } = useVolunteerIndividual(() => {
+    console.log("✅ Solicitud individual enviada con éxito");
+  });
 
   if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
   if (error || !data) return (
@@ -46,6 +52,15 @@ export default function VolunteersPage() {
     e.preventDefault();
     console.log("Form submitted:", formData);
   };
+
+  const formToUse = tipoSolicitante === 'ORGANIZACION' ? formOrganizacion : undefined;
+
+  // ✅ Wrapper para adaptar el tipo de submitIndividual
+  const handleSubmitIndividual = tipoSolicitante === 'INDIVIDUAL' 
+    ? async (data: any) => {
+        await submitIndividual(data);
+      }
+    : undefined;
 
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
@@ -66,29 +81,36 @@ export default function VolunteersPage() {
           <div className="max-w-4xl mx-auto">
             <Stepper step={step} tipoSolicitante={tipoSolicitante} />
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <Steps
-                step={step}
-                formData={formData}
-                setFormData={setFormData}
-                handleInputChange={handleInputChange}
-                nextStep={nextStep}
-                prevStep={prevStep}
-                isStepValid={isStepValid}
-                lookup={lookup}
-                tipoSolicitante={tipoSolicitante}
-                form={tipoSolicitante === 'ORGANIZACION' ? (formOrganizacion as any) : undefined}  // ✅ Cast explícito
-                isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : false}
-              />
-
-              {step === 5 && tipoSolicitante === 'INDIVIDUAL' && (
-                <TermsAndSubmit
+            {(tipoSolicitante === 'INDIVIDUAL' || (tipoSolicitante === 'ORGANIZACION' && formOrganizacion)) ? (
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <Steps
+                  step={step}
                   formData={formData}
+                  setFormData={setFormData}
                   handleInputChange={handleInputChange}
+                  nextStep={nextStep}
                   prevStep={prevStep}
+                  isStepValid={isStepValid}
+                  lookup={lookup}
+                  tipoSolicitante={tipoSolicitante}
+                  form={formToUse}
+                  isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : isSubmittingInd}
+                  submitIndividual={handleSubmitIndividual} // ✅ Usar el wrapper
                 />
-              )}
-            </form>
+
+                {step === 5 && tipoSolicitante === 'INDIVIDUAL' && (
+                  <TermsAndSubmit
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    prevStep={prevStep}
+                  />
+                )}
+              </form>
+            ) : (
+              <div className="bg-white rounded-xl p-6 text-center">
+                <p className="text-gray-600">Cargando formulario...</p>
+              </div>
+            )}
           </div>
         </div>
       )}

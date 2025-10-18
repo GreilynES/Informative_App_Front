@@ -37,12 +37,12 @@ function sanitizePayload(obj: any): any {
 }
 
 /**
- * Crea una solicitud de voluntariado
+ * Crea una solicitud de voluntariado (ORGANIZACIÓN)
  */
 export async function createSolicitudVoluntario(
   payload: CreateSolicitudVoluntarioDto
 ): Promise<SolicitudVoluntarioResponse> {
-  console.log("[Service] Enviando solicitud:", JSON.stringify(payload, null, 2));
+  console.log("[Service Org] Enviando solicitud:", JSON.stringify(payload, null, 2));
 
   try {
     const cleanData = sanitizePayload(payload);
@@ -53,11 +53,37 @@ export async function createSolicitudVoluntario(
         headers: { "Content-Type": "application/json" },
       }
     );
-    console.log("[Service] ✅ Respuesta del backend:", data);
+    console.log("[Service Org] ✅ Respuesta del backend:", data);
     return data;
   } catch (err: any) {
-    console.error("[Service] ❌ Error al enviar solicitud:", err?.message || err);
-    console.error("[Service] Response data:", err?.response?.data);
+    console.error("[Service Org] ❌ Error al enviar solicitud:", err?.message || err);
+    console.error("[Service Org] Response data:", err?.response?.data);
+    throw err;
+  }
+}
+
+/**
+ * Crea una solicitud de voluntariado (INDIVIDUAL)
+ */
+export async function createSolicitudVoluntarioIndividual(
+  payload: CreateSolicitudVoluntarioDto
+): Promise<SolicitudVoluntarioResponse> {
+  console.log("[Service Individual] Enviando solicitud:", JSON.stringify(payload, null, 2));
+
+  try {
+    const cleanData = sanitizePayload(payload);
+    const { data } = await apiConfig.post<SolicitudVoluntarioResponse>(
+      "/solicitudes-voluntariado",
+      cleanData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    console.log("[Service Individual] ✅ Respuesta del backend:", data);
+    return data;
+  } catch (err: any) {
+    console.error("[Service Individual] ❌ Error al enviar solicitud:", err?.message || err);
+    console.error("[Service Individual] Response data:", err?.response?.data);
     throw err;
   }
 }

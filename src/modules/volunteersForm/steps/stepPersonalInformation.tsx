@@ -109,6 +109,18 @@ export function StepPersonalInformation({
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
             />
           </div>
+          <div>
+            <label htmlFor="nacionalidad" className="block text-sm font-medium text-gray-700 mb-1">
+              Nacionalidad
+            </label>
+            <input
+              type="text"
+              value={formData.nacionalidad || ""}
+              onChange={(e) => handleInputChange("nacionalidad", e.target.value)}
+              placeholder="Ej: Costarricense"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            />
+          </div>
         </div>
       </div>
 
