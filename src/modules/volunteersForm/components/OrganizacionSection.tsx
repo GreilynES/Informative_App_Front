@@ -1,10 +1,8 @@
-// src/modules/volunteersForm/components/OrganizacionSection.tsx
 import { useState } from "react";
 import { organizacionSchema } from "../schemas/volunteerSchema";
 
 interface OrganizacionSectionProps {
   form: any;
-  /** controla si se muestran los mensajes en rojo */
   showErrors?: boolean;
 }
 
@@ -32,23 +30,6 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
     (form.getFieldValue?.("organizacion.tipoOrganizacion") as string) || ""
   );
   const [otroTipo, setOtroTipo] = useState("");
-
-  const handleTipoChange = async (valor: string) => {
-    setTipoOrg(valor);
-    if (valor !== "Otro") {
-      setOtroTipo("");
-      form.setFieldValue("organizacion.tipoOrganizacion", valor);
-    } else {
-      form.setFieldValue("organizacion.tipoOrganizacion", "");
-    }
-    await form.validateField?.("organizacion.tipoOrganizacion");
-  };
-
-  const handleOtroTipoChange = async (valor: string) => {
-    setOtroTipo(valor);
-    form.setFieldValue("organizacion.tipoOrganizacion", valor);
-    await form.validateField?.("organizacion.tipoOrganizacion");
-  };
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -171,26 +152,12 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           </form.Field>
         </div>
 
-        {/* Tipo de organización */}
+        {/* Tipo de organización (cambio mínimo: value = field.state.value) */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Tipo de organización <span className="text-red-500">*</span>
           </label>
 
-          <select
-            value={tipoOrg}
-            onChange={(e) => handleTipoChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-          >
-            <option value="">Seleccione...</option>
-            {TIPOS_ORGANIZACION.map((tipo) => (
-              <option key={tipo} value={tipo}>
-                {tipo}
-              </option>
-            ))}
-          </select>
-
-          {/* Field “real” que guarda el valor y pinta el error */}
           <form.Field
             name="organizacion.tipoOrganizacion"
             validators={{
@@ -199,32 +166,58 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
               onSubmit: validateOrgField("tipoOrganizacion"),
             }}
           >
-            {(field: any) =>
-              showErrors && field.state.meta.errors?.length > 0 ? (
-                <p className="mt-1 text-sm text-red-600">
-                  {field.state.meta.errors[0]}
-                </p>
-              ) : null
-            }
+            {(field: any) => (
+              <>
+                <select
+                  value={field.state.value ?? ""}  
+                  onChange={(e) => {
+                    const valor = e.target.value;
+                    setTipoOrg(valor);                     
+                    if (valor !== "Otro") {
+                      setOtroTipo("");
+                      field.handleChange(valor);
+                    } else {
+                      field.handleChange("");
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                >
+                  <option value="">Seleccione...</option>
+                  {TIPOS_ORGANIZACION.map((tipo) => (
+                    <option key={tipo} value={tipo}>
+                      {tipo}
+                    </option>
+                  ))}
+                </select>
+
+                {showErrors && field.state.meta.errors?.length > 0 && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {field.state.meta.errors[0]}
+                  </p>
+                )}
+
+                {tipoOrg === "Otro" && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+                      Especifique el tipo de organización <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={otroTipo}
+                      onChange={(e) => {
+                        setOtroTipo(e.target.value);
+                        field.handleChange(e.target.value); // ✅ el mismo Field recibe el texto
+                      }}
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      placeholder="Ej: Cooperativa agrícola"
+                      maxLength={100}
+                    />
+                  </div>
+                )}
+              </>
+            )}
           </form.Field>
         </div>
-
-        {/* Campo “Otro” */}
-        {tipoOrg === "Otro" && (
-          <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-              Especifique el tipo de organización <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={otroTipo}
-              onChange={(e) => handleOtroTipoChange(e.target.value)}
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-              placeholder="Ej: Cooperativa agrícola"
-              maxLength={100}
-            />
-          </div>
-        )}
 
         {/* Dirección */}
         <div>

@@ -8,7 +8,6 @@ export const isAdult = (isoDate: string) => {
   let age = today.getFullYear() - d.getFullYear();
   const m = today.getMonth() - d.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
-  // ✅ ahora 18 años
   return age >= 16;
 };
 
@@ -130,8 +129,7 @@ export const organizacionSchema = z.object({
   email: z.string().trim().toLowerCase().email("Email institucional inválido"),
   tipoOrganizacion: z
     .string()
-    .trim()
-    .min(1, "El tipo de organización es requerido"),
+    .trim(),
   representante: representanteSchema,
   razonesSociales: z
     .array(

@@ -54,7 +54,6 @@ export function Steps({
   const dispRefOrg = useRef<DisponibilidadAreasSectionHandle>(null);
   const motivRef = useRef<MotivacionHabilidadesSectionHandle>(null);
 
-  // Flag para mostrar errores en Paso 1 (ORGANIZACIÓN)
   const [showOrgStep1Errors, setShowOrgStep1Errors] = useState(false);
 
   // ========== FLUJO INDIVIDUAL ==========
@@ -316,9 +315,13 @@ export function Steps({
           </div>
         )}
 
+        {/* Paso 6: Enviado */}
         {step === 6 && (
           <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] text-center">
-            {/* ... sin cambios ... */}
+            <h2 className="text-3xl font-bold text-[#708C3E] mb-4">¡Solicitud enviada!</h2>
+            <p className="text-[#4A4A4A] max-w-2xl mx-auto">
+              Gracias por aplicar al voluntariado. Hemos recibido tu información y nos pondremos en contacto contigo por correo o teléfono.
+            </p>
           </div>
         )}
       </>
@@ -380,7 +383,6 @@ export function Steps({
         "organizacion.representante.persona.email",
       ];
 
-      // ⬇ ESTA ES LA LÍNEA CLAVE: pasa el tipo 'submit' para que corran los validators onSubmit
       namesToValidate.forEach((n) => form?.validateField?.(n, "submit"));
 
       if (anyEmpty) {
