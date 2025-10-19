@@ -1,8 +1,11 @@
+// src/modules/volunteersForm/components/OrganizacionSection.tsx
 import { useState } from "react";
 import { organizacionSchema } from "../schemas/volunteerSchema";
 
 interface OrganizacionSectionProps {
-  form: any; 
+  form: any;
+  /** controla si se muestran los mensajes en rojo */
+  showErrors?: boolean;
 }
 
 const TIPOS_ORGANIZACION = [
@@ -13,30 +16,24 @@ const TIPOS_ORGANIZACION = [
   "Otro",
 ];
 
-
 function validateOrgField(key: keyof typeof organizacionSchema.shape) {
   const shape = (organizacionSchema.shape as any)[key];
   if (!shape) return () => undefined;
 
   return (arg: any) => {
-    // TanStack React Form envía { value, fieldApi, formApi }
     const value = arg && typeof arg === "object" && "value" in arg ? arg.value : arg;
-
     const single = shape.safeParse(value);
-    return single.success
-      ? undefined
-      : single.error.issues?.[0]?.message || "Campo inválido";
+    return single.success ? undefined : single.error.issues?.[0]?.message || "Campo inválido";
   };
 }
 
-
-export function OrganizacionSection({ form }: OrganizacionSectionProps) {
+export function OrganizacionSection({ form, showErrors }: OrganizacionSectionProps) {
   const [tipoOrg, setTipoOrg] = useState(
     (form.getFieldValue?.("organizacion.tipoOrganizacion") as string) || ""
   );
   const [otroTipo, setOtroTipo] = useState("");
 
-  const handleTipoChange = (valor: string) => {
+  const handleTipoChange = async (valor: string) => {
     setTipoOrg(valor);
     if (valor !== "Otro") {
       setOtroTipo("");
@@ -44,11 +41,13 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
     } else {
       form.setFieldValue("organizacion.tipoOrganizacion", "");
     }
+    await form.validateField?.("organizacion.tipoOrganizacion");
   };
 
-  const handleOtroTipoChange = (valor: string) => {
+  const handleOtroTipoChange = async (valor: string) => {
     setOtroTipo(valor);
     form.setFieldValue("organizacion.tipoOrganizacion", valor);
+    await form.validateField?.("organizacion.tipoOrganizacion");
   };
 
   return (
@@ -63,7 +62,7 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Nombre de la organización */}
+        {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Nombre de la organización <span className="text-red-500">*</span>
@@ -85,9 +84,9 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: Fundación Amigos del Ambiente"
-                  aria-invalid={field.state.meta.errors?.length > 0}
+                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -97,7 +96,7 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           </form.Field>
         </div>
 
-        {/* Número estimado de voluntarios */}
+        {/* Número de voluntarios */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Número estimado de voluntarios <span className="text-red-500">*</span>
@@ -126,9 +125,9 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Mínimo 1"
-                  aria-invalid={field.state.meta.errors?.length > 0}
+                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -138,7 +137,7 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           </form.Field>
         </div>
 
-        {/* Cédula jurídica/RUC */}
+        {/* Cédula jurídica */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Cédula jurídica/RUC <span className="text-red-500">*</span>
@@ -160,9 +159,9 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: 3-101-123456"
-                  aria-invalid={field.state.meta.errors?.length > 0}
+                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -177,43 +176,44 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Tipo de organización <span className="text-red-500">*</span>
           </label>
-        </div>
-        <select
-          value={tipoOrg}
-          onChange={(e) => handleTipoChange(e.target.value)}
-          className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-        >
-          <option value="">Seleccione...</option>
-          {TIPOS_ORGANIZACION.map((tipo) => (
-            <option key={tipo} value={tipo}>
-              {tipo}
-            </option>
-          ))}
-        </select>
-        {/* Field “real” que guarda el valor y pinta el error */}
-        <form.Field
-          name="organizacion.tipoOrganizacion"
-          validators={{
-            onBlur: validateOrgField("tipoOrganizacion"),
-            onChange: validateOrgField("tipoOrganizacion"),
-            onSubmit: validateOrgField("tipoOrganizacion"),
-          }}
-        >
-          {(field: any) =>
-            field.state.meta.errors?.length > 0 ? (
-              <p className="mt-1 text-sm text-red-600">
-                {field.state.meta.errors[0]}
-              </p>
-            ) : null
-          }
-        </form.Field>
 
-        {/* Campo "Otro" */}
+          <select
+            value={tipoOrg}
+            onChange={(e) => handleTipoChange(e.target.value)}
+            className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+          >
+            <option value="">Seleccione...</option>
+            {TIPOS_ORGANIZACION.map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {tipo}
+              </option>
+            ))}
+          </select>
+
+          {/* Field “real” que guarda el valor y pinta el error */}
+          <form.Field
+            name="organizacion.tipoOrganizacion"
+            validators={{
+              onBlur: validateOrgField("tipoOrganizacion"),
+              onChange: validateOrgField("tipoOrganizacion"),
+              onSubmit: validateOrgField("tipoOrganizacion"),
+            }}
+          >
+            {(field: any) =>
+              showErrors && field.state.meta.errors?.length > 0 ? (
+                <p className="mt-1 text-sm text-red-600">
+                  {field.state.meta.errors[0]}
+                </p>
+              ) : null
+            }
+          </form.Field>
+        </div>
+
+        {/* Campo “Otro” */}
         {tipoOrg === "Otro" && (
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-              Especifique el tipo de organización{" "}
-              <span className="text-red-500">*</span>
+              Especifique el tipo de organización <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -248,9 +248,9 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
                   rows={3}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Dirección completa de la sede principal"
-                  aria-invalid={field.state.meta.errors?.length > 0}
+                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -282,9 +282,9 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: 2222-3333"
-                  aria-invalid={field.state.meta.errors?.length > 0}
+                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -294,11 +294,10 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           </form.Field>
         </div>
 
-        {/* Email institucional */}
+        {/* Email */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Correo electrónico institucional{" "}
-            <span className="text-red-500">*</span>
+            Correo electrónico institucional <span className="text-red-500">*</span>
           </label>
           <form.Field
             name="organizacion.email"
@@ -317,9 +316,9 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: contacto@organizacion.org"
-                  aria-invalid={field.state.meta.errors?.length > 0}
+                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>

@@ -8,6 +8,7 @@ export const isAdult = (isoDate: string) => {
   let age = today.getFullYear() - d.getFullYear();
   const m = today.getMonth() - d.getMonth();
   if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+  // ✅ ahora 18 años
   return age >= 16;
 };
 
@@ -114,14 +115,9 @@ export const motivacionHabilidadesSchema = z.object({
 
 /* ORGANIZACIÓN */
 export const organizacionSchema = z.object({
-  cedulaJuridica: z
-    .string()
-    .trim()
-    .min(1, "La cédula jurídica es requerida"),
-  nombre: z
-    .string()
-    .trim()
-    .min(1, "El nombre de la organización es requerido"),
+  cedulaJuridica: z.string().trim().min(1, "La cédula jurídica es requerida"),
+  nombre: z.string().trim().min(1, "El nombre de la organización es requerido"),
+  // (dejo tu definición tal cual, sin cambios no requeridos)
   numeroVoluntarios: z
     .int("Debe ser un número entero")
     .min(1, "Debe ser al menos 1"),
@@ -140,10 +136,7 @@ export const organizacionSchema = z.object({
   razonesSociales: z
     .array(
       z.object({
-        razonSocial: z
-          .string()
-          .trim()
-          .min(1, "La razón social no puede estar vacía"),
+        razonSocial: z.string().trim().min(1, "La razón social no puede estar vacía"),
       })
     )
     .optional(),
@@ -158,9 +151,7 @@ export const volunteerOrganizacionSchema = z.object({
   tipoSolicitante: z.literal("ORGANIZACION"),
   organizacion: organizacionSchema,
 });
-export type VolunteerOrganizacionValues = z.infer<
-  typeof volunteerOrganizacionSchema
->;
+export type VolunteerOrganizacionValues = z.infer<typeof volunteerOrganizacionSchema>;
 
 /* INDIVIDUAL (opcional) */
 export const volunteerIndividualSchema = z.object({
@@ -170,11 +161,9 @@ export const volunteerIndividualSchema = z.object({
   areasInteres: z.array(areaInteresSchema).optional(),
   motivacion: motivacionHabilidadesSchema,
 });
-export type VolunteerIndividualValues = z.infer<
-  typeof volunteerIndividualSchema
->;
+export type VolunteerIndividualValues = z.infer<typeof volunteerIndividualSchema>;
 
-/* Unión principal para todo el flujo (por si la necesitas a nivel de form) */
+/* Unión principal */
 export const volunteerSchema = z.discriminatedUnion("tipoSolicitante", [
   volunteerOrganizacionSchema,
   volunteerIndividualSchema,

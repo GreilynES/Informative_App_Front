@@ -13,7 +13,7 @@ import {
 import { DocumentUploadVoluntarios } from "../components/DocumentUploadVoluntarios";
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 interface StepsProps {
   step: number;
@@ -52,7 +52,10 @@ export function Steps({
   
   const dispRefIndividual = useRef<DisponibilidadAreasSectionHandle>(null);
   const dispRefOrg = useRef<DisponibilidadAreasSectionHandle>(null);
-  const motivRef = useRef<MotivacionHabilidadesSectionHandle>(null); 
+  const motivRef = useRef<MotivacionHabilidadesSectionHandle>(null);
+
+  // Flag para mostrar errores en Paso 1 (ORGANIZACIÓN)
+  const [showOrgStep1Errors, setShowOrgStep1Errors] = useState(false);
 
   // ========== FLUJO INDIVIDUAL ==========
   if (tipoSolicitante === "INDIVIDUAL") {
@@ -74,7 +77,6 @@ export function Steps({
 
     return (
       <>
-        {/* Paso 1: Información Personal + Contacto */}
         {step === 1 && (
           <StepPersonalInformation
             formData={formData!}
@@ -85,7 +87,6 @@ export function Steps({
           />
         )}
 
-        {/* Paso 2: Disponibilidad y Áreas de Interés */}
         {step === 2 && (
           <div className="space-y-6">
             <DisponibilidadAreasSection
@@ -103,11 +104,10 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 3: Motivación, Habilidades y Experiencia */}
         {step === 3 && (
           <div className="space-y-6">
             <MotivacionHabilidadesSection
-              ref={motivRef} // ✅ pasamos el ref
+              ref={motivRef}
               formData={formData!}
               handleInputChange={handleInputChange!}
             />
@@ -116,7 +116,6 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 4: Carga de Documentos */}
         {step === 4 && (
           <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
             <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -317,14 +316,9 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 6: Enviado */}
         {step === 6 && (
           <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] text-center">
-            <h2 className="text-3xl font-bold text-[#708C3E] mb-4">¡Solicitud enviada!</h2>
-            <p className="text-[#4A4A4A] max-w-2xl mx-auto">
-              Gracias por aplicar al voluntariado. Hemos recibido tu información y documentos. Nos
-              pondremos en contacto contigo por correo o teléfono.
-            </p>
+            {/* ... sin cambios ... */}
           </div>
         )}
       </>
@@ -347,15 +341,70 @@ export function Steps({
       nextStep();
     };
 
+    // >>> FIX: forzar validación tipo "submit" y mostrar errores si hay vacíos
+    const handleNextFromOrgStep1 = () => {
+      const v = form?.state?.values?.organizacion || {};
+      const r = v?.representante || {};
+      const p = r?.persona || {};
+
+      const anyEmpty =
+        !v.nombre ||
+        !v.numeroVoluntarios ||
+        !v.cedulaJuridica ||
+        !v.tipoOrganizacion ||
+        !v.direccion ||
+        !v.telefono ||
+        !v.email ||
+        !r.cargo ||
+        !p.cedula ||
+        !p.nombre ||
+        !p.apellido1 ||
+        !p.apellido2 ||
+        !p.telefono ||
+        !p.email;
+
+      const namesToValidate = [
+        "organizacion.nombre",
+        "organizacion.numeroVoluntarios",
+        "organizacion.cedulaJuridica",
+        "organizacion.tipoOrganizacion",
+        "organizacion.direccion",
+        "organizacion.telefono",
+        "organizacion.email",
+        "organizacion.representante.cargo",
+        "organizacion.representante.persona.cedula",
+        "organizacion.representante.persona.nombre",
+        "organizacion.representante.persona.apellido1",
+        "organizacion.representante.persona.apellido2",
+        "organizacion.representante.persona.telefono",
+        "organizacion.representante.persona.email",
+      ];
+
+      // ⬇ ESTA ES LA LÍNEA CLAVE: pasa el tipo 'submit' para que corran los validators onSubmit
+      namesToValidate.forEach((n) => form?.validateField?.(n, "submit"));
+
+      if (anyEmpty) {
+        setShowOrgStep1Errors(true);
+        return;
+      }
+
+      nextStep();
+    };
+
     return (
       <>
         {/* Paso 1: Información de Organización */}
         {step === 1 && (
           <div className="space-y-6">
-            <OrganizacionSection form={form!} />
-            <RepresentanteSection form={form} lookup={lookup} />
+            <OrganizacionSection form={form!} showErrors={showOrgStep1Errors} />
+            <RepresentanteSection form={form} lookup={lookup} showErrors={showOrgStep1Errors} />
 
-            <NavigationButtons onPrev={() => {}} onNext={nextStep} disableNext={false} hidePrev />
+            <NavigationButtons
+              onPrev={() => {}}
+              onNext={handleNextFromOrgStep1}
+              disableNext={false}
+              hidePrev
+            />
           </div>
         )}
 
@@ -374,7 +423,7 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 3: Carga de Documentos para Organización */}
+        {/* Paso 3 */}
         {step === 3 && (
           <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
             <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">

@@ -1,10 +1,53 @@
+// src/modules/volunteersForm/components/RepresentanteSection.tsx
+import { useMemo } from "react";
+import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema";
+
 export function RepresentanteSection({
   form,
   lookup,
+  showErrors = false,
 }: {
   form: any;
   lookup?: (id: string) => Promise<any>;
+  showErrors?: boolean;
 }) {
+  const personaSchema = useMemo(
+    () =>
+      volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape
+        .persona,
+    []
+  );
+  const representanteSchema = useMemo(
+    () => volunteerOrganizacionSchema.shape.organizacion.shape.representante,
+    []
+  );
+
+  // 🔒 Máxima fecha permitida: hoy - 18 años
+  const maxBirthDate = useMemo(() => {
+    const t = new Date();
+    t.setFullYear(t.getFullYear() - 18);
+    const mm = String(t.getMonth() + 1).padStart(2, "0");
+    const dd = String(t.getDate()).padStart(2, "0");
+    return `${t.getFullYear()}-${mm}-${dd}`;
+  }, []);
+
+  // Helpers de validación para onSubmit
+  const validatePersonaField =
+    (key: keyof typeof personaSchema.shape) => (arg: any) => {
+      const schema = (personaSchema.shape as any)[key];
+      if (!schema) return undefined;
+      const value = arg && typeof arg === "object" && "value" in arg ? arg.value : arg;
+      const r = schema.safeParse(value);
+      return r.success ? undefined : r.error.issues?.[0]?.message || "Campo inválido";
+    };
+
+  const validateCargo = (arg: any) => {
+    const schema = (representanteSchema.shape as any).cargo;
+    const value = arg && typeof arg === "object" && "value" in arg ? arg.value : arg;
+    const r = schema.safeParse(value);
+    return r.success ? undefined : r.error.issues?.[0]?.message || "Campo inválido";
+  };
+
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -17,36 +60,32 @@ export function RepresentanteSection({
       </div>
 
       <div className="p-6 space-y-6">
-        {/* ───────────────────── CÉDULA (PRIMERO) ───────────────────── */}
+        {/* Cédula */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Cédula <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.representante.persona.cedula">
+          <form.Field
+            name="organizacion.representante.persona.cedula"
+            validators={{ onSubmit: validatePersonaField("cedula") }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="text"
                   value={field.state.value || ""}
+                  maxLength={60}
                   onChange={async (e) => {
                     const raw = e.target.value;
                     field.handleChange(raw);
 
-                    
                     const onlyDigits = String(raw).replace(/\D/g, "");
-
-                    
                     if (onlyDigits.length >= 9) {
                       try {
-                        
                         const result = lookup ? await lookup(onlyDigits) : null;
                         if (result) {
-                          
                           const nameVal =
-                            result.firstname ||
-                            result.nombre ||
-                            result.name ||
-                            "";
+                            result.firstname || result.nombre || result.name || "";
                           const last1Val =
                             result.lastname1 ||
                             result.apellido1 ||
@@ -58,7 +97,6 @@ export function RepresentanteSection({
                             result.segundoApellido ||
                             "";
 
-                          
                           form?.setFieldValue?.(
                             "organizacion.representante.persona.nombre",
                             nameVal
@@ -71,28 +109,14 @@ export function RepresentanteSection({
                             "organizacion.representante.persona.apellido2",
                             last2Val
                           );
-
-                          
-                          form?.validateField?.(
-                            "organizacion.representante.persona.nombre"
-                          );
-                          form?.validateField?.(
-                            "organizacion.representante.persona.apellido1"
-                          );
-                          form?.validateField?.(
-                            "organizacion.representante.persona.apellido2"
-                          );
                         }
-                      } catch {
-                    
-                      }
+                      } catch {}
                     }
                   }}
-                  onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 503450789"
+                  placeholder="Número de cédula"
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -102,24 +126,27 @@ export function RepresentanteSection({
           </form.Field>
         </div>
 
-        {/* ───────── Nombre y Apellidos (se rellenan con lookup) ───────── */}
+        {/* Nombre y Apellidos */}
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
               Nombre <span className="text-red-500">*</span>
             </label>
-            <form.Field name="organizacion.representante.persona.nombre">
+            <form.Field
+              name="organizacion.representante.persona.nombre"
+              validators={{ onSubmit: validatePersonaField("nombre") }}
+            >
               {(field: any) => (
                 <>
                   <input
                     type="text"
                     value={field.state.value || ""}
+                    maxLength={60}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
                     className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    placeholder="Nombre"
+                    placeholder="Tu nombre"
                   />
-                  {field.state.meta.errors?.length > 0 && (
+                  {showErrors && field.state.meta.errors?.length > 0 && (
                     <p className="mt-1 text-sm text-red-600">
                       {field.state.meta.errors[0]}
                     </p>
@@ -133,18 +160,21 @@ export function RepresentanteSection({
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
               Primer Apellido <span className="text-red-500">*</span>
             </label>
-            <form.Field name="organizacion.representante.persona.apellido1">
+            <form.Field
+              name="organizacion.representante.persona.apellido1"
+              validators={{ onSubmit: validatePersonaField("apellido1") }}
+            >
               {(field: any) => (
                 <>
                   <input
                     type="text"
                     value={field.state.value || ""}
+                    maxLength={60}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
                     className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    placeholder="Primer apellido"
+                    placeholder="Tu primer apellido"
                   />
-                  {field.state.meta.errors?.length > 0 && (
+                  {showErrors && field.state.meta.errors?.length > 0 && (
                     <p className="mt-1 text-sm text-red-600">
                       {field.state.meta.errors[0]}
                     </p>
@@ -158,18 +188,21 @@ export function RepresentanteSection({
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
               Segundo Apellido <span className="text-red-500">*</span>
             </label>
-            <form.Field name="organizacion.representante.persona.apellido2">
+            <form.Field
+              name="organizacion.representante.persona.apellido2"
+              validators={{ onSubmit: validatePersonaField("apellido2") }}
+            >
               {(field: any) => (
                 <>
                   <input
                     type="text"
                     value={field.state.value || ""}
+                    maxLength={60}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
                     className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    placeholder="Segundo apellido"
+                    placeholder="Tu segundo apellido"
                   />
-                  {field.state.meta.errors?.length > 0 && (
+                  {showErrors && field.state.meta.errors?.length > 0 && (
                     <p className="mt-1 text-sm text-red-600">
                       {field.state.meta.errors[0]}
                     </p>
@@ -180,23 +213,26 @@ export function RepresentanteSection({
           </div>
         </div>
 
-        {/* Cargo/Posición */}
+        {/* Cargo */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Cargo/Posición <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.representante.cargo">
+          <form.Field
+            name="organizacion.representante.cargo"
+            validators={{ onSubmit: validateCargo }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="text"
                   value={field.state.value || ""}
+                  maxLength={100}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: Director, Coordinador, Presidente, etc."
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -211,18 +247,21 @@ export function RepresentanteSection({
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Teléfono del representante <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.representante.persona.telefono">
+          <form.Field
+            name="organizacion.representante.persona.telefono"
+            validators={{ onSubmit: validatePersonaField("telefono") }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="tel"
                   value={field.state.value || ""}
+                  maxLength={20}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 8888-9999"
+                  placeholder="Número de teléfono"
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -232,23 +271,26 @@ export function RepresentanteSection({
           </form.Field>
         </div>
 
-        {/* Correo */}
+        {/* Email */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Correo del representante <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.representante.persona.email">
+          <form.Field
+            name="organizacion.representante.persona.email"
+            validators={{ onSubmit: validatePersonaField("email") }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="email"
                   value={field.state.value || ""}
+                  maxLength={60}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: representante@organizacion.org"
+                  placeholder="correo@ejemplo.com"
                 />
-                {field.state.meta.errors?.length > 0 && (
+                {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
@@ -258,26 +300,37 @@ export function RepresentanteSection({
           </form.Field>
         </div>
 
-        {/* Información adicional */}
+        {/* Información adicional (opcional) */}
         <div className="bg-[#F5F7EC] border border-[#DCD6C9] rounded-lg p-4">
           <h4 className="text-sm font-semibold text-[#708C3E] mb-3">
             Información adicional (Opcional)
           </h4>
 
           <div className="space-y-4">
+            {/* ✅ Fecha de nacimiento: no menores de 18 */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                 Fecha de nacimiento
               </label>
-              <form.Field name="organizacion.representante.persona.fechaNacimiento">
+              <form.Field
+                name="organizacion.representante.persona.fechaNacimiento"
+                validators={{ onSubmit: validatePersonaField("fechaNacimiento") }}
+              >
                 {(field: any) => (
-                  <input
-                    type="date"
-                    value={field.state.value || ""}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  />
+                  <>
+                    <input
+                      type="date"
+                      value={field.state.value || ""}
+                      max={maxBirthDate}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    />
+                    {showErrors && field.state.meta.errors?.length > 0 && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {field.state.meta.errors[0]}
+                      </p>
+                    )}
+                  </>
                 )}
               </form.Field>
             </div>
@@ -291,8 +344,8 @@ export function RepresentanteSection({
                   <textarea
                     value={field.state.value || ""}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
                     rows={2}
+                    maxLength={200}
                     className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                     placeholder="Dirección de residencia (opcional)"
                   />
