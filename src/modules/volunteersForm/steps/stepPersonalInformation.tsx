@@ -24,11 +24,9 @@ export function StepPersonalInformation({
 
   const [limitReached, setLimitReached] = useState<Record<string, boolean>>({});
 
-  
   const personaSchema =
     volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona;
 
-  
   const maxBirthDate = useMemo(() => {
     const t = new Date();
     t.setFullYear(t.getFullYear() - 16);
@@ -37,7 +35,6 @@ export function StepPersonalInformation({
     return `${t.getFullYear()}-${mm}-${dd}`;
   }, []);
 
-  
   const updateLimitFlag = (
     field: keyof VolunteersFormData,
     value: string,
@@ -50,7 +47,6 @@ export function StepPersonalInformation({
     }));
   };
 
-  
   const validateField = (field: keyof VolunteersFormData, value: any) => {
     const mapped = mapFormToPersona({ ...formData, [field]: value });
     const single = personaSchema.pick({ [mapField(field)]: true } as any);
@@ -62,7 +58,6 @@ export function StepPersonalInformation({
     }));
   };
 
-  
   const validateAll = () => {
     const persona = mapFormToPersona(formData);
     const result = personaSchema.safeParse(persona);
@@ -79,7 +74,6 @@ export function StepPersonalInformation({
     return true;
   };
 
-  
   const handleNext = () => {
     if (validateAll() && isStepValid()) {
       onNextCombined();
@@ -114,12 +108,28 @@ export function StepPersonalInformation({
                   handleInputChange("idNumber", value);
                   validateField("idNumber", value);
                   updateLimitFlag("idNumber", value, 60);
+
                   if (value.length >= 9) {
                     const result = await lookup(value);
                     if (result) {
-                      handleInputChange("name", result.firstname || "");
-                      handleInputChange("lastName1", result.lastname1 || "");
-                      handleInputChange("lastName2", result.lastname2 || "");
+                      const nameVal = result.firstname || "";
+                      const last1Val = result.lastname1 || "";
+                      const last2Val = result.lastname2 || "";
+
+                      // actualizar campos
+                      handleInputChange("name", nameVal);
+                      handleInputChange("lastName1", last1Val);
+                      handleInputChange("lastName2", last2Val);
+
+                      // ✅ validar inmediatamente para limpiar los mensajes en rojo
+                      validateField("name", nameVal);
+                      validateField("lastName1", last1Val);
+                      validateField("lastName2", last2Val);
+
+                      // mantener el indicador de límite coherente
+                      updateLimitFlag("name", nameVal, 60);
+                      updateLimitFlag("lastName1", last1Val, 60);
+                      updateLimitFlag("lastName2", last2Val, 60);
                     }
                   }
                 }}
@@ -367,7 +377,6 @@ export function StepPersonalInformation({
     </div>
   );
 }
-
 
 function mapFormToPersona(data: VolunteersFormData) {
   return {
