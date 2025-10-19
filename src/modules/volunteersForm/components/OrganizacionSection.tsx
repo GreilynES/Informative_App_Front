@@ -1,6 +1,5 @@
-// src/modules/volunteersForm/components/OrganizacionSection.tsx
-
 import { useState } from "react";
+import { organizacionSchema } from "../schemas/volunteerSchema";
 
 interface OrganizacionSectionProps {
   form: any; 
@@ -11,19 +10,39 @@ const TIPOS_ORGANIZACION = [
   "Institución educativa",
   "Empresa privada",
   "Grupo comunitario",
-  "Otro"
+  "Otro",
 ];
 
+
+function validateOrgField(key: keyof typeof organizacionSchema.shape) {
+  const shape = (organizacionSchema.shape as any)[key];
+  if (!shape) return () => undefined;
+
+  return (arg: any) => {
+    // TanStack React Form envía { value, fieldApi, formApi }
+    const value = arg && typeof arg === "object" && "value" in arg ? arg.value : arg;
+
+    const single = shape.safeParse(value);
+    return single.success
+      ? undefined
+      : single.error.issues?.[0]?.message || "Campo inválido";
+  };
+}
+
+
 export function OrganizacionSection({ form }: OrganizacionSectionProps) {
-  const [tipoOrg, setTipoOrg] = useState("");
+  const [tipoOrg, setTipoOrg] = useState(
+    (form.getFieldValue?.("organizacion.tipoOrganizacion") as string) || ""
+  );
   const [otroTipo, setOtroTipo] = useState("");
 
   const handleTipoChange = (valor: string) => {
     setTipoOrg(valor);
-    
     if (valor !== "Otro") {
       setOtroTipo("");
       form.setFieldValue("organizacion.tipoOrganizacion", valor);
+    } else {
+      form.setFieldValue("organizacion.tipoOrganizacion", "");
     }
   };
 
@@ -49,16 +68,24 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Nombre de la organización <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.nombre">
+          <form.Field
+            name="organizacion.nombre"
+            validators={{
+              onBlur: validateOrgField("nombre"),
+              onChange: validateOrgField("nombre"),
+              onSubmit: validateOrgField("nombre"),
+            }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="text"
-                  value={field.state.value || ""}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: Fundación Amigos del Ambiente"
+                  aria-invalid={field.state.meta.errors?.length > 0}
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
@@ -75,17 +102,31 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Número estimado de voluntarios <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.numeroVoluntarios">
+          <form.Field
+            name="organizacion.numeroVoluntarios"
+            validators={{
+              onBlur: validateOrgField("numeroVoluntarios"),
+              onChange: validateOrgField("numeroVoluntarios"),
+              onSubmit: validateOrgField("numeroVoluntarios"),
+            }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="number"
-                  min="1"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(parseInt(e.target.value) || 1)}
+                  min={1}
+                  value={field.state.value ?? ""}
+                  onChange={(e) =>
+                    field.handleChange(
+                      Number.isNaN(parseInt(e.target.value, 10))
+                        ? undefined
+                        : parseInt(e.target.value, 10)
+                    )
+                  }
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Mínimo 1"
+                  aria-invalid={field.state.meta.errors?.length > 0}
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
@@ -102,16 +143,24 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Cédula jurídica/RUC <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.cedulaJuridica">
+          <form.Field
+            name="organizacion.cedulaJuridica"
+            validators={{
+              onBlur: validateOrgField("cedulaJuridica"),
+              onChange: validateOrgField("cedulaJuridica"),
+              onSubmit: validateOrgField("cedulaJuridica"),
+            }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="text"
-                  value={field.state.value || ""}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: 3-101-123456"
+                  aria-invalid={field.state.meta.errors?.length > 0}
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
@@ -128,25 +177,43 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Tipo de organización <span className="text-red-500">*</span>
           </label>
-          <select
-            value={tipoOrg}
-            onChange={(e) => handleTipoChange(e.target.value)}
-            className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-          >
-            <option value="">Seleccione...</option>
-            {TIPOS_ORGANIZACION.map((tipo) => (
-              <option key={tipo} value={tipo}>
-                {tipo}
-              </option>
-            ))}
-          </select>
         </div>
+        <select
+          value={tipoOrg}
+          onChange={(e) => handleTipoChange(e.target.value)}
+          className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+        >
+          <option value="">Seleccione...</option>
+          {TIPOS_ORGANIZACION.map((tipo) => (
+            <option key={tipo} value={tipo}>
+              {tipo}
+            </option>
+          ))}
+        </select>
+        {/* Field “real” que guarda el valor y pinta el error */}
+        <form.Field
+          name="organizacion.tipoOrganizacion"
+          validators={{
+            onBlur: validateOrgField("tipoOrganizacion"),
+            onChange: validateOrgField("tipoOrganizacion"),
+            onSubmit: validateOrgField("tipoOrganizacion"),
+          }}
+        >
+          {(field: any) =>
+            field.state.meta.errors?.length > 0 ? (
+              <p className="mt-1 text-sm text-red-600">
+                {field.state.meta.errors[0]}
+              </p>
+            ) : null
+          }
+        </form.Field>
 
         {/* Campo "Otro" */}
         {tipoOrg === "Otro" && (
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-              Especifique el tipo de organización <span className="text-red-500">*</span>
+              Especifique el tipo de organización{" "}
+              <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -164,16 +231,24 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Dirección de la organización <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.direccion">
+          <form.Field
+            name="organizacion.direccion"
+            validators={{
+              onBlur: validateOrgField("direccion"),
+              onChange: validateOrgField("direccion"),
+              onSubmit: validateOrgField("direccion"),
+            }}
+          >
             {(field: any) => (
               <>
                 <textarea
-                  value={field.state.value || ""}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   rows={3}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Dirección completa de la sede principal"
+                  aria-invalid={field.state.meta.errors?.length > 0}
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
@@ -190,16 +265,24 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Teléfono de la organización <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.telefono">
+          <form.Field
+            name="organizacion.telefono"
+            validators={{
+              onBlur: validateOrgField("telefono"),
+              onChange: validateOrgField("telefono"),
+              onSubmit: validateOrgField("telefono"),
+            }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="tel"
-                  value={field.state.value || ""}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: 2222-3333"
+                  aria-invalid={field.state.meta.errors?.length > 0}
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
@@ -214,18 +297,27 @@ export function OrganizacionSection({ form }: OrganizacionSectionProps) {
         {/* Email institucional */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Correo electrónico institucional <span className="text-red-500">*</span>
+            Correo electrónico institucional{" "}
+            <span className="text-red-500">*</span>
           </label>
-          <form.Field name="organizacion.email">
+          <form.Field
+            name="organizacion.email"
+            validators={{
+              onBlur: validateOrgField("email"),
+              onChange: validateOrgField("email"),
+              onSubmit: validateOrgField("email"),
+            }}
+          >
             {(field: any) => (
               <>
                 <input
                   type="email"
-                  value={field.state.value || ""}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: contacto@organizacion.org"
+                  aria-invalid={field.state.meta.errors?.length > 0}
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
