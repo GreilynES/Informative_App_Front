@@ -1,6 +1,10 @@
-// src/modules/volunteersForm/components/RepresentanteSection.tsx
-
-export function RepresentanteSection({ form }: { form: any }) {
+export function RepresentanteSection({
+  form,
+  lookup,
+}: {
+  form: any;
+  lookup?: (id: string) => Promise<any>;
+}) {
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -13,7 +17,92 @@ export function RepresentanteSection({ form }: { form: any }) {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Nombre completo del representante */}
+        {/* ───────────────────── CÉDULA (PRIMERO) ───────────────────── */}
+        <div>
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+            Cédula <span className="text-red-500">*</span>
+          </label>
+          <form.Field name="organizacion.representante.persona.cedula">
+            {(field: any) => (
+              <>
+                <input
+                  type="text"
+                  value={field.state.value || ""}
+                  onChange={async (e) => {
+                    const raw = e.target.value;
+                    field.handleChange(raw);
+
+                    
+                    const onlyDigits = String(raw).replace(/\D/g, "");
+
+                    
+                    if (onlyDigits.length >= 9) {
+                      try {
+                        
+                        const result = lookup ? await lookup(onlyDigits) : null;
+                        if (result) {
+                          
+                          const nameVal =
+                            result.firstname ||
+                            result.nombre ||
+                            result.name ||
+                            "";
+                          const last1Val =
+                            result.lastname1 ||
+                            result.apellido1 ||
+                            result.primerApellido ||
+                            "";
+                          const last2Val =
+                            result.lastname2 ||
+                            result.apellido2 ||
+                            result.segundoApellido ||
+                            "";
+
+                          
+                          form?.setFieldValue?.(
+                            "organizacion.representante.persona.nombre",
+                            nameVal
+                          );
+                          form?.setFieldValue?.(
+                            "organizacion.representante.persona.apellido1",
+                            last1Val
+                          );
+                          form?.setFieldValue?.(
+                            "organizacion.representante.persona.apellido2",
+                            last2Val
+                          );
+
+                          
+                          form?.validateField?.(
+                            "organizacion.representante.persona.nombre"
+                          );
+                          form?.validateField?.(
+                            "organizacion.representante.persona.apellido1"
+                          );
+                          form?.validateField?.(
+                            "organizacion.representante.persona.apellido2"
+                          );
+                        }
+                      } catch {
+                    
+                      }
+                    }
+                  }}
+                  onBlur={field.handleBlur}
+                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  placeholder="Ej: 503450789"
+                />
+                {field.state.meta.errors?.length > 0 && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {field.state.meta.errors[0]}
+                  </p>
+                )}
+              </>
+            )}
+          </form.Field>
+        </div>
+
+        {/* ───────── Nombre y Apellidos (se rellenan con lookup) ───────── */}
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
@@ -91,32 +180,6 @@ export function RepresentanteSection({ form }: { form: any }) {
           </div>
         </div>
 
-        {/* Cédula */}
-        <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cédula <span className="text-red-500">*</span>
-          </label>
-          <form.Field name="organizacion.representante.persona.cedula">
-            {(field: any) => (
-              <>
-                <input
-                  type="text"
-                  value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 1-2345-6789"
-                />
-                {field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </>
-            )}
-          </form.Field>
-        </div>
-
         {/* Cargo/Posición */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
@@ -143,7 +206,7 @@ export function RepresentanteSection({ form }: { form: any }) {
           </form.Field>
         </div>
 
-        {/* Teléfono del representante */}
+        {/* Teléfono */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Teléfono del representante <span className="text-red-500">*</span>
@@ -169,7 +232,7 @@ export function RepresentanteSection({ form }: { form: any }) {
           </form.Field>
         </div>
 
-        {/* Correo del representante */}
+        {/* Correo */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Correo del representante <span className="text-red-500">*</span>
@@ -202,7 +265,6 @@ export function RepresentanteSection({ form }: { form: any }) {
           </h4>
 
           <div className="space-y-4">
-            {/* Fecha de nacimiento */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                 Fecha de nacimiento
@@ -220,7 +282,6 @@ export function RepresentanteSection({ form }: { form: any }) {
               </form.Field>
             </div>
 
-            {/* Dirección */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
                 Dirección del representante

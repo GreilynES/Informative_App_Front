@@ -353,7 +353,7 @@ export function Steps({
         {step === 1 && (
           <div className="space-y-6">
             <OrganizacionSection form={form!} />
-            <RepresentanteSection form={form!} />
+            <RepresentanteSection form={form} lookup={lookup} />
 
             <NavigationButtons onPrev={() => {}} onNext={nextStep} disableNext={false} hidePrev />
           </div>
