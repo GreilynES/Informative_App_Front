@@ -1,24 +1,18 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
-import { otroCercaSchema, otroEquipoSchema } from "../schemas/associateApply";
-
-
-
 
 interface CaracteristicasFisicasSectionProps {
   form: FormLike;
+  showErrors?: boolean;
 }
 
-export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSectionProps) {
+export function CaracteristicasFisicasSection({ form, showErrors = false }: CaracteristicasFisicasSectionProps) {
   const existentes = (form as any).state?.values?.caracteristicasFisicas || {};
 
   const [tiposCerca, setTiposCerca] = useState<string[]>(existentes.tiposCerca || []);
-  const [otroCerca, setOtroCerca] = useState<string>("");
-  const [otroCercaError, setOtroCercaError] = useState<string | null>(null);
-
   const [equipos, setEquipos] = useState<string[]>(existentes.equipos || []);
+  const [otraCerca, setOtraCerca] = useState<string>("");
   const [otroEquipo, setOtroEquipo] = useState<string>("");
-  const [otroEquipoError, setOtroEquipoError] = useState<string | null>(null);
 
   useEffect(() => {
     (form as any).setFieldValue("caracteristicasFisicas", {
@@ -27,160 +21,120 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
     });
   }, [tiposCerca, equipos, form]);
 
-  const toggleCerca = (tipo: string) => {
-    if (tiposCerca.includes(tipo)) {
-      setTiposCerca(tiposCerca.filter((t) => t !== tipo));
-    } else {
-      setTiposCerca([...tiposCerca, tipo]);
-    }
-  };
-
-  const agregarOtroCerca = () => {
-    const trimmed = otroCerca.trim();
-
-    if (!trimmed) {
-      setOtroCercaError("El tipo de cerca es requerido");
-      return;
-    }
-    const parsed = otroCercaSchema.safeParse(trimmed);
-    if (!parsed.success) {
-      setOtroCercaError(parsed.error.issues[0]?.message ?? "Valor inválido");
-      return;
-    }
-    if (tiposCerca.includes(trimmed)) {
-      setOtroCercaError("Este tipo de cerca ya fue agregado");
-      return;
-    }
-
-    setTiposCerca([...tiposCerca, trimmed]);
-    setOtroCerca("");
-    setOtroCercaError(null);
+  const toggleCerca = (cerca: string) => {
+    setTiposCerca((prev) =>
+      prev.includes(cerca) ? prev.filter((c) => c !== cerca) : [...prev, cerca]
+    );
   };
 
   const toggleEquipo = (equipo: string) => {
-    if (equipos.includes(equipo)) {
-      setEquipos(equipos.filter((e) => e !== equipo));
-    } else {
-      setEquipos([...equipos, equipo]);
+    setEquipos((prev) =>
+      prev.includes(equipo) ? prev.filter((e) => e !== equipo) : [...prev, equipo]
+    );
+  };
+
+  const agregarOtraCerca = () => {
+    const trimmed = otraCerca.trim();
+    if (!trimmed) return;
+    
+    if (trimmed.length > 75) {
+      alert("El texto es muy largo (máx. 75 caracteres).");
+      return;
     }
+
+    // Solo letras y espacios
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) {
+      alert("Solo se permiten letras y espacios");
+      return;
+    }
+    
+    const exists = tiposCerca.some((c) => c.toLowerCase() === trimmed.toLowerCase());
+    if (exists) {
+      alert("Este tipo de cerca ya fue agregado");
+      return;
+    }
+    
+    setTiposCerca((prev) => [...prev, trimmed]);
+    setOtraCerca("");
   };
 
   const agregarOtroEquipo = () => {
     const trimmed = otroEquipo.trim();
-
-    if (!trimmed) {
-      setOtroEquipoError("El nombre del equipo es requerido");
-      return;
-    }
-    const parsed = otroEquipoSchema.safeParse(trimmed);
-    if (!parsed.success) {
-      setOtroEquipoError(parsed.error.issues[0]?.message ?? "Valor inválido");
-      return;
-    }
-    if (equipos.includes(trimmed)) {
-      setOtroEquipoError("Este equipo ya fue agregado");
+    if (!trimmed) return;
+    
+    if (trimmed.length > 75) {
+      alert("El texto es muy largo (máx. 75 caracteres).");
       return;
     }
 
-    setEquipos([...equipos, trimmed]);
+    // Solo letras y espacios
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) {
+      alert("Solo se permiten letras y espacios");
+      return;
+    }
+    
+    const exists = equipos.some((e) => e.toLowerCase() === trimmed.toLowerCase());
+    if (exists) {
+      alert("Este equipo ya fue agregado");
+      return;
+    }
+    
+    setEquipos((prev) => [...prev, trimmed]);
     setOtroEquipo("");
-    setOtroEquipoError(null);
   };
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-          8
+          9
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">
-          Características físicas y equipos de la finca
-        </h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Características Físicas</h3>
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Tipos de Cerca */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            ¿Qué tipo de cerca posee su finca? Seleccione el tipo:
+            Tipos de cerca:
           </label>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="cerca-viva"
-                checked={tiposCerca.includes("Viva")}
-                onChange={() => toggleCerca("Viva")}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="cerca-viva" className="text-sm text-[#4A4A4A]">
-                Viva
-              </label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="cerca-electrica"
-                checked={tiposCerca.includes("Eléctrica")}
-                onChange={() => toggleCerca("Eléctrica")}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="cerca-electrica" className="text-sm text-[#4A4A4A]">
-                Eléctrica
-              </label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="cerca-muerto"
-                checked={tiposCerca.includes("P. muerto")}
-                onChange={() => toggleCerca("P. muerto")}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="cerca-muerto" className="text-sm text-[#4A4A4A]">
-                P. muerto
-              </label>
-            </div>
-
-            {/* OTRO TIPO DE CERCA */}
-            <div className="flex gap-2 mt-3 items-start">
-              <div className="flex-1">
+            {["Alambre de púas", "Eléctrica", "Viva", "Muerta"].map((cerca) => (
+              <div key={cerca} className="flex items-center gap-3">
                 <input
-                  type="text"
-                  value={otroCerca}
-                  onChange={(e) => {
-                    setOtroCerca(e.target.value);
-                    if (otroCercaError) setOtroCercaError(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      agregarOtroCerca();
-                    }
-                  }}
-                  placeholder="Otro tipo de cerca..."
-                  maxLength={75}
-                  aria-invalid={!!otroCercaError}
-                  className={[
-                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1",
-                    otroCercaError
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
-                  ].join(" ")}
+                  type="checkbox"
+                  id={`cerca-${cerca}`}
+                  checked={tiposCerca.includes(cerca)}
+                  onChange={() => toggleCerca(cerca)}
+                  className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
+                  style={{ accentColor: "#708C3E" }}
                 />
-                {otroCercaError && (
-                  <p className="mt-1 text-sm text-red-600">{otroCercaError}</p>
-                )}
+                <label htmlFor={`cerca-${cerca}`} className="text-sm text-[#4A4A4A]">
+                  {cerca}
+                </label>
               </div>
+            ))}
 
+            {/* Campo "Otra" */}
+            <div className="flex gap-2 mt-3">
+              <input
+                type="text"
+                value={otraCerca}
+                onChange={(e) => setOtraCerca(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarOtraCerca();
+                  }
+                }}
+                placeholder="Otro tipo de cerca"
+                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                maxLength={75}
+              />
               <button
                 type="button"
-                onClick={agregarOtroCerca}
+                onClick={agregarOtraCerca}
                 className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
               >
                 Agregar
@@ -188,17 +142,15 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
             </div>
 
             {tiposCerca.length > 0 && (
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-xs text-green-800 font-medium mb-2">
-                  Tipos de cerca seleccionados:
-                </p>
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-xs text-blue-800 font-medium mb-2">Tipos de cerca seleccionados:</p>
                 <div className="flex flex-wrap gap-2">
-                  {tiposCerca.map((tipo, idx) => (
+                  {tiposCerca.map((cerca, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-green-300 rounded-full px-3 py-1 text-xs text-green-700"
+                      className="inline-flex items-center gap-1 bg-white border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700"
                     >
-                      {tipo}
+                      {cerca}
                     </span>
                   ))}
                 </div>
@@ -207,21 +159,14 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
           </div>
         </div>
 
+        {/* Equipos */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Seleccione los equipos con que cuenta:
+            Equipos disponibles:
           </label>
 
           <div className="space-y-2">
-            {[
-              "Tractor de espalda",
-              "Bomba de agua",
-              "Camión ganadero",
-              "Motosierra",
-              "Picadora eléctrica",
-              "Picadora de combustible",
-              "Tanque de ordeño",
-            ].map((equipo) => (
+            {["Tractor", "Picadora", "Mezcladora", "Bomba de agua"].map((equipo) => (
               <div key={equipo} className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -237,37 +182,22 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
               </div>
             ))}
 
-            {/* OTRO EQUIPO */}
-            <div className="flex gap-2 mt-3 items-start">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={otroEquipo}
-                  onChange={(e) => {
-                    setOtroEquipo(e.target.value);
-                    if (otroEquipoError) setOtroEquipoError(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      agregarOtroEquipo();
-                    }
-                  }}
-                  placeholder="Otro equipo..."
-                  maxLength={75}
-                  aria-invalid={!!otroEquipoError}
-                  className={[
-                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1",
-                    otroEquipoError
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
-                  ].join(" ")}
-                />
-                {otroEquipoError && (
-                  <p className="mt-1 text-sm text-red-600">{otroEquipoError}</p>
-                )}
-              </div>
-
+            {/* Campo "Otro" */}
+            <div className="flex gap-2 mt-3">
+              <input
+                type="text"
+                value={otroEquipo}
+                onChange={(e) => setOtroEquipo(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarOtroEquipo();
+                  }
+                }}
+                placeholder="Otro equipo"
+                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                maxLength={75}
+              />
               <button
                 type="button"
                 onClick={agregarOtroEquipo}
@@ -278,17 +208,15 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
             </div>
 
             {equipos.length > 0 && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-xs text-blue-800 font-medium mb-2">
-                  Equipos seleccionados:
-                </p>
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-xs text-green-800 font-medium mb-2">Equipos seleccionados:</p>
                 <div className="flex flex-wrap gap-2">
-                  {equipos.map((eq, idx) => (
+                  {equipos.map((equipo, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700"
+                      className="inline-flex items-center gap-1 bg-white border border-green-300 rounded-full px-3 py-1 text-xs text-green-700"
                     >
-                      {eq}
+                      {equipo}
                     </span>
                   ))}
                 </div>

@@ -4,9 +4,10 @@ import { actividadCultivoSchema } from "../schemas/associateApply";
 
 interface ActividadesInfraestructuraSectionProps {
   form: FormLike;
+  showErrors?: boolean;
 }
 
-export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestructuraSectionProps) {
+export function ActividadesInfraestructuraSection({ form, showErrors = false }: ActividadesInfraestructuraSectionProps) {
   const existentes = (form as any).state?.values?.actividadesInfraestructura || {};
 
   const [actividades, setActividades] = useState<string[]>(existentes.cultivos || []);
@@ -77,14 +78,14 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
           7
         </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">
-          Otras Actividades e Infraestructura de Producción
+          Otras Actividades e Infraestructura de Producción *
         </h3>
       </div>
 
       <div className="p-6 space-y-6">
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            ¿Qué cultivos o actividades tiene en su finca?
+            ¿Qué cultivos o actividades tiene en su finca? *
           </label>
 
           <div className="flex gap-2 items-start">
@@ -149,7 +150,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
 
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            ¿Qué tipo de equipo para la producción posee? Escriba la cantidad
+            ¿Qué tipo de equipo para la producción posee? Escriba la cantidad *
           </label>
 
           <div className="grid md:grid-cols-3 gap-4">

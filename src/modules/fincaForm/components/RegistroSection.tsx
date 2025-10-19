@@ -4,9 +4,10 @@ import type { FormLike } from "../../../shared/types/form-lite";
 interface RegistroSectionProps {
   form: FormLike;
   onChange?: () => void;
+  showErrors?: boolean;
 }
 
-export function RegistroSection({ form, onChange }: RegistroSectionProps) {
+export function RegistroSection({ form, onChange, showErrors = false }: RegistroSectionProps) {
   const registrosExistentes = (form as any).state?.values?.registrosProductivos;
 
   const [formValues, setFormValues] = useState({
@@ -14,6 +15,8 @@ export function RegistroSection({ form, onChange }: RegistroSectionProps) {
     costosProductivos: Boolean(registrosExistentes?.costosProductivos) || false,
     noTiene: Boolean(registrosExistentes?.noTiene) || false,
   });
+
+  const [error, setError] = useState<string>("");
 
   // Inicializa el form global si no hay valores
   useEffect(() => {
@@ -32,22 +35,27 @@ export function RegistroSection({ form, onChange }: RegistroSectionProps) {
     }
   }, []);
 
-  // Sincroniza con form solo si hay alguna selección válida
+  // Sincroniza con form y valida
   useEffect(() => {
     const hasValue =
       formValues.reproductivos || formValues.costosProductivos || formValues.noTiene;
+    
     if (hasValue) {
       (form as any).setFieldValue("registrosProductivos", formValues);
+      setError("");
+    } else if (showErrors) {
+      setError("Debe seleccionar al menos una opción de registro");
     }
+    
     onChange?.();
-  }, [formValues, form, onChange]);
+  }, [formValues, form, onChange, showErrors]);
 
   // Manejadores de checkboxes
   const toggleRegistro = (field: "reproductivos" | "costosProductivos") => {
     const newValues = {
       ...formValues,
       [field]: !formValues[field],
-      noTiene: false, // 🔹 Nunca “No hay” junto a otros
+      noTiene: false, // Nunca "No hay" junto a otros
     };
     setFormValues(newValues);
   };
@@ -123,8 +131,15 @@ export function RegistroSection({ form, onChange }: RegistroSectionProps) {
             </div>
 
             <p className="text-xs text-gray-500 mt-2">
-              No puede seleccionar “No hay” junto con otros registros.
+              No puede seleccionar "No hay" junto con otros registros.
             </p>
+
+            {/* Mensaje de error */}
+            {error && (
+              <p className="text-sm text-red-600 mt-2">
+                {error}
+              </p>
+            )}
           </div>
         </div>
       </div>

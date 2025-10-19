@@ -5,7 +5,6 @@ import { associateApplySchema } from "../schemas/associateApply";
 import { Step1 } from "../steps/stepPersonalInformation";
 import { Step2 } from "../steps/stepFincaGeoPropi";
 import { Step3 } from "../steps/stepForrajeRegisto";
-
 import { Step6 } from "../steps/stepDocumentsUpload";
 import { Step7 } from "../steps/stepConfirmation";
 import { Step4 } from "../steps/stepActividadessCaracteristicas";
@@ -22,7 +21,6 @@ interface StepsProps {
 
 export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: StepsProps) {
   const [, bump] = useState(0);
-
   
   const formTopRef = useRef<HTMLDivElement | null>(null);
 
@@ -140,7 +138,14 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
             !!values.propietarioFechaNacimiento
           );
         }
-        return fincaValid && geografiaValid && propietarioValid;
+
+        // Validar hato ganadero
+        const hatoValid = 
+          (values.tipoExplotacion?.length ?? 0) >= 1 &&
+          Array.isArray(values.hatoItems) && 
+          values.hatoItems.length > 0;
+
+        return fincaValid && geografiaValid && propietarioValid && hatoValid;
       }
 
       case 3: {
@@ -150,8 +155,17 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       }
 
       case 4:
-      case 5:
-        return true;
+        return true; // No hay campos obligatorios en este paso
+
+      case 5: {
+        const accesos = values.viasAcceso?.accesos || [];
+        const canales = values.comercializacion?.canales || [];
+        const necesidades = (values.necesidadesObservaciones?.necesidades || []).filter(
+          (n: string) => n && n.trim() !== ""
+        );
+        
+        return accesos.length > 0 && canales.length > 0 && necesidades.length > 0;
+      }
 
       case 6: {
         const docsOk =
@@ -185,7 +199,6 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
 
   const canProceed = useMemo(() => checkStepValidity(values), [step, fingerprint]);
 
-  
   const scrollToFormTop = () => {
     formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
   };
@@ -200,7 +213,6 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
     requestAnimationFrame(scrollToFormTop);
   };
  
-
   return (
     <div ref={formTopRef} className="scroll-mt-[120px]">
       {step === 1 && (

@@ -3,17 +3,26 @@ import type { FormLike } from "../../../shared/types/form-lite";
 
 interface ComercializacionSectionProps {
   form: FormLike;
+  showErrors?: boolean;
 }
 
-export function ComercializacionSection({ form }: ComercializacionSectionProps) {
+export function ComercializacionSection({ form, showErrors = false }: ComercializacionSectionProps) {
   const existentes = (form as any).state?.values?.comercializacion || {};
 
   const [canales, setCanales] = useState<string[]>(existentes.canales || []);
   const [otroCanal, setOtroCanal] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     (form as any).setFieldValue("comercializacion", { canales });
-  }, [canales, form]);
+    
+    // Validar cuando cambian los canales
+    if (showErrors && canales.length === 0) {
+      setError("Debe seleccionar al menos un canal de comercialización");
+    } else {
+      setError("");
+    }
+  }, [canales, form, showErrors]);
 
   const toggleCanal = (canal: string) => {
     setCanales((prev) =>
@@ -24,15 +33,18 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
   const agregarOtroCanal = () => {
     const trimmed = (otroCanal ?? "").trim();
     if (!trimmed) return;
+    
     if (trimmed.length > 75) {
       alert("El texto es muy largo (máx. 75 caracteres).");
       return;
     }
+    
     const exists = canales.some((c) => c.toLowerCase() === trimmed.toLowerCase());
     if (exists) {
       alert("Este canal ya fue agregado");
       return;
     }
+    
     setCanales((prev) => [...prev, trimmed]);
     setOtroCanal("");
   };
@@ -40,15 +52,15 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-        11
-      </div>
+        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+          11
+        </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">Comercialización</h3>
       </div>
 
       <div className="p-6 space-y-4">
         <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-          Canales de comercialización:
+          Canales de comercialización: * 
         </label>
 
         <div className="space-y-2">
@@ -92,6 +104,13 @@ export function ComercializacionSection({ form }: ComercializacionSectionProps) 
               Agregar
             </button>
           </div>
+
+          {/* Mensaje de error */}
+          {error && (
+            <p className="text-sm text-red-600 mt-2">
+              {error}
+            </p>
+          )}
 
           {canales.length > 0 && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
