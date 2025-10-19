@@ -1,31 +1,20 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
-import { otraInfraestructuraSchema } from "../schemas/associateApply";
-
-
 
 interface InfraestructuraSectionProps {
   form: FormLike;
+  showErrors?: boolean;
 }
 
-export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
+export function InfraestructuraSection({ form, showErrors = false }: InfraestructuraSectionProps) {
   const existentes = (form as any).state?.values?.infraestructuraDisponible || {};
 
-  const [infraestructuras, setInfraestructuras] = useState<string[]>(
-    existentes.infraestructuras || []
-  );
-  const [otraInfraestructura, setOtraInfraestructura] = useState<string>("");
-
-  
-  const [otraInfraError, setOtraInfraError] = useState<string | null>(null);
-
-  const [corrienteElectrica, setCorrienteElectrica] = useState<{
-    publica: boolean;
-    privada: boolean;
-  }>({
+  const [infraestructuras, setInfraestructuras] = useState<string[]>(existentes.infraestructuras || []);
+  const [corrienteElectrica, setCorrienteElectrica] = useState({
     publica: existentes.corrienteElectrica?.publica || false,
     privada: existentes.corrienteElectrica?.privada || false,
   });
+  const [otraInfraestructura, setOtraInfraestructura] = useState<string>("");
 
   useEffect(() => {
     (form as any).setFieldValue("infraestructuraDisponible", {
@@ -35,73 +24,62 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
   }, [infraestructuras, corrienteElectrica, form]);
 
   const toggleInfraestructura = (infra: string) => {
-    if (infraestructuras.includes(infra)) {
-      setInfraestructuras(infraestructuras.filter((i) => i !== infra));
-    } else {
-      setInfraestructuras([...infraestructuras, infra]);
-    }
+    setInfraestructuras((prev) =>
+      prev.includes(infra) ? prev.filter((i) => i !== infra) : [...prev, infra]
+    );
   };
 
   const agregarOtraInfraestructura = () => {
     const trimmed = otraInfraestructura.trim();
-
-    // requerido
-    if (!trimmed) {
-      setOtraInfraError("La infraestructura es requerida");
+    if (!trimmed) return;
+    
+    if (trimmed.length > 75) {
+      alert("El texto es muy largo (máx. 75 caracteres).");
       return;
     }
 
-   
-    const parsed = otraInfraestructuraSchema.safeParse(trimmed);
-    if (!parsed.success) {
-      setOtraInfraError(parsed.error.issues[0]?.message ?? "Valor inválido");
+    // Solo letras y espacios
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) {
+      alert("Solo se permiten letras y espacios");
       return;
     }
-
-    // duplicados
-    if (infraestructuras.includes(trimmed)) {
-      setOtraInfraError("Esta infraestructura ya fue agregada");
+    
+    const exists = infraestructuras.some((i) => i.toLowerCase() === trimmed.toLowerCase());
+    if (exists) {
+      alert("Esta infraestructura ya fue agregada");
       return;
     }
-
-    setInfraestructuras([...infraestructuras, trimmed]);
+    
+    setInfraestructuras((prev) => [...prev, trimmed]);
     setOtraInfraestructura("");
-    setOtraInfraError(null);
-  };
-
-  const toggleCorriente = (tipo: "publica" | "privada") => {
-    setCorrienteElectrica((prev) => ({
-      ...prev,
-      [tipo]: !prev[tipo],
-    }));
   };
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-          9
+          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+          </svg>
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">
-          Infraestructura disponible y corriente eléctrica
-        </h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Infraestructura Disponible</h3>
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Infraestructura disponible */}
+        {/* Infraestructuras */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Infraestructura disponible:
+            Infraestructura disponible en la finca:
           </label>
 
           <div className="space-y-2">
             {[
-              "Corral",
-              "Picadora",
-              "Comederos",
-              "Abrevadero",
-              "Cargadero",
+              "Corral de manejo",
               "Bodega",
+              "Sala de ordeño",
+              "Tanque de enfriamiento",
+              "Biodigestor",
+              "Sistema de tratamiento de aguas",
             ].map((infra) => (
               <div key={infra} className="flex items-center gap-3">
                 <input
@@ -118,37 +96,22 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
               </div>
             ))}
 
-            {/* Campo "Otra infraestructura" con el mismo estilo de error */}
-            <div className="flex gap-2 mt-3 items-start">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={otraInfraestructura}
-                  onChange={(e) => {
-                    setOtraInfraestructura(e.target.value);
-                    if (otraInfraError) setOtraInfraError(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      agregarOtraInfraestructura();
-                    }
-                  }}
-                  placeholder="Otra infraestructura..."
-                  maxLength={75}
-                  aria-invalid={!!otraInfraError}
-                  className={[
-                    "w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1",
-                    otraInfraError
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
-                  ].join(" ")}
-                />
-                {otraInfraError && (
-                  <p className="mt-1 text-sm text-red-600">{otraInfraError}</p>
-                )}
-              </div>
-
+            {/* Campo "Otra" */}
+            <div className="flex gap-2 mt-3">
+              <input
+                type="text"
+                value={otraInfraestructura}
+                onChange={(e) => setOtraInfraestructura(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    agregarOtraInfraestructura();
+                  }
+                }}
+                placeholder="Otra infraestructura"
+                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                maxLength={75}
+              />
               <button
                 type="button"
                 onClick={agregarOtraInfraestructura}
@@ -159,15 +122,13 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
             </div>
 
             {infraestructuras.length > 0 && (
-              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                <p className="text-xs text-amber-800 font-medium mb-2">
-                  Infraestructura seleccionada:
-                </p>
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-xs text-blue-800 font-medium mb-2">Infraestructura seleccionada:</p>
                 <div className="flex flex-wrap gap-2">
                   {infraestructuras.map((infra, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-amber-300 rounded-full px-3 py-1 text-xs text-amber-700"
+                      className="inline-flex items-center gap-1 bg-white border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700"
                     >
                       {infra}
                     </span>
@@ -178,68 +139,44 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
           </div>
         </div>
 
-        {/* Corriente eléctrica */}
-        <div className="pt-4 border-t border-[#DCD6C9]">
+        {/* Corriente Eléctrica */}
+        <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Corriente eléctrica en la finca:
+            Corriente eléctrica:
           </label>
 
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
-                id="corriente-publica"
+                id="electrica-publica"
                 checked={corrienteElectrica.publica}
-                onChange={() => toggleCorriente("publica")}
+                onChange={(e) =>
+                  setCorrienteElectrica({ ...corrienteElectrica, publica: e.target.checked })
+                }
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
               />
-              <label htmlFor="corriente-publica" className="text-sm text-[#4A4A4A]">
-                Pública
+              <label htmlFor="electrica-publica" className="text-sm text-[#4A4A4A]">
+                Pública (ICE)
               </label>
             </div>
 
             <div className="flex items-center gap-3">
               <input
                 type="checkbox"
-                id="corriente-privada"
+                id="electrica-privada"
                 checked={corrienteElectrica.privada}
-                onChange={() => toggleCorriente("privada")}
+                onChange={(e) =>
+                  setCorrienteElectrica({ ...corrienteElectrica, privada: e.target.checked })
+                }
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
               />
-              <label htmlFor="corriente-privada" className="text-sm text-[#4A4A4A]">
-                Privada
+              <label htmlFor="electrica-privada" className="text-sm text-[#4A4A4A]">
+                Privada (planta eléctrica/solar)
               </label>
             </div>
-
-            {!corrienteElectrica.publica && !corrienteElectrica.privada && (
-              <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                <p className="text-xs text-gray-600">
-                  ℹ️ Si no marca ninguna opción, se asumirá que no hay corriente eléctrica
-                </p>
-              </div>
-            )}
-
-            {(corrienteElectrica.publica || corrienteElectrica.privada) && (
-              <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-md">
-                <p className="text-xs text-purple-800 font-medium mb-2">
-                  Tipo de corriente:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {corrienteElectrica.publica && (
-                    <span className="inline-flex items-center gap-1 bg-white border border-purple-300 rounded-full px-3 py-1 text-xs text-purple-700">
-                      Pública
-                    </span>
-                  )}
-                  {corrienteElectrica.privada && (
-                    <span className="inline-flex items-center gap-1 bg-white border border-purple-300 rounded-full px-3 py-1 text-xs text-purple-700">
-                      Privada
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

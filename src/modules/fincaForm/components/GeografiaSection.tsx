@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ZodError } from "zod";
 import type { FormLike } from "../../../shared/types/form-lite";
 import { geografiaSchema } from "../schema/fincaSchema";
@@ -5,9 +6,12 @@ import { useGeografia } from "../hooks/useGeografia";
 
 interface GeografiaSectionProps {
   form: FormLike;
+  forceValidation?: boolean;
 }
 
-export function GeografiaSection({ form }: GeografiaSectionProps) {
+export function GeografiaSection({ form, forceValidation = false }: GeografiaSectionProps) {
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
+  
   const {
     provincias,
     cantones,
@@ -34,6 +38,28 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
     }
   };
 
+  // Validar todos los campos cuando forceValidation cambia a true
+  useEffect(() => {
+    if (forceValidation) {
+      const values = (form as any).state?.values || {};
+      const errors: Record<string, string> = {};
+
+      if (!values.provincia || values.provincia.trim().length === 0) {
+        errors.provincia = "La provincia es requerida";
+      }
+
+      if (!values.canton || values.canton.trim().length === 0) {
+        errors.canton = "El cantón es requerido";
+      }
+
+      if (!values.distrito || values.distrito.trim().length === 0) {
+        errors.distrito = "El distrito es requerido";
+      }
+
+      setLocalErrors(errors);
+    }
+  }, [forceValidation, form]);
+
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -52,28 +78,45 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
             name="provincia"
             validators={{ onChange: ({ value }: any) => validateField("provincia", value) }}
           >
-            {(f: any) => (
-              <div>
-                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                  Provincia *
-                </label>
-                <select
-                  value={f.state.value}
-                  onChange={(e) => handleProvinciaChange(e.target.value, f)}
-                  onBlur={f.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  disabled={loadingProvincias}
-                >
-                  <option value="">Seleccione una provincia</option>
-                  {provincias.map((p) => (
-                    <option key={p.id} value={p.nombre}>{p.nombre}</option>
-                  ))}
-                </select>
-                {f.state.meta.errors?.length > 0 && (
-                  <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
-                )}
-              </div>
-            )}
+            {(f: any) => {
+              const showError = (f.state.meta.errors?.length > 0 || localErrors.provincia);
+              return (
+                <div>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                    Provincia *
+                  </label>
+                  <select
+                    value={f.state.value}
+                    onChange={(e) => {
+                      handleProvinciaChange(e.target.value, f);
+                      if (localErrors.provincia) {
+                        setLocalErrors(prev => {
+                          const { provincia, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
+                    onBlur={f.handleBlur}
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                      showError 
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
+                    disabled={loadingProvincias}
+                  >
+                    <option value="">Seleccione una provincia</option>
+                    {provincias.map((p) => (
+                      <option key={p.id} value={p.nombre}>{p.nombre}</option>
+                    ))}
+                  </select>
+                  {showError && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {localErrors.provincia || f.state.meta.errors[0]}
+                    </p>
+                  )}
+                </div>
+              );
+            }}
           </form.Field>
 
           {/* Cantón */}
@@ -83,6 +126,7 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
           >
             {(f: any) => {
               const provinciaValue = (form as any).state.values.provincia;
+              const showError = (f.state.meta.errors?.length > 0 || localErrors.canton);
               return (
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
@@ -90,9 +134,21 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
                   </label>
                   <select
                     value={f.state.value}
-                    onChange={(e) => handleCantonChange(e.target.value, f)}
+                    onChange={(e) => {
+                      handleCantonChange(e.target.value, f);
+                      if (localErrors.canton) {
+                        setLocalErrors(prev => {
+                          const { canton, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                      showError 
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                     disabled={!provinciaValue || loadingCantones}
                   >
                     <option value="">Seleccione un cantón</option>
@@ -100,8 +156,10 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
                       <option key={c.id} value={c.nombre}>{c.nombre}</option>
                     ))}
                   </select>
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {showError && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {localErrors.canton || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               );
@@ -117,6 +175,7 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
           >
             {(f: any) => {
               const cantonValue = (form as any).state.values.canton;
+              const showError = (f.state.meta.errors?.length > 0 || localErrors.distrito);
               return (
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
@@ -124,9 +183,21 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
                   </label>
                   <select
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      f.handleChange(e.target.value);
+                      if (localErrors.distrito) {
+                        setLocalErrors(prev => {
+                          const { distrito, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                      showError 
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                     disabled={!cantonValue || loadingDistritos}
                   >
                     <option value="">Seleccione un distrito</option>
@@ -134,8 +205,10 @@ export function GeografiaSection({ form }: GeografiaSectionProps) {
                       <option key={d.id} value={d.nombre}>{d.nombre}</option>
                     ))}
                   </select>
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {showError && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {localErrors.distrito || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               );

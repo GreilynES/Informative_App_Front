@@ -57,6 +57,7 @@ export async function createSolicitud(payload: any) {
   } catch (err: any) {
     console.error("[Service] ❌ Error al enviar solicitud:", err?.message || err);
     console.error("[Service] Response data:", err?.response?.data);
+    console.error("[Service] Status:", err?.response?.status);
     throw err;
   }
 }
@@ -121,39 +122,61 @@ export async function uploadDocuments(
 }
 
 /* =========================================================
-   NUEVOS HELPERS: verificación de unicidad (cédula / email)
+   HELPERS MEJORADOS: verificación de unicidad (cédula / email)
    Convención:
-   - 200 => existe
-   - 404 => no existe
-   - otros => se propaga error (para no enmascarar problemas)
-   Ajusta las rutas a las de tu back si difieren.
+   - 200 => existe (duplicado encontrado)
+   - 404 => no existe (disponible para registro)
+   - otros => error de verificación
 ========================================================= */
 
+export async function existsCedula(cedula: string): Promise<boolean> {
+  const v = (cedula ?? "").trim();
+  if (!v) return false;
+  
+  console.log("[existsCedula] Verificando cédula:", v);
+  
+  try {
+    const response = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
+    console.log("[existsCedula] ✅ Cédula encontrada (existe):", response.data);
+    return true; // 200 => existe
+  } catch (err: any) {
+    const status = err?.response?.status;
+    console.log("[existsCedula] Status recibido:", status);
+    
+    if (status === 404) {
+      console.log("[existsCedula] ✅ Cédula NO existe (disponible)");
+      return false; // 404 => no existe, disponible para registro
+    }
+    
+    // Para cualquier otro error, registrar y permitir continuar
+    console.warn("[existsCedula] ⚠️ Error al verificar cédula:", status, err?.message);
+    console.warn("[existsCedula] Permitiendo continuar por error de verificación");
+    return false; // En caso de error, no bloquear al usuario
+  }
+}
 
-  export async function existsCedula(cedula: string): Promise<boolean> {
-    const v = (cedula ?? "").trim();
-    if (!v) return false;
-    try {
-      await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
-      return true; // 200 => existe
-    } catch (err: any) {
-      const st = err?.response?.status;
-      if (st === 404) return false; // 404 => no existe
-      console.warn("[existsCedula] verificación no concluyente:", st, err?.message);
-      return false; // en error de red/500 => NO bloquees al usuario
+export async function existsEmail(email: string): Promise<boolean> {
+  const v = (email ?? "").trim();
+  if (!v) return false;
+  
+  console.log("[existsEmail] Verificando email:", v);
+  
+  try {
+    const response = await apiConfig.get(`/personas/email/${encodeURIComponent(v)}`);
+    console.log("[existsEmail] ✅ Email encontrado (existe):", response.data);
+    return true; // 200 => existe
+  } catch (err: any) {
+    const status = err?.response?.status;
+    console.log("[existsEmail] Status recibido:", status);
+    
+    if (status === 404) {
+      console.log("[existsEmail] ✅ Email NO existe (disponible)");
+      return false; // 404 => no existe, disponible para registro
     }
+    
+    // Para cualquier otro error, registrar y permitir continuar
+    console.warn("[existsEmail] ⚠️ Error al verificar email:", status, err?.message);
+    console.warn("[existsEmail] Permitiendo continuar por error de verificación");
+    return false; // En caso de error, no bloquear al usuario
   }
- 
-  export async function existsEmail(email: string): Promise<boolean> {
-    const v = (email ?? "").trim();
-    if (!v) return false;
-    try {
-      await apiConfig.get(`/personas/email/${encodeURIComponent(v)}`);
-      return true;
-    } catch (err: any) {
-      const st = err?.response?.status;
-      if (st === 404) return false;
-      console.warn("[existsEmail] verificación no concluyente:", st, err?.message);
-      return false;
-    }
-  }
+}

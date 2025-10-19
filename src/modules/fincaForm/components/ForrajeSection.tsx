@@ -14,15 +14,16 @@ function FieldError({ msg }: { msg?: string }) {
 
 interface ForrajeSectionProps {
   form: FormLike;
-  onChange?: () => void; // 🔹 callback opcional para habilitar botón
+  onChange?: () => void;
+  showErrors?: boolean;
 }
 
-// Tipo local: garantiza que `utilizacion` sea string (evita TS “possibly undefined”)
+// Tipo local: garantiza que `utilizacion` sea string
 type ForrajeDraft = Omit<ForrajeItem, "id" | "idForraje"> & {
   utilizacion: string;
 };
 
-export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
+export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSectionProps) {
   const forrajesExistentes = (form as any).state?.values?.forrajes || [];
 
   const [forrajes, setForrajes] = React.useState<ForrajeItem[]>(forrajesExistentes);
@@ -43,12 +44,26 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
 
   // Banner general
   const [error, setError] = React.useState<string | null>(null);
+  const [touched, setTouched] = React.useState({
+    tipoForraje: false,
+    variedad: false,
+    hectareas: false,
+    utilizacion: false,
+  });
 
   // Sincroniza con el form global
   useEffect(() => {
     (form as any).setFieldValue("forrajes", forrajes);
-    onChange?.(); // 🔹 notifica cambio
-  }, [forrajes, form, onChange]);
+    
+    // Validar si showErrors está activo
+    if (showErrors && forrajes.length === 0) {
+      setError("Debe agregar al menos un tipo de forraje");
+    } else {
+      setError(null);
+    }
+    
+    onChange?.();
+  }, [forrajes, form, onChange, showErrors]);
 
   // ---- Helpers ----
   const validateDraft = (draft: ForrajeDraft) => {
@@ -63,15 +78,24 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
   };
 
   const onBlurField = (key: keyof ForrajeDraft, value: string | number) => {
+    setTouched({ ...touched, [key]: true });
     const next: ForrajeDraft = { ...currentForraje, [key]: value } as ForrajeDraft;
     const fieldErrs = validateDraft(next);
     setErrors((prev) => ({ ...prev, [key]: fieldErrs[key] }));
   };
 
-  // ✅ Solo letras (tildes/ñ/ü) y espacios
+  // Solo letras (tildes/ñ/ü) y espacios
   const keepLetters = (s: string) => s.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
 
   const agregarForraje = () => {
+    // Marcar todos como touched
+    setTouched({
+      tipoForraje: true,
+      variedad: true,
+      hectareas: true,
+      utilizacion: true,
+    });
+
     const fieldErrs = validateDraft(currentForraje);
     setErrors(fieldErrs);
 
@@ -102,15 +126,25 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
 
     setErrors({});
     setError(null);
-    onChange?.(); // 🔹 notifica cambio
+    setTouched({
+      tipoForraje: false,
+      variedad: false,
+      hectareas: false,
+      utilizacion: false,
+    });
+    onChange?.();
     console.log("[ForrajeSection] Forraje agregado:", nuevoForraje);
   };
 
   const eliminarForraje = (id: number | undefined) => {
     if (!id) return;
     setForrajes((prev) => prev.filter((f) => f.id !== id));
-    onChange?.(); // 🔹 notifica cambio
+    onChange?.();
     console.log("[ForrajeSection] Forraje eliminado:", id);
+  };
+
+  const shouldShowFieldError = (field: keyof typeof errors) => {
+    return (touched[field] || showErrors) && errors[field];
   };
 
   return (
@@ -151,7 +185,11 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
                 setCurrentForraje({ ...currentForraje, tipoForraje: e.target.value })
               }
               onBlur={(e) => onBlurField("tipoForraje", e.target.value)}
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                shouldShowFieldError("tipoForraje")
+                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                  : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              }`}
             >
               <option value="">Seleccione</option>
               <option value="Pastos mejorados de piso">Pastos mejorados de piso</option>
@@ -160,7 +198,7 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
               <option value="Banco de proteína">Banco de proteína</option>
               <option value="Otro">Otro</option>
             </select>
-            <FieldError msg={errors.tipoForraje} />
+            <FieldError msg={shouldShowFieldError("tipoForraje") ? errors.tipoForraje : undefined} />
           </div>
 
           {/* Variedad */}
@@ -176,12 +214,16 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
               }
               onBlur={(e) => onBlurField("variedad", e.target.value)}
               placeholder="Ej: Estrella africana"
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                shouldShowFieldError("variedad")
+                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                  : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              }`}
               maxLength={75}
               inputMode="text"
               pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]*"
             />
-            <FieldError msg={errors.variedad} />
+            <FieldError msg={shouldShowFieldError("variedad") ? errors.variedad : undefined} />
           </div>
 
           {/* Hectáreas */}
@@ -201,10 +243,14 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
                   hectareas: parseFloat(e.target.value) || 0,
                 })
               }
-              onBlur={(e) => onBlurField("hectareas", e.target.value)}
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              onBlur={(e) => onBlurField("hectareas", parseFloat(e.target.value) || 0)}
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                shouldShowFieldError("hectareas")
+                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                  : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              }`}
             />
-            <FieldError msg={errors.hectareas} />
+            <FieldError msg={shouldShowFieldError("hectareas") ? errors.hectareas : undefined} />
           </div>
 
           {/* Utilización */}
@@ -220,12 +266,16 @@ export function ForrajeSection({ form, onChange }: ForrajeSectionProps) {
               }
               onBlur={(e) => onBlurField("utilizacion", e.target.value)}
               placeholder="Alimentación directa"
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                shouldShowFieldError("utilizacion")
+                  ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                  : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              }`}
               maxLength={75}
               inputMode="text"
               pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]*"
             />
-            <FieldError msg={errors.utilizacion} />
+            <FieldError msg={shouldShowFieldError("utilizacion") ? errors.utilizacion : undefined} />
           </div>
 
           {/* Botón */}

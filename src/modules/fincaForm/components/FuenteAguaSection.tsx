@@ -7,7 +7,8 @@ import {
 
 interface FuenteAguaSectionProps {
   form: FormLike;
-  onChange?: () => void; // 🔹 callback opcional
+  onChange?: () => void;
+  showErrors?: boolean;
 }
 
 /** Error con alto fijo para no mover el layout */
@@ -19,7 +20,7 @@ function FieldError({ msg }: { msg?: string }) {
   );
 }
 
-export function FuenteAguaSection({ form, onChange }: FuenteAguaSectionProps) {
+export function FuenteAguaSection({ form, onChange, showErrors = false }: FuenteAguaSectionProps) {
   const existentesFuentes = (form as any).state?.values?.fuentesAgua || [];
   const existentesRiego = (form as any).state?.values?.metodosRiego || [];
 
@@ -37,6 +38,8 @@ export function FuenteAguaSection({ form, onChange }: FuenteAguaSectionProps) {
 
   const [fuentesError, setFuentesError] = useState<string>("");
   const [riegoError, setRiegoError] = useState<string>("");
+  const [fuentesTouched, setFuentesTouched] = useState(false);
+  const [riegoTouched, setRiegoTouched] = useState(false);
 
   const sanitizeTextarea = (s: string) =>
     s.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s,\n]/g, "");
@@ -80,13 +83,25 @@ export function FuenteAguaSection({ form, onChange }: FuenteAguaSectionProps) {
     const items = parseList(fuentesText).map((nombre) => ({ nombre }));
     (form as any).setFieldValue("fuentesAgua", items);
     onChange?.();
-  }, [fuentesText, form, onChange]);
+
+    // Validar si showErrors está activo
+    if (showErrors || fuentesTouched) {
+      const error = validateFuentes(fuentesText);
+      setFuentesError(error);
+    }
+  }, [fuentesText, form, onChange, showErrors, fuentesTouched]);
 
   useEffect(() => {
     const items = parseList(riegoText).map((tipo) => ({ tipo }));
     (form as any).setFieldValue("metodosRiego", items);
     onChange?.();
-  }, [riegoText, form, onChange]);
+
+    // Validar si showErrors está activo
+    if (showErrors || riegoTouched) {
+      const error = validateRiego(riegoText);
+      setRiegoError(error);
+    }
+  }, [riegoText, form, onChange, showErrors, riegoTouched]);
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -108,14 +123,23 @@ export function FuenteAguaSection({ form, onChange }: FuenteAguaSectionProps) {
             value={fuentesText}
             onChange={(e) => {
               setFuentesText(sanitizeTextarea(e.target.value));
-              if (fuentesError) setFuentesError("");
+              if (fuentesError && fuentesTouched) {
+                setFuentesError(validateFuentes(e.target.value));
+              }
             }}
-            onBlur={(e) => setFuentesError(validateFuentes(e.target.value))}
+            onBlur={(e) => {
+              setFuentesTouched(true);
+              setFuentesError(validateFuentes(e.target.value));
+            }}
             placeholder="Ejemplos: Pozo, Naciente, Quebrada La Esperanza, Río Grande…&#10;(Puedes separar por coma o una por línea)"
-            className="w-full min-h-[112px] px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            className={`w-full min-h-[112px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+              (showErrors || fuentesTouched) && fuentesError
+                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            }`}
             maxLength={150}
           />
-          <FieldError msg={fuentesError} />
+          <FieldError msg={(showErrors || fuentesTouched) ? fuentesError : ""} />
           <p className="text-xs text-gray-500">
             Separa por comas o ingresa una por línea. Guardamos cada una como un registro.
           </p>
@@ -129,14 +153,23 @@ export function FuenteAguaSection({ form, onChange }: FuenteAguaSectionProps) {
             value={riegoText}
             onChange={(e) => {
               setRiegoText(sanitizeTextarea(e.target.value));
-              if (riegoError) setRiegoError("");
+              if (riegoError && riegoTouched) {
+                setRiegoError(validateRiego(e.target.value));
+              }
             }}
-            onBlur={(e) => setRiegoError(validateRiego(e.target.value))}
+            onBlur={(e) => {
+              setRiegoTouched(true);
+              setRiegoError(validateRiego(e.target.value));
+            }}
             placeholder="Ejemplos: Gravedad, Aspersión, Goteo, Riego por manguera…&#10;(Puedes separar por coma o una por línea)"
-            className="w-full min-h-[112px] px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            className={`w-full min-h-[112px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+              (showErrors || riegoTouched) && riegoError
+                ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+            }`}
             maxLength={150}
           />
-          <FieldError msg={riegoError} />
+          <FieldError msg={(showErrors || riegoTouched) ? riegoError : ""} />
           <p className="text-xs text-gray-500">
             Separa por comas o ingresa una por línea. Guardamos cada tipo como un registro.
           </p>

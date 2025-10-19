@@ -3,9 +3,10 @@ import type { FormLike } from "../../../shared/types/form-lite";
 
 interface ActividadesInfraestructuraSectionProps {
   form: FormLike;
+  showErrors?: boolean;
 }
 
-export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestructuraSectionProps) {
+export function ActividadesInfraestructuraSection({ form, showErrors = false }: ActividadesInfraestructuraSectionProps) {
   // Carga inicial si el usuario regresa a este paso
   const existentes = (form as any).state?.values?.actividadesInfraestructura || {};
 
@@ -48,6 +49,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
       {/* Header */}
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+          8
         </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">
           Otras Actividades e Infraestructura de Producción

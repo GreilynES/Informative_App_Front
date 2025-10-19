@@ -1,9 +1,10 @@
+import { useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 import { ZodError } from "zod";
 import { associateApplySchema } from "../schemas/associateApply";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { NucleoFamiliarSection } from "../components/FamilyNucleusSection";
-import { useEffect, useState } from "react";
+import { existsCedula, existsEmail } from "../services/associatesFormService";
 
 interface Step1Props {
   form: FormLike;
@@ -13,6 +14,11 @@ interface Step1Props {
 }
 
 export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
+  const [intentoAvanzar, setIntentoAvanzar] = useState(false);
+  const [erroresValidacion, setErroresValidacion] = useState<Record<string, string>>({});
+  const [verificandoCedula, setVerificandoCedula] = useState(false);
+  const [verificandoEmail, setVerificandoEmail] = useState(false);
+
   const validateField = (name: string, value: any) => {
     try {
       const fieldSchema = (associateApplySchema.shape as any)[name];
@@ -28,64 +34,176 @@ export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
     }
   };
 
-  const [showModal, setShowModal] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
+  // Validar si la cédula ya existe
+  const validarCedulaUnica = async (cedula: string): Promise<string | undefined> => {
+    if (!cedula || cedula.trim().length < 8) {
+      console.log("[Step1] Cédula muy corta, no validando");
+      return undefined;
+    }
+    
+    console.log("[Step1] Iniciando validación de cédula:", cedula);
+    setVerificandoCedula(true);
+    try {
+      const existe = await existsCedula(cedula);
+      console.log("[Step1] Resultado validación cédula:", existe ? "EXISTE" : "DISPONIBLE");
+      if (existe) {
+        return "Esta cédula ya está registrada en el sistema";
+      }
+      return undefined;
+    } catch (error) {
+      console.error("[Step1] Error al verificar cédula:", error);
+      return undefined; // No bloquear en caso de error de red
+    } finally {
+      setVerificandoCedula(false);
+    }
+  };
 
-const toISO = (d: Date) => {
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-};
+  // Validar si el email ya existe
+  const validarEmailUnico = async (email: string): Promise<string | undefined> => {
+    if (!email || email.trim().length === 0) {
+      console.log("[Step1] Email vacío, no validando");
+      return undefined;
+    }
+    
+    // Validar formato básico primero
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log("[Step1] Email con formato inválido, no validando duplicados");
+      return undefined;
+    }
+    
+    console.log("[Step1] Iniciando validación de email:", email);
+    setVerificandoEmail(true);
+    try {
+      const existe = await existsEmail(email);
+      console.log("[Step1] Resultado validación email:", existe ? "EXISTE" : "DISPONIBLE");
+      if (existe) {
+        return "Este email ya está registrado en el sistema";
+      }
+      return undefined;
+    } catch (error) {
+      console.error("[Step1] Error al verificar email:", error);
+      return undefined; // No bloquear en caso de error de red
+    } finally {
+      setVerificandoEmail(false);
+    }
+  };
 
-const todayDate = new Date();
-const adultCutoff = new Date(todayDate);        // hoy - 18 años
-adultCutoff.setFullYear(adultCutoff.getFullYear() - 18);
-const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
+  const toISO = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
-  useEffect(() => {
-    // Solo lo muestra si no existe el flag en localStorage
-    const warned = localStorage.getItem("showModalAviso");
-    setShowModal(!warned);
-  }, []);
+  const todayDate = new Date();
+  const adultCutoff = new Date(todayDate);
+  adultCutoff.setFullYear(adultCutoff.getFullYear() - 18);
+  const adultMaxDate = toISO(adultCutoff);
 
-  function handleClose() {
-    setIsVisible(false);
-    setTimeout(() => {
-      setShowModal(false);
-      localStorage.setItem("showModalAviso", "true"); // Marca como visto
-      setIsVisible(true); // opcional si reusas el modal en otro lado
-    }, 250);
-  }
+  // Función para validar todo el paso y mostrar errores
+  const handleNext = async () => {
+    setIntentoAvanzar(true);
+    const values = (form as any).state?.values || {};
+    const errores: Record<string, string> = {};
+
+    // Validar campos obligatorios
+    const camposObligatorios = [
+      { name: "cedula", label: "Cédula", minLength: 8 },
+      { name: "nombre", label: "Nombre", minLength: 1 },
+      { name: "apellido1", label: "Primer Apellido", minLength: 1 },
+      { name: "apellido2", label: "Segundo Apellido", minLength: 1 },
+      { name: "fechaNacimiento", label: "Fecha de Nacimiento" },
+      { name: "telefono", label: "Teléfono", minLength: 8 },
+      { name: "email", label: "Email" },
+      { name: "marcaGanado", label: "Marca de Ganado", minLength: 1 },
+      { name: "CVO", label: "CVO", minLength: 1 },
+    ];
+
+    // Validar cada campo obligatorio
+    for (const { name, label, minLength } of camposObligatorios) {
+      const valor = values[name];
+      
+      if (!valor || (typeof valor === 'string' && valor.trim().length === 0)) {
+        errores[name] = `${label} es obligatorio`;
+      } else if (minLength && valor.length < minLength) {
+        errores[name] = `${label} debe tener al menos ${minLength} caracteres`;
+      } else {
+        // Validar con Zod
+        const errorZod = validateField(name, valor);
+        if (errorZod) {
+          errores[name] = errorZod;
+        }
+      }
+    }
+
+    // Validar unicidad de cédula
+    if (values.cedula && !errores.cedula) {
+      const errorCedula = await validarCedulaUnica(values.cedula);
+      if (errorCedula) {
+        errores.cedula = errorCedula;
+      }
+    }
+
+    // Validar unicidad de email
+    if (values.email && !errores.email) {
+      const errorEmail = await validarEmailUnico(values.email);
+      if (errorEmail) {
+        errores.email = errorEmail;
+      }
+    }
+
+    // Validar distancia si no vive en la finca
+    const viveEnFinca = values.viveEnFinca ?? true;
+    if (!viveEnFinca) {
+      const distancia = values.distanciaFinca;
+      if (!distancia || distancia === "" || Number(distancia) <= 0) {
+        errores["distanciaFinca"] = "La distancia debe ser mayor a 0";
+      } else {
+        const errorZod = validateField("distanciaFinca", distancia);
+        if (errorZod) {
+          errores["distanciaFinca"] = errorZod;
+        }
+      }
+    }
+
+    setErroresValidacion(errores);
+
+    // Si hay errores, no avanzar y hacer scroll al primer error
+    if (Object.keys(errores).length > 0) {
+      // Scroll al primer campo con error
+      const primerCampoError = Object.keys(errores)[0];
+      const elemento = document.querySelector(`[name="${primerCampoError}"]`);
+      if (elemento) {
+        elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    // Si no hay errores, avanzar
+    onNext();
+  };
+
   return (
-    <>
-    {showModal && (
-        <div
-          className={`
-            fixed inset-0 flex items-center justify-center z-50
-            bg-white/30 backdrop-blur-sm
-            transition-all duration-250
-            ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"}
-          `}
-        >
-          <div className="bg-white p-8 rounded-xl shadow-xl max-w-lg mx-4 transition-all duration-250">
-            <h2 className="text-2xl font-semibold mb-3">Aviso importante</h2>
-            <p className="mb-6 text-lg">
-              Antes de empezar, tenga a mano copia de la cédula, copia del acta de finca o contrato de arriendo de finca. Estos documentos serán necesarios.
-            </p>
-            <button
-              onClick={handleClose}
-              className="px-5 py-2 bg-[#708C3E] text-white rounded hover:bg-[#5d7334] text-lg"
-            >
-              Entendido, continuar
-            </button>
+    <div className="space-y-6">
+      {intentoAvanzar && Object.keys(erroresValidacion).length > 0 && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-semibold text-red-800">
+                Por favor complete los campos obligatorios
+              </h3>
+              <p className="text-sm text-red-700 mt-1">
+                Hay {Object.keys(erroresValidacion).length} campo(s) que requieren su atención.
+              </p>
+            </div>
           </div>
         </div>
       )}
 
-{!showModal && (
-    <div className="space-y-6">
-      
       {/* Información Personal */}
       <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
         <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -101,29 +219,62 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
               {(f: any) => (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Cédula *</label>
-                  <input
-                    type="text"
-                    value={f.state.value}
-                    onChange={async (e) => {
-                      const v = e.target.value;
-                      f.handleChange(v);
-                      if (/^\d{9,12}$/.test(v)) {
-                        const r = await lookup(v);
-                        if (r) {
-                          form.setFieldValue("nombre", r.firstname || "");
-                          form.setFieldValue("apellido1", r.lastname1 || "");
-                          form.setFieldValue("apellido2", r.lastname2 || "");
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={f.state.value}
+                      onChange={async (e) => {
+                        const v = e.target.value;
+                        f.handleChange(v);
+                        // Limpiar error de cédula cuando el usuario modifica el campo
+                        setErroresValidacion(prev => {
+                          const { cedula, ...rest } = prev;
+                          return rest;
+                        });
+                        if (/^\d{9,12}$/.test(v)) {
+                          const r = await lookup(v);
+                          if (r) {
+                            form.setFieldValue("nombre", r.firstname || "");
+                            form.setFieldValue("apellido1", r.lastname1 || "");
+                            form.setFieldValue("apellido2", r.lastname2 || "");
+                          }
                         }
-                      }
-                    }}
-                    onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    placeholder="Número de cédula"
-                  />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                      }}
+                      onBlur={async (e) => {
+                        f.handleBlur();
+                        const cedula = e.target.value.trim();
+                        if (cedula.length >= 8) {
+                          const errorUnicidad = await validarCedulaUnica(cedula);
+                          if (errorUnicidad) {
+                            setErroresValidacion(prev => ({
+                              ...prev,
+                              cedula: errorUnicidad
+                            }));
+                          }
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                        erroresValidacion["cedula"]
+                          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      }`}
+                      placeholder="Número de cédula"
+                      disabled={verificandoCedula}
+                    />
+                    {verificandoCedula && (
+                      <div className="absolute right-3 top-2.5">
+                        <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["cedula"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["cedula"] || f.state.meta.errors[0]}
+                    </p>
                   )}
-                  
                 </div>
               )}
             </form.Field>
@@ -138,13 +289,27 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
                   <input
                     type="text"
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      f.handleChange(e.target.value);
+                      if (intentoAvanzar) {
+                        setErroresValidacion(prev => {
+                          const { nombre, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    className={`w-full px-3 py-2 border rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 ${
+                      erroresValidacion["nombre"]
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                     placeholder="Tu nombre"
                   />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["nombre"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["nombre"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -162,13 +327,27 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
                   <input
                     type="text"
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      f.handleChange(e.target.value);
+                      if (intentoAvanzar) {
+                        setErroresValidacion(prev => {
+                          const { apellido1, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    className={`w-full px-3 py-2 border rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 ${
+                      erroresValidacion["apellido1"]
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                     placeholder="Tu primer apellido"
                   />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["apellido1"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["apellido1"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -184,13 +363,27 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
                   <input
                     type="text"
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      f.handleChange(e.target.value);
+                      if (intentoAvanzar) {
+                        setErroresValidacion(prev => {
+                          const { apellido2, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    className={`w-full px-3 py-2 border rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 ${
+                      erroresValidacion["apellido2"]
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                     placeholder="Tu segundo apellido"
                   />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["apellido2"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["apellido2"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -201,40 +394,46 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
             name="fechaNacimiento"
             validators={{ onChange: ({ value }: any) => validateField("fechaNacimiento", value) }}
           >
-            {(f: any) => {
-              
-              return (
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Fecha de Nacimiento *
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={f.state.value}
-                      onChange={(e) => {
-                        const inputDate = e.target.value;
-                        if (!inputDate) {
-                          // Campo obligatorio
-                          f.handleChange("");
-                        } else if (inputDate > adultMaxDate) {
-                          f.handleChange(adultMaxDate);
-                        } else {
-                          f.handleChange(inputDate);
-                        }
-                      }}
-                      onBlur={f.handleBlur}
-                      // Límite superior: exactamente 18 años atrás desde hoy
-                      max={adultMaxDate}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    />
-                    {f.state.meta.errors?.length > 0 && (
-                      <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
-                    )}
-                  </div>
-
-              );
-            }}
+            {(f: any) => (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha de Nacimiento *
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={f.state.value}
+                  onChange={(e) => {
+                    const inputDate = e.target.value;
+                    if (intentoAvanzar) {
+                      setErroresValidacion(prev => {
+                        const { fechaNacimiento, ...rest } = prev;
+                        return rest;
+                      });
+                    }
+                    if (!inputDate) {
+                      f.handleChange("");
+                    } else if (inputDate > adultMaxDate) {
+                      f.handleChange(adultMaxDate);
+                    } else {
+                      f.handleChange(inputDate);
+                    }
+                  }}
+                  onBlur={f.handleBlur}
+                  max={adultMaxDate}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                    erroresValidacion["fechaNacimiento"]
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  }`}
+                />
+                {(f.state.meta.errors?.length > 0 || erroresValidacion["fechaNacimiento"]) && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {erroresValidacion["fechaNacimiento"] || f.state.meta.errors[0]}
+                  </p>
+                )}
+              </div>
+            )}
           </form.Field>
         </div>
       </div>
@@ -265,14 +464,26 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       f.handleChange(value);
+                      if (intentoAvanzar) {
+                        setErroresValidacion(prev => {
+                          const { telefono, ...rest } = prev;
+                          return rest;
+                        });
+                      }
                     }}
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                      erroresValidacion["telefono"]
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                     placeholder="Número de teléfono"
                     maxLength={12}
                   />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["telefono"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["telefono"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -285,16 +496,53 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
               {(f: any) => (
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Email *</label>
-                  <input
-                    type="email"
-                    value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
-                    onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    placeholder="correo@ejemplo.com"
-                  />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={f.state.value}
+                      onChange={(e) => {
+                        f.handleChange(e.target.value);
+                        // Limpiar error de email cuando el usuario modifica el campo
+                        setErroresValidacion(prev => {
+                          const { email, ...rest } = prev;
+                          return rest;
+                        });
+                      }}
+                      onBlur={async (e) => {
+                        f.handleBlur();
+                        const email = e.target.value.trim();
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (email && emailRegex.test(email)) {
+                          const errorUnicidad = await validarEmailUnico(email);
+                          if (errorUnicidad) {
+                            setErroresValidacion(prev => ({
+                              ...prev,
+                              email: errorUnicidad
+                            }));
+                          }
+                        }
+                      }}
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                        erroresValidacion["email"]
+                          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                          : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      }`}
+                      placeholder="correo@ejemplo.com"
+                      disabled={verificandoEmail}
+                    />
+                    {verificandoEmail && (
+                      <div className="absolute right-3 top-2.5">
+                        <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["email"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["email"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -338,95 +586,100 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
 
         <div className="p-6 space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
-            
+            <form.Field name="viveEnFinca">
+              {(f: any) => (
+                <div className="flex items-center gap-3 mt-1">
+                  <input
+                    id="viveEnFinca"
+                    type="checkbox"
+                    checked={f.state.value ?? true}
+                    onChange={(e) => {
+                      f.handleChange(e.target.checked);
+                      if (e.target.checked && f.form?.setFieldValue) {
+                        f.form.setFieldValue("distanciaFinca", "");
+                        setErroresValidacion(prev => {
+                          const { distanciaFinca, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
+                    onBlur={f.handleBlur}
+                    className="w-4 h-4 rounded"
+                    style={{ accentColor: "#708C3E" }}
+                  />
+                  <label htmlFor="viveEnFinca" className="text-sm text-[#4A4A4A]">
+                    ¿Vive en la finca?
+                  </label>
+                </div>
+              )}
+            </form.Field>
 
-{/* ✅ Checkbox marcado por defecto (uno solo) */}
-<form.Field name="viveEnFinca">
-  {(f: any) => (
-    <div className="flex items-center gap-3 mt-1">
-      <input
-        id="viveEnFinca"
-        type="checkbox"
-        checked={f.state.value ?? true} // default: true
-        onChange={(e) => {
-          f.handleChange(e.target.checked);
-          // si vuelve a marcar, limpia distancia
-          if (e.target.checked && f.form?.setFieldValue) {
-            f.form.setFieldValue("distanciaFinca", "");
-          }
-        }}
-        onBlur={f.handleBlur}
-        className="w-4 h-4 rounded"
-        style={{ accentColor: "#708C3E" }}
-      />
-      <label htmlFor="viveEnFinca" className="text-sm text-[#4A4A4A]">
-        ¿Vive en la finca?
-      </label>
-    </div>
-  )}
-</form.Field>
+            <form.Field name="viveEnFinca">
+              {(v: any) => {
+                const viveEnFinca = (v.state.value ?? true) as boolean;
+                if (viveEnFinca) return null;
 
-{/* ✅ Listener: solo muestra distancia cuando viveEnFinca === false */}
-<form.Field name="viveEnFinca">
-  {(v: any) => {
-    const viveEnFinca = (v.state.value ?? true) as boolean;
-    if (viveEnFinca) return null; // solo cuando está DESMARCADO
+                return (
+                  <form.Field
+                    name="distanciaFinca"
+                    validators={{
+                      onChange: ({ value }: any) => validateField("distanciaFinca", value),
+                    }}
+                  >
+                    {(f: any) => (
+                      <div className="mt-3">
+                        <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                          Distancia de su residencia a la finca (km) *
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={f.state.value}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/[^\d.]/g, "");
+                            const parts = value.split(".");
+                            const filtered =
+                              parts.length > 2
+                                ? parts[0] + "." + parts.slice(1).join("")
+                                : value;
 
-    return (
-      <form.Field
-        name="distanciaFinca"
-        validators={{
-          onChange: ({ value }: any) => validateField("distanciaFinca", value),
-        }}
-      >
-        {(f: any) => (
-          <div className="mt-3">
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Distancia de su residencia a la finca (km) *
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={f.state.value}
-              onChange={(e) => {
-                // Solo dígitos y punto, sin guion
-                let value = e.target.value.replace(/[^\d.]/g, "");
-                const parts = value.split(".");
-                const filtered =
-                  parts.length > 2
-                    ? parts[0] + "." + parts.slice(1).join("")
-                    : value;
+                            if (filtered === "" || filtered === "0" || parseFloat(filtered) === 0) {
+                              f.handleChange("");
+                              return;
+                            }
 
-                // Rechaza 0 o vacío (debe ser > 0)
-                if (filtered === "" || filtered === "0" || parseFloat(filtered) === 0) {
-                  f.handleChange("");
-                  return;
-                }
-
-                f.handleChange(filtered);
+                            f.handleChange(filtered);
+                            if (intentoAvanzar) {
+                              setErroresValidacion(prev => {
+                                const { distanciaFinca, ...rest } = prev;
+                                return rest;
+                              });
+                            }
+                          }}
+                          onBlur={f.handleBlur}
+                          placeholder="Ej: 12.50"
+                          className={`w-full px-3 py-2 border rounded-md ${
+                            erroresValidacion["distanciaFinca"]
+                              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                              : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                          }`}
+                          onKeyDown={(e) => {
+                            if (e.key === "-" || e.key === "e" || (e.key === "0" && !f.state.value)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        />
+                        {(f.state.meta.errors?.length > 0 || erroresValidacion["distanciaFinca"]) && (
+                          <p className="text-sm text-red-600 mt-1">
+                            {erroresValidacion["distanciaFinca"] || f.state.meta.errors[0]}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+                );
               }}
-              onBlur={f.handleBlur}
-              placeholder="Ej: 12.50"
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
-              onKeyDown={(e) => {
-                // Bloquea '-', 'e' y 0 como primer dígito
-                if (e.key === "-" || e.key === "e" || (e.key === "0" && !f.state.value)) {
-                  e.preventDefault();
-                }
-              }}
-            />
-            {f.state.meta.errors?.length > 0 && (
-              <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
-            )}
-          </div>
-        )}
-      </form.Field>
-    );
-  }}
-</form.Field>
-
-
-
+            </form.Field>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -440,13 +693,27 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
                   <input
                     type="text"
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      f.handleChange(e.target.value);
+                      if (intentoAvanzar) {
+                        setErroresValidacion(prev => {
+                          const { marcaGanado, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     onBlur={f.handleBlur}
                     placeholder="Ej: MG-2025"
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      erroresValidacion["marcaGanado"]
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                   />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["marcaGanado"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["marcaGanado"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -462,13 +729,27 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
                   <input
                     type="text"
                     value={f.state.value}
-                    onChange={(e) => f.handleChange(e.target.value)}
+                    onChange={(e) => {
+                      f.handleChange(e.target.value);
+                      if (intentoAvanzar) {
+                        setErroresValidacion(prev => {
+                          const { CVO, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }}
                     placeholder="Ej: CVO-123456"
                     onBlur={f.handleBlur}
-                    className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md"
+                    className={`w-full px-3 py-2 border rounded-md ${
+                      erroresValidacion["CVO"]
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                    }`}
                   />
-                  {f.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
+                  {(f.state.meta.errors?.length > 0 || erroresValidacion["CVO"]) && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {erroresValidacion["CVO"] || f.state.meta.errors[0]}
+                    </p>
                   )}
                 </div>
               )}
@@ -481,11 +762,8 @@ const adultMaxDate = toISO(adultCutoff);        // "YYYY-MM-DD"
 
       <NavigationButtons 
         showPrev={false} 
-        onNext={onNext} 
-        disableNext={!canProceed}
+        onNext={handleNext}
       />
     </div>
-    )}
-    </>
   );
 }
