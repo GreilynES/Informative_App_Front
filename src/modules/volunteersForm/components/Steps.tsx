@@ -6,7 +6,10 @@ import {
   DisponibilidadAreasSection,
   type DisponibilidadAreasSectionHandle,
 } from "../components/DisponibilidadAreasSection";
-import { MotivacionHabilidadesSection } from "../components/MotivacionHabilidadesSection";
+import {
+  MotivacionHabilidadesSection,
+  type MotivacionHabilidadesSectionHandle, 
+} from "../components/MotivacionHabilidadesSection";
 import { DocumentUploadVoluntarios } from "../components/DocumentUploadVoluntarios";
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 
@@ -46,9 +49,10 @@ export function Steps({
   files,
   setFiles,
 }: StepsProps) {
-  // refs para validar desde el botón "Siguiente"
+  
   const dispRefIndividual = useRef<DisponibilidadAreasSectionHandle>(null);
   const dispRefOrg = useRef<DisponibilidadAreasSectionHandle>(null);
+  const motivRef = useRef<MotivacionHabilidadesSectionHandle>(null); 
 
   // ========== FLUJO INDIVIDUAL ==========
   if (tipoSolicitante === "INDIVIDUAL") {
@@ -58,7 +62,13 @@ export function Steps({
 
     const handleNextFromDisponibilidad = () => {
       const ok = dispRefIndividual.current?.validateAndShowErrors() ?? false;
-      if (!ok) return; // bloquear avance si hay errores
+      if (!ok) return; 
+      nextStep();
+    };
+
+    const handleNextFromMotivacion = () => { 
+      const ok = motivRef.current?.validateAndShowErrors() ?? false;
+      if (!ok) return;
       nextStep();
     };
 
@@ -97,11 +107,12 @@ export function Steps({
         {step === 3 && (
           <div className="space-y-6">
             <MotivacionHabilidadesSection
+              ref={motivRef} // ✅ pasamos el ref
               formData={formData!}
               handleInputChange={handleInputChange!}
             />
 
-            <NavigationButtons onPrev={prevStep} onNext={nextStep} disableNext={false} />
+            <NavigationButtons onPrev={prevStep} onNext={handleNextFromMotivacion} disableNext={false} />
           </div>
         )}
 
@@ -332,7 +343,7 @@ export function Steps({
 
     const handleNextFromDisponibilidadOrg = () => {
       const ok = dispRefOrg.current?.validateAndShowErrors() ?? false;
-      if (!ok) return; // bloquear avance si hay errores
+      if (!ok) return; 
       nextStep();
     };
 

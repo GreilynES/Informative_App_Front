@@ -27,17 +27,22 @@ export const MotivacionHabilidadesSection = forwardRef<
   const experienceLen = (formData?.previousExperience || "").length;
 
   const getErrors = useMemo(
-    () => (payload: { motivation: string; volunteeringType: string; previousExperience?: string }) => {
-      const res = motivacionHabilidadesSchema.safeParse(payload);
-      const base = { motivation: "", volunteeringType: "" };
-      if (!res.success) {
-        for (const issue of res.error.issues) {
-          const key = (issue.path[0] as "motivation" | "volunteeringType") ?? "motivation";
-          if (key in base) (base as any)[key] = issue.message;
+    () =>
+      (payload: {
+        motivation: string;
+        volunteeringType: string;
+        previousExperience?: string;
+      }) => {
+        const res = motivacionHabilidadesSchema.safeParse(payload);
+        const base = { motivation: "", volunteeringType: "" };
+        if (!res.success) {
+          for (const issue of res.error.issues) {
+            const key = (issue.path[0] as "motivation" | "volunteeringType") ?? "motivation";
+            if (key in base) (base as any)[key] = issue.message;
+          }
         }
-      }
-      return base;
-    },
+        return base;
+      },
     []
   );
 
@@ -76,7 +81,13 @@ export const MotivacionHabilidadesSection = forwardRef<
       previousExperience: formData?.previousExperience || "",
     });
     setErrors(merged);
-  }, [formData?.motivation, formData?.volunteeringType, formData?.previousExperience, showErrors, getErrors]);
+  }, [
+    formData?.motivation,
+    formData?.volunteeringType,
+    formData?.previousExperience,
+    showErrors,
+    getErrors,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -100,14 +111,19 @@ export const MotivacionHabilidadesSection = forwardRef<
             maxLength={MAX}
             placeholder="Comparte tus razones para querer ser parte de nuestro equipo de voluntarios..."
             className={`w-full px-3 py-2 border rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
-              (showErrors && errors.motivation) || motivationLen >= MAX ? "border-red-400" : "border-gray-300"
+              (showErrors && errors.motivation) || motivationLen >= MAX
+                ? "border-red-400"
+                : "border-gray-300"
             }`}
           />
           {/* Mensajes */}
-          {showErrors && errors.motivation && <p className="text-sm text-red-600 mt-1">{errors.motivation}</p>}
+          {showErrors && errors.motivation && (
+            <p className="text-sm text-red-600 mt-1">{errors.motivation}</p>
+          )}
           <div className="mt-1 flex justify-end">
             <span className={`text-xs ${motivationLen >= MAX ? "text-red-600" : "text-gray-400"}`}>
-              {motivationLen}/{MAX}{motivationLen >= MAX ? " — Llegaste al máximo (150)" : ""}
+              {motivationLen}/{MAX}
+              {motivationLen >= MAX ? " — Llegaste al máximo (150)" : ""}
             </span>
           </div>
         </div>
@@ -119,7 +135,7 @@ export const MotivacionHabilidadesSection = forwardRef<
           <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
             <Award className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-lg font-semibold text-[#708C3E]">Habilidades</h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Habilidades</h3>
         </div>
 
         <div className="p-6">
@@ -133,7 +149,9 @@ export const MotivacionHabilidadesSection = forwardRef<
             maxLength={MAX}
             placeholder="Ej: Trabajo en equipo, comunicación, agricultura sostenible, manejo de redes sociales..."
             className={`w-full px-3 py-2 border rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
-              (showErrors && errors.volunteeringType) || volunteeringLen >= MAX ? "border-red-400" : "border-gray-300"
+              (showErrors && errors.volunteeringType) || volunteeringLen >= MAX
+                ? "border-red-400"
+                : "border-gray-300"
             }`}
           />
           {/* Mensajes */}
@@ -141,8 +159,11 @@ export const MotivacionHabilidadesSection = forwardRef<
             <p className="text-sm text-red-600 mt-1">{errors.volunteeringType}</p>
           )}
           <div className="mt-1 flex justify-end">
-            <span className={`text-xs ${volunteeringLen >= MAX ? "text-red-600" : "text-gray-400"}`}>
-              {volunteeringLen}/{MAX}{volunteeringLen >= MAX ? " — Llegaste al máximo (150)" : ""}
+            <span
+              className={`text-xs ${volunteeringLen >= MAX ? "text-red-600" : "text-gray-400"}`}
+            >
+              {volunteeringLen}/{MAX}
+              {volunteeringLen >= MAX ? " — Llegaste al máximo (150)" : ""}
             </span>
           </div>
         </div>
@@ -174,7 +195,8 @@ export const MotivacionHabilidadesSection = forwardRef<
           />
           <div className="mt-1 flex justify-end">
             <span className={`text-xs ${experienceLen >= MAX ? "text-red-600" : "text-gray-400"}`}>
-              {experienceLen}/{MAX}{experienceLen >= MAX ? " — Llegaste al máximo (150)" : ""}
+              {experienceLen}/{MAX}
+              {experienceLen >= MAX ? " — Llegaste al máximo (150)" : ""}
             </span>
           </div>
         </div>
