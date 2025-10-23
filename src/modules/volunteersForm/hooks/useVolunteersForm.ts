@@ -26,42 +26,72 @@ export function useVolunteersForm() {
     motivation: "",
     acceptTerms: false,
     receiveInfo: false,
-    nacionalidad: "", // ✅ NUEVO CAMPO
+    nacionalidad: "",
+    disponibilidades: [],
+    areasInteres: [],
+  });
+
+  const [files, setFiles] = useState<{
+    cv?: File | null;
+    cedula?: File | null;
+    carta?: File | null;
+  }>({
+    cv: null,
+    cedula: null,
+    carta: null,
   });
 
   const nextStep = () => setStep((prev) => prev + 1);
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handleInputChange = (
-    field: keyof VolunteersFormData,
-    value: string | boolean
-  ) => {
+  const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const isStepValid = () => {
-    if (SKIP_VALIDATION_INDIVIDUAL) return true;
+    if (SKIP_VALIDATION_INDIVIDUAL && tipoSolicitante === 'INDIVIDUAL') return true;
 
-    switch (step) {
-      case 1:
-        return (
-          formData.name.trim() !== "" &&
-          formData.lastName1.trim() !== "" &&
-          formData.lastName2.trim() !== "" &&
-          formData.idNumber.trim() !== "" &&
-          formData.birthDate.trim() !== "" &&
-          formData.phone.trim() !== "" &&
-          formData.email.trim() !== ""
-        );
-      case 2:
-        return (
-          formData.volunteeringType.trim() !== "" &&
-          formData.availability.trim() !== "" &&
-          formData.acceptTerms
-        );
-      default:
-        return true;
+    // ✅ Validación para INDIVIDUAL
+    if (tipoSolicitante === 'INDIVIDUAL') {
+      switch (step) {
+        case 1:
+          return (
+            formData.name.trim() !== "" &&
+            formData.lastName1.trim() !== "" &&
+            formData.lastName2.trim() !== "" &&
+            formData.idNumber.trim() !== "" &&
+            formData.birthDate.trim() !== "" &&
+            formData.phone.trim() !== "" &&
+            formData.email.trim() !== ""
+          );
+        case 2:
+          return true; // Disponibilidad es opcional
+        case 3:
+          return true; // Motivación es opcional
+        case 4: // ✅ Paso de documentos
+          return !!files.cv && !!files.cedula;
+        default:
+          return true;
+      }
     }
+
+    // ✅ Validación para ORGANIZACION
+    if (tipoSolicitante === 'ORGANIZACION') {
+      switch (step) {
+        case 1:
+          return true; // Se valida en el form de TanStack
+        case 2:
+          return true; // Disponibilidad es opcional
+        case 3: // ✅ Paso de documentos para organización
+          return !!files.cedula; // Solo documento legal obligatorio
+        case 4:
+          return true; // Confirmación
+        default:
+          return true;
+      }
+    }
+
+    return true;
   };
 
   return {
@@ -76,5 +106,7 @@ export function useVolunteersForm() {
     setTipoSolicitante,
     handleInputChange,
     isStepValid,
+    files,
+    setFiles,
   };
 }

@@ -12,39 +12,28 @@ export interface CreateSolicitudVoluntarioDto {
     telefono: string;
     email: string;
     tipoOrganizacion: string;
-    
-    representantes?: Array<{
-      persona: {
-        cedula: string;
-        nombre: string;
-        apellido1: string;
-        apellido2: string;
-        telefono: string;
-        email: string;
-        fechaNacimiento?: string;
-        direccion?: string;
-      };
-      cargo: string;
-    }>;
-    
-    razonesSociales?: Array<{
-      razonSocial: string;
-    }>;
-    
-    disponibilidades?: Array<{
-      fechaInicio: string;
-      fechaFin: string;
-      dias: string[];
-      horario: string;
-    }>;
-    
-    areasInteres?: Array<{
-      nombreArea: string;
-    }>;
   };
 
+  representantes?: Array<{
+    persona: {
+      cedula: string;
+      nombre: string;
+      apellido1: string;
+      apellido2: string;
+      telefono: string;
+      email: string;
+      fechaNacimiento?: string;
+      direccion?: string;
+    };
+    cargo: string;
+  }>;
+  
+  razonesSociales?: Array<{
+    razonSocial: string;
+  }>;
+
   // ========== Datos de INDIVIDUAL ==========
-  voluntario?: {  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
+  voluntario?: {
     persona: {
       cedula: string;
       nombre: string;
@@ -59,25 +48,39 @@ export interface CreateSolicitudVoluntarioDto {
     habilidades: string;
     experiencia: string;
     nacionalidad: string;
-    
-    disponibilidades?: Array<{
-      fechaInicio: string;
-      fechaFin: string;
-      dias: string[];
-      horario: string;
-    }>;
-    
-    areasInteres?: Array<{
-      nombreArea: string;
-    }>;
   };
+
+  // ========== Campos compartidos (nivel raíz) ==========
+  disponibilidades?: Array<{
+    fechaInicio: string;
+    fechaFin: string;
+    dias: string[];
+    horarios: string[];
+  }>;
+  
+  areasInteres?: Array<{
+    nombreArea: string;
+  }>;
 }
 
+// ✅ Tipo de respuesta corregido según lo que devuelve el backend
 export interface SolicitudVoluntarioResponse {
-  idSolicitud: number;
+  idSolicitudVoluntariado: number; // ✅ Nombre correcto del campo
   tipoSolicitante: string;
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO';
   fechaSolicitud: string;
+  fechaResolucion?: string | null;
+  motivo?: string | null;
+  formData?: {
+    cv: string[];
+    cedula: string[];
+    carta: string[];
+  } | null;
+  cvUrlTemp?: string | null;
+  cedulaUrlTemp?: string | null;
+  cartaUrlTemp?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  voluntario?: any;
   organizacion?: any;
-  voluntario?: any;  // ✅ CAMBIO: "voluntarioIndividual" → "voluntario"
 }

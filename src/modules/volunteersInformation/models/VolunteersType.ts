@@ -19,7 +19,16 @@ export type VolunteersFormData = {
   acceptTerms: boolean;
   receiveInfo: boolean;
   
-  nacionalidad?: string; // ✅ NUEVO CAMPO
+  nacionalidad?: string;
+  
+  // ✅ NUEVOS CAMPOS PARA PASO 3
+  disponibilidades?: Array<{
+    fechaInicio: string;
+    fechaFin: string;
+    dias: string[];
+    horarios: string[];
+  }>;
+  areasInteres?: Array<{ nombreArea: string }>;
 }
 
 export type Form = any;
@@ -43,5 +52,7 @@ export const initialVolunteersFormData: VolunteersFormData = {
   acceptTerms: false,
   receiveInfo: false,
   
-  nacionalidad: "", 
+  nacionalidad: "",
+  disponibilidades: [],
+  areasInteres: [],
 }

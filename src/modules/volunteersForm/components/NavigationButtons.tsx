@@ -4,6 +4,7 @@ interface NavigationButtonsProps {
   showPrev?: boolean
   showNext?: boolean
   disableNext?: boolean
+  hidePrev?: boolean; 
   className?: string
 }
 

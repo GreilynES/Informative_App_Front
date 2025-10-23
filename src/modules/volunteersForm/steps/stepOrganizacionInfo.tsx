@@ -1,5 +1,3 @@
-// src/modules/volunteersForm/steps/stepOrganizacionInfo.tsx
-
 import type { FormLike } from "../../../shared/types/form-lite";
 import { OrganizacionSection } from "../components/OrganizacionSection";
 import { RepresentanteSection } from "../components/RepresentanteSection";

@@ -1,21 +1,28 @@
 import React, { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 
-
 interface AccesoSectionProps {
   form: FormLike;
+  showErrors?: boolean; // Para mostrar errores cuando se intenta avanzar
 }
 
-export function AccesoSection({ form }: AccesoSectionProps) {
+export function AccesoSection({ form, showErrors = false }: AccesoSectionProps) {
   const existentes = (form as any).state?.values?.viasAcceso || {};
 
   const [accesos, setAccesos] = useState<string[]>(existentes.accesos || []);
   const [otroAcceso, setOtroAcceso] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    // Sincroniza con el form cada vez que cambie el estado local
     (form as any).setFieldValue("viasAcceso", { accesos });
-  }, [accesos, form]);
+    
+    // Validar cuando cambian los accesos
+    if (showErrors && accesos.length === 0) {
+      setError("Debe seleccionar al menos una vía de acceso");
+    } else {
+      setError("");
+    }
+  }, [accesos, form, showErrors]);
 
   const toggleAcceso = (acceso: string) => {
     setAccesos((prev) =>
@@ -26,15 +33,18 @@ export function AccesoSection({ form }: AccesoSectionProps) {
   const agregarOtroAcceso = () => {
     const trimmed = (otroAcceso ?? "").trim();
     if (!trimmed) return;
+    
     if (trimmed.length > 75) {
       alert("El texto es muy largo (máx. 75 caracteres).");
       return;
     }
+    
     const exists = accesos.some((a) => a.toLowerCase() === trimmed.toLowerCase());
     if (exists) {
       alert("Este tipo de acceso ya fue agregado");
       return;
     }
+    
     setAccesos((prev) => [...prev, trimmed]);
     setOtroAcceso("");
   };
@@ -42,15 +52,15 @@ export function AccesoSection({ form }: AccesoSectionProps) {
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-  10
-</div>
+        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
+          10
+        </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">Vías de Acceso</h3>
       </div>
 
       <div className="p-6 space-y-4">
         <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-          Vías de acceso:
+          Vías de acceso: *
         </label>
 
         <div className="space-y-2">
@@ -94,6 +104,13 @@ export function AccesoSection({ form }: AccesoSectionProps) {
               Agregar
             </button>
           </div>
+
+          {/* Mensaje de error */}
+          {error && (
+            <p className="text-sm text-red-600 mt-2">
+              {error}
+            </p>
+          )}
 
           {accesos.length > 0 && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">

@@ -6,12 +6,11 @@ interface StepperProps {
 }
 
 export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) {
-  // ✅ Labels según el tipo
   const stepLabels = tipoSolicitante === 'INDIVIDUAL' 
-    ? ["Información", "Voluntariado", "Confirmación", "Enviado"]
-    : ["Organización", "Disponibilidad", "Confirmación"];
+    ? ["Información", "Disponibilidad", "Motivación", "Documentos", "Confirmación", "Enviado"] // 6 pasos
+    : ["Organización", "Disponibilidad", "Documentos", "Confirmación"]; // 4 pasos
 
-  const totalSteps = tipoSolicitante === 'INDIVIDUAL' ? 4 : 3;
+  const totalSteps = tipoSolicitante === 'INDIVIDUAL' ? 6 : 4; //  Ajustado a 6
   const stepsArray = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
   return (
