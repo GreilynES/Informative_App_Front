@@ -31,19 +31,18 @@ export default function VolunteersPage() {
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useVolunteersPage();
 
-  // ✅ Hook para organizaciones
   const { 
     form: formOrganizacion, 
     isLoading: isSubmittingOrg,
     submitWithFiles: submitOrganizacion,
   } = useVolunteerApply(() => {
-    console.log("✅ Solicitud de organización enviada con éxito");
+    console.log(" Solicitud de organización enviada con éxito");
     nextStep();
   });
 
-  // ✅ Hook para individuales
+
   const { submitIndividual, isLoading: isSubmittingInd } = useVolunteerIndividual(() => {
-    console.log("✅ Solicitud individual enviada con éxito");
+    console.log(" Solicitud individual enviada con éxito");
     nextStep();
   });
 
@@ -64,7 +63,6 @@ export default function VolunteersPage() {
 
   const formToUse = tipoSolicitante === 'ORGANIZACION' ? formOrganizacion : undefined;
 
-  // ✅ Wrapper para envío de Individual con archivos
   const handleSubmitIndividual = tipoSolicitante === 'INDIVIDUAL' 
     ? async (data: any) => {
         console.log("[Page] Enviando individual con files:", files);
@@ -79,7 +77,6 @@ export default function VolunteersPage() {
       }
     : undefined;
 
-  // ✅ Wrapper para envío de Organización con archivos
   const handleSubmitOrganizacion = tipoSolicitante === 'ORGANIZACION'
     ? async () => {
         const values = formOrganizacion.state.values;
@@ -105,18 +102,49 @@ export default function VolunteersPage() {
     handleInputChange(field, value);
   };
 
+  const resetStepsToFirst = () => {
+    const go = () => {
+      if (step > 1) {
+        prevStep();
+        requestAnimationFrame(go);
+      }
+    };
+    requestAnimationFrame(go);
+  };
+
+  const handleAfterSubmit = () => {
+    resetStepsToFirst();
+
+
+    setShowForm(false);
+
+  
+    setTimeout(() => {
+      document.getElementById("requisitos")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 300);
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F5]">
       <HeaderSection title={data.headerTitle} description={data.headerDescription} />
 
       <div className="max-w-6xl mx-auto">
         <BenefitsSection items={[...data.benefits].sort((a, b) => a.order - b.order)} />
-        <RequirementsSection
-          requirements={[...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text)}
-          showForm={showForm}
-          setShowForm={setShowForm}
-          setTipoSolicitante={setTipoSolicitante}
-        />
+
+        <section id="requisitos">
+          <RequirementsSection
+            requirements={[...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text)}
+            showForm={showForm}
+            setShowForm={(v: boolean) => {
+              if (v) resetStepsToFirst();
+              setShowForm(v);
+            }}
+            setTipoSolicitante={setTipoSolicitante}
+          />
+        </section>
       </div>
 
       {showForm && (
@@ -139,9 +167,10 @@ export default function VolunteersPage() {
                   form={formToUse}
                   isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : isSubmittingInd}
                   submitIndividual={handleSubmitIndividual}
-                  submitOrganizacion={handleSubmitOrganizacion} // ✅ PASAR LA FUNCIÓN
+                  submitOrganizacion={handleSubmitOrganizacion} 
                   files={files}
                   setFiles={setFiles}
+                  onAfterSubmit={handleAfterSubmit}
                 />
               </form>
             ) : (

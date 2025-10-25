@@ -31,6 +31,7 @@ interface StepsProps {
   isSubmitting?: boolean;
   files?: any;
   setFiles?: (files: any) => void;
+  onAfterSubmit?: () => void;
 }
 
 export function Steps({
@@ -48,8 +49,49 @@ export function Steps({
   submitOrganizacion,
   files,
   setFiles,
+  onAfterSubmit, 
 }: StepsProps) {
-  
+  // ===== Scroll helpers (como en Asociados) =====
+  const formTopRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToFormTop = () => {
+    formTopRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+      inline: "nearest",
+    });
+  };
+
+  const goNext = () => {
+    nextStep();
+    requestAnimationFrame(scrollToFormTop);
+  };
+
+  const goPrev = () => {
+    prevStep();
+    requestAnimationFrame(scrollToFormTop);
+  };
+
+  // ✅ Scroll a la sección de requisitos (botones)
+  const scrollToRequisitos = () => {
+    const el =
+      document.getElementById("requisitos") ||
+      document.getElementById("requirements") ||
+      document.querySelector("[data-anchor='requisitos']") as HTMLElement | null;
+
+    el?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+  };
+
+  const afterSubmit = () => {
+    if (onAfterSubmit) {
+      onAfterSubmit();
+      setTimeout(scrollToRequisitos, 250);
+    } else {
+      nextStep();
+      setTimeout(scrollToRequisitos, 250);
+    }
+  };
+
   const dispRefIndividual = useRef<DisponibilidadAreasSectionHandle>(null);
   const dispRefOrg = useRef<DisponibilidadAreasSectionHandle>(null);
   const motivRef = useRef<MotivacionHabilidadesSectionHandle>(null);
@@ -59,23 +101,23 @@ export function Steps({
   // ========== FLUJO INDIVIDUAL ==========
   if (tipoSolicitante === "INDIVIDUAL") {
     const goFromCombinedToVolunteering = () => {
-      nextStep();
+      goNext();
     };
 
     const handleNextFromDisponibilidad = () => {
       const ok = dispRefIndividual.current?.validateAndShowErrors() ?? false;
       if (!ok) return; 
-      nextStep();
+      goNext();
     };
 
     const handleNextFromMotivacion = () => { 
       const ok = motivRef.current?.validateAndShowErrors() ?? false;
       if (!ok) return;
-      nextStep();
+      goNext();
     };
 
     return (
-      <>
+      <div ref={formTopRef} className="scroll-mt-[120px]">
         {step === 1 && (
           <StepPersonalInformation
             formData={formData!}
@@ -96,7 +138,7 @@ export function Steps({
             />
 
             <NavigationButtons
-              onPrev={prevStep}
+              onPrev={goPrev}
               onNext={handleNextFromDisponibilidad}
               disableNext={false}
             />
@@ -111,7 +153,7 @@ export function Steps({
               handleInputChange={handleInputChange!}
             />
 
-            <NavigationButtons onPrev={prevStep} onNext={handleNextFromMotivacion} disableNext={false} />
+            <NavigationButtons onPrev={goPrev} onNext={handleNextFromMotivacion} disableNext={false} />
           </div>
         )}
 
@@ -126,7 +168,7 @@ export function Steps({
 
             <DocumentUploadVoluntarios files={files!} setFiles={setFiles!} />
 
-            <NavigationButtons onPrev={prevStep} onNext={nextStep} disableNext={!isStepValid!()} />
+            <NavigationButtons onPrev={goPrev} onNext={goNext} disableNext={!isStepValid!()} />
           </div>
         )}
 
@@ -284,7 +326,7 @@ export function Steps({
             <div className="mt-8 flex justify-between items-center">
               <button
                 type="button"
-                onClick={prevStep}
+                onClick={goPrev}
                 className="px-6 py-3 border-2 border-[#708C3E] text-[#708C3E] rounded-lg hover:bg-[#F5F7EC] transition-colors font-medium"
               >
                 ← Anterior
@@ -296,7 +338,7 @@ export function Steps({
                   if (submitIndividual && formData) {
                     try {
                       await submitIndividual(formData);
-                      nextStep();
+                      afterSubmit(); 
                     } catch (error) {
                       console.error("Error al enviar:", error);
                     }
@@ -314,17 +356,7 @@ export function Steps({
             </div>
           </div>
         )}
-
-        {/* Paso 6: Enviado */}
-        {step === 6 && (
-          <div className="bg-white/80 rounded-xl p-8 shadow-md border border-[#DCD6C9] text-center">
-            <h2 className="text-3xl font-bold text-[#708C3E] mb-4">¡Solicitud enviada!</h2>
-            <p className="text-[#4A4A4A] max-w-2xl mx-auto">
-              Gracias por aplicar al voluntariado. Hemos recibido tu información y nos pondremos en contacto contigo por correo o teléfono.
-            </p>
-          </div>
-        )}
-      </>
+      </div>
     );
   }
 
@@ -341,10 +373,9 @@ export function Steps({
     const handleNextFromDisponibilidadOrg = () => {
       const ok = dispRefOrg.current?.validateAndShowErrors() ?? false;
       if (!ok) return; 
-      nextStep();
+      goNext();
     };
 
-    // >>> FIX: forzar validación tipo "submit" y mostrar errores si hay vacíos
     const handleNextFromOrgStep1 = () => {
       const v = form?.state?.values?.organizacion || {};
       const r = v?.representante || {};
@@ -390,11 +421,11 @@ export function Steps({
         return;
       }
 
-      nextStep();
+      goNext();
     };
 
     return (
-      <>
+      <div ref={formTopRef} className="scroll-mt-[120px]">
         {/* Paso 1: Información de Organización */}
         {step === 1 && (
           <div className="space-y-6">
@@ -421,7 +452,7 @@ export function Steps({
               form={form}
             />
 
-            <NavigationButtons onPrev={prevStep} onNext={handleNextFromDisponibilidadOrg} disableNext={false} />
+            <NavigationButtons onPrev={goPrev} onNext={handleNextFromDisponibilidadOrg} disableNext={false} />
           </div>
         )}
 
@@ -437,7 +468,7 @@ export function Steps({
 
             <DocumentUploadVoluntarios files={files!} setFiles={setFiles!} />
 
-            <NavigationButtons onPrev={prevStep} onNext={nextStep} disableNext={!isStepValid!()} />
+            <NavigationButtons onPrev={goPrev} onNext={goNext} disableNext={!isStepValid!()} />
           </div>
         )}
 
@@ -449,6 +480,7 @@ export function Steps({
             </h2>
 
             <div className="space-y-6 text-[#4A4A4A]">
+              {/* (contenido igual a tu versión) */}
               {/* Información de la Organización */}
               <div>
                 <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Datos de la Organización</h3>
@@ -604,7 +636,7 @@ export function Steps({
             <div className="mt-8 flex justify-between items-center">
               <button
                 type="button"
-                onClick={prevStep}
+                onClick={goPrev}
                 className="px-6 py-3 border-2 border-[#708C3E] text-[#708C3E] rounded-lg hover:bg-[#F5F7EC] transition-colors font-medium"
               >
                 ← Anterior
@@ -616,6 +648,7 @@ export function Steps({
                   if (submitOrganizacion) {
                     try {
                       await submitOrganizacion();
+                      afterSubmit(); 
                     } catch (error) {
                       console.error("[Steps] Error al enviar:", error);
                     }
@@ -633,7 +666,7 @@ export function Steps({
             </div>
           </div>
         )}
-      </>
+      </div>
     );
   }
 
