@@ -359,7 +359,7 @@ export const DisponibilidadAreasSection = forwardRef<
 
           <div className="p-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Describa los objetivos o razón social de su organización
+              Describa los objetivos o razón social de su organización <span className="text-red-500">*</span>
             </label>
             <textarea
               value={razonSocial}

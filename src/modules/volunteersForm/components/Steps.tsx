@@ -14,6 +14,9 @@ import { DocumentUploadVoluntarios } from "../components/DocumentUploadVoluntari
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 
 import { useRef, useState } from "react";
+import { submitSolicitudFlow } from "../../utils/alerts";
+
+
 
 interface StepsProps {
   step: number;
@@ -77,7 +80,7 @@ export function Steps({
     const el =
       document.getElementById("requisitos") ||
       document.getElementById("requirements") ||
-      document.querySelector("[data-anchor='requisitos']") as HTMLElement | null;
+      (document.querySelector("[data-anchor='requisitos']") as HTMLElement | null);
 
     el?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
   };
@@ -336,12 +339,17 @@ export function Steps({
                 type="button"
                 onClick={async () => {
                   if (submitIndividual && formData) {
-                    try {
-                      await submitIndividual(formData);
-                      afterSubmit(); 
-                    } catch (error) {
-                      console.error("Error al enviar:", error);
-                    }
+                    const { ok } = await submitSolicitudFlow(
+                      async () => {
+                        await submitIndividual(formData);
+                      },
+                      {
+                        loadingText: "Enviando solicitud...",
+                        successText: "¡Solicitud enviada correctamente!",
+                        errorText: "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
+                      }
+                    );
+                    if (ok) afterSubmit();
                   }
                 }}
                 disabled={isSubmitting}
@@ -646,12 +654,17 @@ export function Steps({
                 type="button"
                 onClick={async () => {
                   if (submitOrganizacion) {
-                    try {
-                      await submitOrganizacion();
-                      afterSubmit(); 
-                    } catch (error) {
-                      console.error("[Steps] Error al enviar:", error);
-                    }
+                    const { ok } = await submitSolicitudFlow(
+                      async () => {
+                        await submitOrganizacion();
+                      },
+                      {
+                        loadingText: "Enviando solicitud...",
+                        successText: "¡Solicitud enviada correctamente!",
+                        errorText: "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
+                      }
+                    );
+                    if (ok) afterSubmit();
                   }
                 }}
                 disabled={isSubmitting}

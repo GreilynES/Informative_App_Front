@@ -38,12 +38,8 @@ export const showLoading = (text = "Cargando datos...") => {
     },
     background: "#FAF9F5",
   });
-
-  // Auto–close de seguridad por si algo se colgó (15s)
-  // No interfiere con éxito/error porque ellos cierran antes.
   setTimeout(() => {
     if (Swal.isVisible()) {
-      // solo cerramos si sigue visible (p.ej., si quedó un loading abierto)
       Swal.close();
     }
   }, 8000);
