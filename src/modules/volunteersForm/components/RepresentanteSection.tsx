@@ -1,4 +1,3 @@
-// src/modules/volunteersForm/components/RepresentanteSection.tsx
 import { useMemo } from "react";
 import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema";
 
@@ -300,10 +299,10 @@ export function RepresentanteSection({
           </form.Field>
         </div>
 
-        {/* Información adicional (opcional) */}
+        
         <div className="bg-[#F5F7EC] border border-[#DCD6C9] rounded-lg p-4">
           <h4 className="text-sm font-semibold text-[#708C3E] mb-3">
-            Información adicional (Opcional)
+            Información adicional *
           </h4>
 
           <div className="space-y-4">

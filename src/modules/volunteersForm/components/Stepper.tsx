@@ -7,10 +7,10 @@ interface StepperProps {
 
 export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) {
   const stepLabels = tipoSolicitante === 'INDIVIDUAL' 
-    ? ["Información", "Disponibilidad", "Motivación", "Documentos", "Confirmación", "Enviado"] // 6 pasos
+    ? ["Información", "Disponibilidad", "Motivación", "Documentos", "Confirmación"] // 5 pasos
     : ["Organización", "Disponibilidad", "Documentos", "Confirmación"]; // 4 pasos
 
-  const totalSteps = tipoSolicitante === 'INDIVIDUAL' ? 6 : 4; //  Ajustado a 6
+  const totalSteps = tipoSolicitante === 'INDIVIDUAL' ? 5 : 4; //  Ajustado a 5
   const stepsArray = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
   return (
