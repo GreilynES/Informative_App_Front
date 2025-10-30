@@ -255,7 +255,7 @@ export function RepresentanteSection({
                 <input
                   type="tel"
                   value={field.state.value || ""}
-                  maxLength={20}
+                  maxLength={12}
                   onChange={(e) => field.handleChange(e.target.value)}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Número de teléfono"

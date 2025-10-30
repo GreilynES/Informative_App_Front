@@ -301,7 +301,7 @@ export function StepPersonalInformation({
                 }}
                 required
                 minLength={8}
-                maxLength={20}
+                maxLength={12}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
               {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone}</p>}

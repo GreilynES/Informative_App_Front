@@ -273,6 +273,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
                   value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
+                  maxLength={12}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: 2222-3333"
                   aria-invalid={showErrors && field.state.meta.errors?.length > 0}
