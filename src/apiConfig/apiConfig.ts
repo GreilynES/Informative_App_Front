@@ -1,5 +1,5 @@
 // Simple API configuration using fetch
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 // Helper to create headers with auth token
 function getHeaders(): Record<string, string> {
