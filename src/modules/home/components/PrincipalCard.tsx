@@ -1,12 +1,10 @@
 import { CalendarDays, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
-import { useNavigate } from "@tanstack/react-router"
 import type { EventData } from "../../events/models/EventType"
 import { RippleButton } from "../../../shared/animations/Buttons"
 import { formatDateToWords } from "../../../shared/utils/formatDate"
 
 export function PrincipalCard({ event }: { event: EventData }) {
-   const navigate = useNavigate()
   if (!event) {
     return null
   }

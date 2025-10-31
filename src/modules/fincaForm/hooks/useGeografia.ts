@@ -20,7 +20,7 @@ export function useGeografia({ form }: UseGeografiaProps) {
   const [loadingDistritos, setLoadingDistritos] = useState(false);
   
   const [selectedProvinciaId, setSelectedProvinciaId] = useState<string>("");
-  const [selectedCantonId, setSelectedCantonId] = useState<string>("");
+  const [_selectedCantonId, setSelectedCantonId] = useState<string>("");
 
   // Cargar provincias al montar el componente
   useEffect(() => {

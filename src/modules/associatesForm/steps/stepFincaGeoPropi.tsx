@@ -13,7 +13,7 @@ interface Step2Props {
   canProceed: boolean;
 }
 
-export function Step2({ form, onNext, onPrev, canProceed }: Step2Props) {
+export function Step2({ form, onNext, onPrev}: Step2Props) {
   const [intentoAvanzar, setIntentoAvanzar] = useState(false);
   const [erroresPorSeccion, setErroresPorSeccion] = useState({
     finca: false,
