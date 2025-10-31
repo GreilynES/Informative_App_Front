@@ -1,25 +1,30 @@
-// import { io } from 'socket.io-client';
+import { io } from 'socket.io-client';
 
-// export const socket = io('http://localhost:3000/rt', {
-//   transports: ['websocket'],       
-//   withCredentials: true,
-//   auth: {
-//     token: localStorage.getItem('token') || undefined,
-//   },
-// });
+// Obtener URL base desde variables de entorno
+const API_URL = import.meta.env.VITE_API_URL ;
 
-// socket.on('connect', () => {
-//   console.log('✅ Socket conectado:', socket.id);
-// });
+export const socket = io(`${API_URL}/rt`, {
+  transports: ['websocket'],       
+  withCredentials: true,
+  auth: {
+    token: localStorage.getItem('token') || undefined,
+  },
+});
 
-// socket.on('disconnect', () => {
-//   console.log('❌ Socket desconectado');
-// });
+socket.on('connect', () => {
+  console.log('✅ Socket conectado:', socket.id);
+  console.log('🔗 URL:', API_URL);
+});
 
-// socket.on('connect_error', (error) => {
-//   console.error('🔥 Error conexión:', error);
-// });
+socket.on('disconnect', () => {
+  console.log('❌ Socket desconectado');
+});
 
-// if (typeof window !== 'undefined') {
-//   (window as any).socket = socket;
-// }
+socket.on('connect_error', (error) => {
+  console.error('🔥 Error conexión socket:', error);
+  console.error('🔗 Intentando conectar a:', `${API_URL}/rt`);
+});
+
+if (typeof window !== 'undefined') {
+  (window as any).socket = socket;
+}
