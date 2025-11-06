@@ -13,7 +13,7 @@ interface Step1Props {
   canProceed: boolean;
 }
 
-export function Step1({ form, lookup, onNext, canProceed }: Step1Props) {
+export function Step1({ form, lookup, onNext }: Step1Props) {
   const [intentoAvanzar, setIntentoAvanzar] = useState(false);
   const [erroresValidacion, setErroresValidacion] = useState<Record<string, string>>({});
   const [verificandoCedula, setVerificandoCedula] = useState(false);

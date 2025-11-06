@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 
 interface InfraestructuraSectionProps {
@@ -6,7 +6,7 @@ interface InfraestructuraSectionProps {
   showErrors?: boolean;
 }
 
-export function InfraestructuraSection({ form, showErrors = false }: InfraestructuraSectionProps) {
+export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
   const existentes = (form as any).state?.values?.infraestructuraDisponible || {};
 
   const [infraestructuras, setInfraestructuras] = useState<string[]>(existentes.infraestructuras || []);

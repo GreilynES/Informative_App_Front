@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import{ useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 
 interface ActividadesInfraestructuraSectionProps {
@@ -6,7 +6,7 @@ interface ActividadesInfraestructuraSectionProps {
   showErrors?: boolean;
 }
 
-export function ActividadesInfraestructuraSection({ form, showErrors = false }: ActividadesInfraestructuraSectionProps) {
+export function ActividadesInfraestructuraSection({ form}: ActividadesInfraestructuraSectionProps) {
   // Carga inicial si el usuario regresa a este paso
   const existentes = (form as any).state?.values?.actividadesInfraestructura || {};
 

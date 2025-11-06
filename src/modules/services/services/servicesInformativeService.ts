@@ -1,26 +1,18 @@
-import type { Service } from "../models/ServicesType"
-const API_URL = "http://localhost:3000/servicesInformative"
+import apiConfig from "../../../apiConfig/apiConfig";
+import type { Service } from "../models/ServicesType";
 
-export async function getInformativeServices() {
-  const response = await fetch(API_URL)
-
-  if (!response.ok) throw new Error("Error al obtener los servicios informativos")
-  return response.json()
+export async function getInformativeServices(): Promise<Service[]> {
+  const response = await apiConfig.get<Service[]>("/servicesInformative");
+  return response.data;
 }
 
-
-export async function updateInformativeService(id: number, updatedService: Service) {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(updatedService),
-  })
-
-  if (!response.ok) {
-    throw new Error("Error al actualizar el servicio informativo")
-  }
-
-  return response.json()
+export async function updateInformativeService(
+  id: number, 
+  updatedService: Service
+): Promise<Service> {
+  const response = await apiConfig.put<Service>(
+    `/servicesInformative/${id}`, 
+    updatedService
+  );
+  return response.data;
 }

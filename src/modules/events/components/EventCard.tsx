@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Calendar, X, MapPin, Clock } from "lucide-react"
+import { Calendar, X } from "lucide-react"
 import { formatDateToWords } from "../../../shared/utils/formatDate"
 
 export function EventCard({ event }: any) {

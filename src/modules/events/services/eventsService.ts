@@ -1,6 +1,7 @@
-export async function getEventsData() {
-  const response = await fetch('http://localhost:3000/event'); 
+import apiConfig from "../../../apiConfig/apiConfig";
+import type { EventData } from "../models/EventType";
 
-  if (!response.ok) throw new Error('Error al obtener la información principal');
-  return response.json();
+export async function getEventsData() {
+const response = await apiConfig.get<EventData[]>("/event");
+return response.data;
 }

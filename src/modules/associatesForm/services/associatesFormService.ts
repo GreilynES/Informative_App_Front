@@ -98,7 +98,7 @@ export async function uploadDocuments(
 
   try {
     // ⚠️ USAR FETCH EN LUGAR DE AXIOS PARA FORMDATA
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = import.meta.env.VITE_API_URL;
     const response = await fetch(
       `${apiUrl}/solicitudes/${solicitudId}/upload-documents`,
       {

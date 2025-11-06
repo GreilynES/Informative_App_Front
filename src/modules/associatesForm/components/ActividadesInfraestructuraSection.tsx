@@ -7,7 +7,7 @@ interface ActividadesInfraestructuraSectionProps {
   showErrors?: boolean;
 }
 
-export function ActividadesInfraestructuraSection({ form, showErrors = false }: ActividadesInfraestructuraSectionProps) {
+export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestructuraSectionProps) {
   const existentes = (form as any).state?.values?.actividadesInfraestructura || {};
 
   const [actividades, setActividades] = useState<string[]>(existentes.cultivos || []);

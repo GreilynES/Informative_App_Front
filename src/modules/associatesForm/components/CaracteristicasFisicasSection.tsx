@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+
+import { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 
 interface CaracteristicasFisicasSectionProps {
@@ -6,7 +7,7 @@ interface CaracteristicasFisicasSectionProps {
   showErrors?: boolean;
 }
 
-export function CaracteristicasFisicasSection({ form, showErrors = false }: CaracteristicasFisicasSectionProps) {
+export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSectionProps) {
   const existentes = (form as any).state?.values?.caracteristicasFisicas || {};
 
   const [tiposCerca, setTiposCerca] = useState<string[]>(existentes.tiposCerca || []);

@@ -1,6 +1,9 @@
 import { io } from 'socket.io-client';
 
-export const socket = io('http://localhost:3000/rt', {
+// Obtener URL base desde variables de entorno
+const API_URL = import.meta.env.VITE_API_URL ;
+
+export const socket = io(`${API_URL}/rt`, {
   transports: ['websocket'],       
   withCredentials: true,
   auth: {
@@ -10,6 +13,7 @@ export const socket = io('http://localhost:3000/rt', {
 
 socket.on('connect', () => {
   console.log('✅ Socket conectado:', socket.id);
+  console.log('🔗 URL:', API_URL);
 });
 
 socket.on('disconnect', () => {
@@ -17,7 +21,8 @@ socket.on('disconnect', () => {
 });
 
 socket.on('connect_error', (error) => {
-  console.error('🔥 Error conexión:', error);
+  console.error('🔥 Error conexión socket:', error);
+  console.error('🔗 Intentando conectar a:', `${API_URL}/rt`);
 });
 
 if (typeof window !== 'undefined') {
