@@ -73,7 +73,7 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
   const [tipoExplotacionError, setTipoExplotacionError] = React.useState<string>("");
   const [razaError, setRazaError] = React.useState<string>("");
   const [rowErrors, setRowErrors] = React.useState<{ nombre?: string; cantidad?: string }>({});
-  const [animalesError, setAnimalesError] = React.useState<string>("");
+  const [, setAnimalesError] = React.useState<string>("");
 
 function FieldError({ msg }: { msg?: string }) {
   return (
