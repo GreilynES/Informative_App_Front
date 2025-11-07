@@ -339,7 +339,7 @@ function FieldError({ msg }: { msg?: string }) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             Agregar animales al hato <span className="text-red-500">*</span>
           </label>
-          <div className="grid gap-4 items-end grid-cols-1 md:grid-cols-4 md:[grid-template-columns:minmax(220px,1fr)_minmax(220px,1fr)_160px_7rem]">
+          <div className="grid gap-4 items-end grid-cols-1 ">
             {/* Selector de tipo de animal */}    
             <div className={!showOtroInput ? "md:col-span-2" : ""}>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
