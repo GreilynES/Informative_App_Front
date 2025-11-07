@@ -1,5 +1,4 @@
 import React, { useEffect} from "react";
-import React, { useEffect } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 import { hatoGanaderoSchema } from "../../fincaForm/schema/fincaSchema";
 
