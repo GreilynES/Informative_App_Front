@@ -1,9 +1,10 @@
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
 import { UserRound, Mail } from "lucide-react";
 import { NavigationButtons } from "../components/NavigationButtons";
-
 import { useMemo, useState } from "react";
 import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema";
+
+import { existsCedula, existsEmail } from "../services/volunteerFormService";
 
 interface StepPersonalInformationProps {
   formData: VolunteersFormData;
@@ -21,8 +22,11 @@ export function StepPersonalInformation({
   lookup,
 }: StepPersonalInformationProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
-
   const [limitReached, setLimitReached] = useState<Record<string, boolean>>({});
+
+  
+  const [verificandoCedula, setVerificandoCedula] = useState(false);
+  const [verificandoEmail, setVerificandoEmail] = useState(false);
 
   const personaSchema =
     volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona;
@@ -74,10 +78,54 @@ export function StepPersonalInformation({
     return true;
   };
 
-  const handleNext = () => {
-    if (validateAll() && isStepValid()) {
-      onNextCombined();
+  const validarCedulaUnica = async (cedula: string): Promise<string | undefined> => {
+    const v = (cedula || "").trim();
+    if (v.length < 8) return;
+    try {
+      setVerificandoCedula(true);
+      const existe = await existsCedula(v);
+      if (existe) return "Esta cédula ya está registrada en el sistema";
+    } finally {
+      setVerificandoCedula(false);
     }
+  };
+
+  const validarEmailUnico = async (email: string): Promise<string | undefined> => {
+    const v = (email || "").trim();
+    if (!v) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(v)) return; // no validar duplicado si formato inválido
+    try {
+      setVerificandoEmail(true);
+      const existe = await existsEmail(v);
+      if (existe) return "Este email ya está registrado en el sistema";
+    } finally {
+      setVerificandoEmail(false);
+    }
+  };
+
+  // MODIFICADO: corre las verificaciones si el usuario no hizo blur
+  const handleNext = async () => {
+    const ok = validateAll() && isStepValid();
+    if (!ok) return;
+
+    if (!errors.idNumber && formData.idNumber?.trim()) {
+      const m = await validarCedulaUnica(formData.idNumber.trim());
+      if (m) {
+        setErrors((p) => ({ ...p, idNumber: m }));
+        return;
+      }
+    }
+
+    if (!errors.email && formData.email?.trim()) {
+      const m = await validarEmailUnico(formData.email.trim());
+      if (m) {
+        setErrors((p) => ({ ...p, email: m }));
+        return;
+      }
+    }
+
+    onNextCombined();
   };
 
   return (
@@ -94,7 +142,7 @@ export function StepPersonalInformation({
         <div className="p-6 space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             {/* Cédula */}
-            <div>
+            <div className="relative">
               <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
                 Cédula *
               </label>
@@ -116,27 +164,45 @@ export function StepPersonalInformation({
                       const last1Val = result.lastname1 || "";
                       const last2Val = result.lastname2 || "";
 
-                      // actualizar campos
                       handleInputChange("name", nameVal);
                       handleInputChange("lastName1", last1Val);
                       handleInputChange("lastName2", last2Val);
 
-                      // ✅ validar inmediatamente para limpiar los mensajes en rojo
                       validateField("name", nameVal);
                       validateField("lastName1", last1Val);
                       validateField("lastName2", last2Val);
 
-                      // mantener el indicador de límite coherente
                       updateLimitFlag("name", nameVal, 60);
                       updateLimitFlag("lastName1", last1Val, 60);
                       updateLimitFlag("lastName2", last2Val, 60);
                     }
                   }
+
+                  // limpiar error de cédula al escribir
+                  setErrors((prev) => ({ ...prev, idNumber: "" }));
+                }}
+                onBlur={async (e) => {
+                  const ced = e.target.value.trim();
+                  if (!ced) return;
+                  const msg = await validarCedulaUnica(ced);
+                  if (msg) setErrors((prev) => ({ ...prev, idNumber: msg }));
                 }}
                 required
                 maxLength={60}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                  errors.idNumber
+                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                    : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                }`}
               />
+              {verificandoCedula && (
+                <div className="absolute right-3 top-9">
+                  <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/>
+                  </svg>
+                </div>
+              )}
               {errors.idNumber && <p className="text-sm text-red-600 mt-1">{errors.idNumber}</p>}
               {limitReached["idNumber"] && (
                 <p className="text-sm text-orange-600 mt-1">
@@ -234,7 +300,7 @@ export function StepPersonalInformation({
             <input
               type="date"
               value={formData.birthDate}
-              max={maxBirthDate} //  NO permite seleccionar menores de 16
+              max={maxBirthDate}
               onChange={(e) => {
                 handleInputChange("birthDate", e.target.value);
                 validateField("birthDate", e.target.value);
@@ -291,7 +357,7 @@ export function StepPersonalInformation({
                 Teléfono *
               </label>
               <input
-                type="tel"
+                type={verificandoCedula ? "tel" : "tel"}
                 placeholder="Número de teléfono"
                 value={formData.phone}
                 onChange={(e) => {
@@ -313,7 +379,7 @@ export function StepPersonalInformation({
             </div>
 
             {/* Email */}
-            <div>
+            <div className="relative">
               <label htmlFor="email" className="block text-sm font-medium text-[#4A4A4A] mb-1">
                 Email *
               </label>
@@ -325,11 +391,31 @@ export function StepPersonalInformation({
                   handleInputChange("email", e.target.value);
                   validateField("email", e.target.value);
                   updateLimitFlag("email", e.target.value, 60);
+                  // limpiar error al escribir
+                  setErrors((prev) => ({ ...prev, email: "" }));
+                }}
+                onBlur={async (e) => {
+                  const em = e.target.value.trim();
+                  if (!em) return;
+                  const msg = await validarEmailUnico(em);
+                  if (msg) setErrors((prev) => ({ ...prev, email: msg }));
                 }}
                 required
                 maxLength={60}
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                  errors.email
+                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                    : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                }`}
               />
+              {verificandoEmail && (
+                <div className="absolute right-3 top-9">
+                  <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/>
+                  </svg>
+                </div>
+              )}
               {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
               {limitReached["email"] && (
                 <p className="text-sm text-orange-600 mt-1">

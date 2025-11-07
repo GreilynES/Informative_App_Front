@@ -1,9 +1,6 @@
-// src/modules/volunteersForm/services/volunteerFormService.ts
-
 import apiConfig from "../../../apiConfig/apiConfig";
 import type { CreateSolicitudVoluntarioDto, SolicitudVoluntarioResponse } from "../models/createVolunteer";
 
-// ... código de sanitizePayload ...
 
 export async function createSolicitudVoluntario(
   payload: CreateSolicitudVoluntarioDto
@@ -18,7 +15,7 @@ export async function createSolicitudVoluntario(
     console.log("[Service Org] ✅ Respuesta del backend:", response);
     console.log("[Service Org] ✅ response.data:", response.data);
     
-    // ✅ Axios envuelve la respuesta en .data
+    //Axios envuelve la respuesta en .data
     return response.data as SolicitudVoluntarioResponse;
   } catch (err: any) {
     console.error("[Service Org] ❌ Error:", err?.message || err);
@@ -40,7 +37,7 @@ export async function createSolicitudVoluntarioIndividual(
     console.log("[Service Individual] ✅ Respuesta del backend:", response);
     console.log("[Service Individual] ✅ response.data:", response.data);
     
-    // ✅ Axios envuelve la respuesta en .data
+    // Axios envuelve la respuesta en .data
     return response.data as SolicitudVoluntarioResponse;
   } catch (err: any) {
     console.error("[Service Individual] ❌ Error:", err?.message || err);
@@ -49,7 +46,7 @@ export async function createSolicitudVoluntarioIndividual(
   }
 }
 
-// ✅ Función para subir documentos
+//Función para subir documentos
 export async function uploadVolunteerDocuments(
   solicitudId: number,
   files: {
@@ -112,5 +109,58 @@ export async function uploadVolunteerDocuments(
   } catch (err: any) {
     console.error("[Service Volunteers] ❌ Error al subir documentos:", err?.message || err);
     throw err;
+  }
+
+  
+}
+
+export async function existsCedula(cedula: string): Promise<boolean> {
+  const v = (cedula ?? "").trim();
+  if (!v) return false;
+  
+  console.log("[existsCedula] Verificando cédula:", v);
+  
+  try {
+    const response = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
+    console.log("[existsCedula] ✅ Cédula encontrada (existe):", response.data);
+    return true; 
+  } catch (err: any) {
+    const status = err?.response?.status;
+    console.log("[existsCedula] Status recibido:", status);
+    
+    if (status === 404) {
+      console.log("[existsCedula] ✅ Cédula NO existe (disponible)");
+      return false; 
+    }
+    
+  
+    console.warn("[existsCedula] ⚠️ Error al verificar cédula:", status, err?.message);
+    console.warn("[existsCedula] Permitiendo continuar por error de verificación");
+    return false; 
+  }
+}
+
+export async function existsEmail(email: string): Promise<boolean> {
+  const v = (email ?? "").trim();
+  if (!v) return false;
+  
+  console.log("[existsEmail] Verificando email:", v);
+  
+  try {
+    const response = await apiConfig.get(`/personas/email/${encodeURIComponent(v)}`);
+    console.log("[existsEmail] ✅ Email encontrado (existe):", response.data);
+    return true; 
+  } catch (err: any) {
+    const status = err?.response?.status;
+    console.log("[existsEmail] Status recibido:", status);
+    
+    if (status === 404) {
+      console.log("[existsEmail] ✅ Email NO existe (disponible)");
+      return false; 
+    }
+    
+    console.warn("[existsEmail] ⚠️ Error al verificar email:", status, err?.message);
+    console.warn("[existsEmail] Permitiendo continuar por error de verificación");
+    return false; 
   }
 }
