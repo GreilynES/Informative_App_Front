@@ -50,12 +50,10 @@ export function useHatoForm(idFinca: number, onSuccess?: () => void) {
       // 2) Crear Animales (si hay)
       if (animalsInput.length > 0) {
         const promises = animalsInput.map((a) => {
-          const edad = Number.parseInt(a.edadAnios, 10);
           const cant = Number.parseInt(a.cantidad, 10);
           const animalPayload: CreateAnimalDto = {
             idHato: hato.idHato,
             tipoAnimal: a.tipoAnimal.trim(),
-            edadAnios: Number.isFinite(edad) ? edad : 0,
             cantidad: Number.isFinite(cant) ? cant : 0,
           };
           return createAnimal(animalPayload);
@@ -78,7 +76,6 @@ export function useHatoForm(idFinca: number, onSuccess?: () => void) {
   const agregarAnimal = () => {
     if (
       !currentAnimal.tipoAnimal.trim() ||
-      !currentAnimal.edadAnios.trim() ||
       !currentAnimal.cantidad.trim()
     ) {
       alert('Por favor completa todos los campos del animal');
