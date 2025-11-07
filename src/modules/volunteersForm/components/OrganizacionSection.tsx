@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { organizacionSchema } from "../schemas/volunteerSchema";
+import { existsEmail } from "../services/volunteerFormService";
 
 interface OrganizacionSectionProps {
   form: any;
@@ -30,6 +31,10 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
     (form.getFieldValue?.("organizacion.tipoOrganizacion") as string) || ""
   );
   const [otroTipo, setOtroTipo] = useState("");
+
+  //estado para verificación de email institucional
+  const [verificandoEmail, setVerificandoEmail] = useState(false);
+  const [emailDupError, setEmailDupError] = useState<string>("");
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -121,7 +126,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Cédula jurídica */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cédula jurídica/RUC <span className="text-red-500">*</span>
+            Cédula jurídica <span className="text-red-500">*</span>
           </label>
           <form.Field
             name="organizacion.cedulaJuridica"
@@ -139,7 +144,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 3-101-123456"
+                  placeholder="Ej: 312369"
                   aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
                 {showErrors && field.state.meta.errors?.length > 0 && (
@@ -152,7 +157,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           </form.Field>
         </div>
 
-        {/* Tipo de organización (cambio mínimo: value = field.state.value) */}
+        {/* Tipo de organización */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Tipo de organización <span className="text-red-500">*</span>
@@ -169,10 +174,10 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
             {(field: any) => (
               <>
                 <select
-                  value={field.state.value ?? ""}  
+                  value={field.state.value ?? ""}
                   onChange={(e) => {
                     const valor = e.target.value;
-                    setTipoOrg(valor);                     
+                    setTipoOrg(valor);
                     if (valor !== "Otro") {
                       setOtroTipo("");
                       field.handleChange(valor);
@@ -206,7 +211,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
                       value={otroTipo}
                       onChange={(e) => {
                         setOtroTipo(e.target.value);
-                        field.handleChange(e.target.value); // ✅ el mismo Field recibe el texto
+                        field.handleChange(e.target.value);
                       }}
                       className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                       placeholder="Ej: Cooperativa agrícola"
@@ -275,7 +280,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
                   onBlur={field.handleBlur}
                   maxLength={12}
                   className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 2222-3333"
+                  placeholder="Ej: 2222 3333"
                   aria-invalid={showErrors && field.state.meta.errors?.length > 0}
                 />
                 {showErrors && field.state.meta.errors?.length > 0 && (
@@ -288,8 +293,8 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           </form.Field>
         </div>
 
-        {/* Email */}
-        <div>
+        {/* Email institucional con verificación de duplicado */}
+        <div className="relative">
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
             Correo electrónico institucional <span className="text-red-500">*</span>
           </label>
@@ -306,16 +311,64 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
                 <input
                   type="email"
                   value={field.state.value ?? ""}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  onChange={(e) => {
+                    field.handleChange(e.target.value);
+                    // limpiar error de duplicado al escribir
+                    if (emailDupError) setEmailDupError("");
+                  }}
+                  onBlur={async (e) => {
+                    field.handleBlur();
+                    const email = e.target.value.trim();
+                    if (!email) return;
+
+                    // validar formato antes de consultar duplicado
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(email)) return;
+
+                    // consulta al backend
+                    setVerificandoEmail(true);
+                    try {
+                      const existe = await existsEmail(email);
+                      if (existe) {
+                        setEmailDupError("Este email ya está registrado en el sistema");
+                      } else {
+                        setEmailDupError("");
+                      }
+                    } finally {
+                      setVerificandoEmail(false);
+                    }
+                  }}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                    emailDupError
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  }`}
                   placeholder="Ej: contacto@organizacion.org"
-                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
+                  aria-invalid={
+                    (showErrors && field.state.meta.errors?.length > 0) || !!emailDupError
+                  }
                 />
+
+                {/* spinner opcional */}
+                {verificandoEmail && (
+                  <div className="absolute right-3 top-11">
+                    <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* error por zod */}
                 {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="mt-1 text-sm text-red-600">
                     {field.state.meta.errors[0]}
                   </p>
+                )}
+
+                {/*  error por duplicado en backend */}
+                {emailDupError && (
+                  <p className="mt-1 text-sm text-red-600">{emailDupError}</p>
                 )}
               </>
             )}
