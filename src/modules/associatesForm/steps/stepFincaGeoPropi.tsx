@@ -125,35 +125,6 @@ export function Step2({ form, onNext, onPrev}: Step2Props) {
 
   return (
     <div className="space-y-6">
-      {/* Banner de error general */}
-      {intentoAvanzar && Object.values(erroresPorSeccion).some(e => e) && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <div className="flex items-start">
-            <svg className="w-5 h-5 text-red-500 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clipRule="evenodd" />
-            </svg>
-            <div>
-              <h3 className="text-sm font-semibold text-red-800">
-                Complete las siguientes secciones obligatorias:
-              </h3>
-              <ul className="text-sm text-red-700 mt-2 list-disc list-inside space-y-1">
-                {erroresPorSeccion.finca && (
-                  <li>Complete la información básica de la finca (nombre, área y número de plano)</li>
-                )}
-                {erroresPorSeccion.geografia && (
-                  <li>Seleccione la provincia, cantón y distrito</li>
-                )}
-                {erroresPorSeccion.propietario && (
-                  <li>Complete toda la información del propietario de la finca</li>
-                )}
-                {erroresPorSeccion.hato && (
-                  <li>Ingrese el tipo de explotación y agregue al menos un animal al hato ganadero</li>
-                )}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Sección 1: Información Básica con ref y scroll-margin */}
       <div ref={fincaRef} className="scroll-mt-24">
@@ -193,14 +164,7 @@ export function Step2({ form, onNext, onPrev}: Step2Props) {
 
       {/* Sección 4: Hato Ganadero con ref y scroll-margin */}
       <div ref={hatoRef} className="scroll-mt-24">
-        <HatoSection form={form} onNext={onNext} onPrev={onPrev} />
-        {intentoAvanzar && erroresPorSeccion.hato && (
-          <div className="mt-2 px-6">
-            <p className="text-sm text-red-600">
-              Ingrese el tipo de explotación y agregue al menos un animal al hato ganadero
-            </p>
-          </div>
-        )}
+        <HatoSection form={form} onNext={onNext} onPrev={onPrev} forceValidation={intentoAvanzar}/>
       </div>
 
       <NavigationButtons 

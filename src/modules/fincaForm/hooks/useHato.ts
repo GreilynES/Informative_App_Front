@@ -76,7 +76,6 @@ export function useHatoForm(idFinca: number, onSuccess?: () => void) {
   const agregarAnimal = () => {
     if (
       !currentAnimal.tipoAnimal.trim() ||
-      !currentAnimal.edadAnios.trim() ||
       !currentAnimal.cantidad.trim()
     ) {
       alert('Por favor completa todos los campos del animal');
