@@ -18,14 +18,6 @@ type HatoLocalState = {
   animales: Row[];
 };
 
-function FieldError({ msg }: { msg?: string }) {
-  return (
-    <p className={`mt-1 h-5 text-sm ${msg ? "text-red-600" : "text-transparent"}`}>
-      {msg || "placeholder"}
-    </p>
-  );
-}
-
 // Opciones predefinidas de animales
 const TIPOS_ANIMAL = [
   { value: "", label: "Seleccione un tipo" },
@@ -77,24 +69,39 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
 
   const [otroAnimal, setOtroAnimal] = React.useState<string>("");
   const [showOtroInput, setShowOtroInput] = React.useState<boolean>(false);
-  
+
   const [tipoExplotacionError, setTipoExplotacionError] = React.useState<string>("");
   const [razaError, setRazaError] = React.useState<string>("");
   const [rowErrors, setRowErrors] = React.useState<{ nombre?: string; cantidad?: string }>({});
-  const [animalesError, setAnimalesError] = React.useState<string>("");
+  const [, setAnimalesError] = React.useState<string>("");
 
-  // Validar cuando forceValidation cambia a true
+function FieldError({ msg }: { msg?: string }) {
+  return (
+    <p className={`mt-1 h-5 text-sm ${msg ? "text-red-600" : "text-transparent"}`}>
+      {msg || "placeholder"}
+    </p>
+  );
+}
+
+  // ✅ Validar cuando forceValidation cambia a true
   useEffect(() => {
     if (forceValidation) {
       if (!formValues.tipoExplotacion || formValues.tipoExplotacion.trim().length === 0) {
         setTipoExplotacionError("El tipo de explotación es requerido");
       }
-
       if (!formValues.animales || formValues.animales.length === 0) {
         setAnimalesError("Debe agregar al menos un animal al hato ganadero");
       }
+      // Sugerir campos actuales si aún no agregan a la tabla
+      if ((!currentAnimal.nombre || (showOtroInput && !otroAnimal)) && formValues.animales.length === 0) {
+        setRowErrors((er) => ({ ...er, nombre: er.nombre ?? "Debe seleccionar un tipo de animal" }));
+      }
+      const cantidadNum = Number(currentAnimal.cantidad);
+      if ((currentAnimal.cantidad === "" || isNaN(cantidadNum) || cantidadNum < 1) && formValues.animales.length === 0) {
+        setRowErrors((er) => ({ ...er, cantidad: er.cantidad ?? "La cantidad debe ser al menos 1" }));
+      }
     }
-  }, [forceValidation, formValues]);
+  }, [forceValidation, formValues, currentAnimal, showOtroInput, otroAnimal]);
 
   const schemaInputBase = () => ({
     tipoExplotacion: formValues.tipoExplotacion,
@@ -133,7 +140,7 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
 
   const validateCurrentRowWithSchema = (row: Row) => {
     const errs: { nombre?: string; cantidad?: string } = {};
-    
+
     if (!row.nombre || row.nombre.trim().length === 0) {
       errs.nombre = "Debe seleccionar un tipo de animal";
       return errs;
@@ -170,7 +177,7 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
         if (field === "cantidad") errs.cantidad = issue.message;
       }
     }
-    
+
     return errs;
   };
 
@@ -291,13 +298,19 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
               }
               placeholder="Ej: Intensivo, extensivo o mixto"
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                (forceValidation || tipoExplotacionError) && tipoExplotacionError
+                (tipoExplotacionError || (forceValidation && !formValues.tipoExplotacion))
                   ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                   : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               }`}
               maxLength={75}
             />
-            <FieldError msg={(forceValidation || tipoExplotacionError) ? tipoExplotacionError : ""} />
+            {/* ✅ Mensaje debajo (siempre con espacio) */}
+            <FieldError
+              msg={
+                tipoExplotacionError ||
+                (forceValidation && !formValues.tipoExplotacion ? "El tipo de explotación es requerido" : "")
+              }
+            />
           </div>
 
           <div>
@@ -316,7 +329,8 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               maxLength={75}
             />
-            <FieldError msg={razaError} />
+            {/* No es obligatorio: reserva espacio transparente */}
+            <FieldError />
           </div>
         </div>
 
@@ -325,111 +339,116 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             Agregar animales al hato <span className="text-red-500">*</span>
           </label>
+        {/* Fila: select(+otro) | cantidad | botón (sin arbitrary props) */}
+<div className="flex flex-col md:flex-row md:items-end gap-4">
+  {/* Selector + (opcional) Otro en misma columna */}
+  <div className="flex-1 min-w-0">
+    <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
+      Tipo de animal
+    </label>
+    <select
+      value={currentAnimal.nombre}
+      onChange={(e) => handleAnimalChange(e.target.value)}
+      className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+        rowErrors.nombre
+          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+          : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+      }`}
+    >
+      {TIPOS_ANIMAL.map((t) => (
+        <option key={t.value} value={t.value}>{t.label}</option>
+      ))}
+    </select>
+    <FieldError
+      msg={
+        rowErrors.nombre ||
+        (forceValidation &&
+          formValues.animales.length === 0 &&
+          (!currentAnimal.nombre || (showOtroInput && !otroAnimal))
+          ? "Debe seleccionar un tipo de animal"
+          : "")
+      }
+    />
 
-          <div className="space-y-2">
-            <div className="flex gap-4 items-end">
-              {/* Selector de tipo de animal */}
-              <div className="flex-1">
-                <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                  Tipo de animal
-                </label>
-                <select
-                  value={currentAnimal.nombre}
-                  onChange={(e) => handleAnimalChange(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                    rowErrors.nombre
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  }`}
-                >
-                  {TIPOS_ANIMAL.map((tipo) => (
-                    <option key={tipo.value} value={tipo.value}>
-                      {tipo.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+    {showOtroInput && (
+      <>
+        <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
+          Especifique el tipo
+        </label>
+        <input
+          type="text"
+          value={otroAnimal}
+          onChange={(e) => {
+            setOtroAnimal(e.target.value);
+            if (rowErrors.nombre) setRowErrors((er) => ({ ...er, nombre: undefined }));
+          }}
+          placeholder="Ingrese el tipo de animal"
+          className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+            rowErrors.nombre
+              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+              : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+          }`}
+          maxLength={75}
+        />
+        <FieldError
+          msg={
+            rowErrors.nombre ||
+            (forceValidation && formValues.animales.length === 0 && showOtroInput && !otroAnimal
+              ? "Ingrese el tipo de animal"
+              : "")
+          }
+        />
+      </>
+    )}
+  </div>
 
-              {/* Campo "Otro" condicional */}
-              {showOtroInput && (
-                <div className="flex-1">
-                  <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                    Especifique el tipo
-                  </label>
-                  <input
-                    type="text"
-                    value={otroAnimal}
-                    onChange={(e) => {
-                      setOtroAnimal(e.target.value);
-                      if (rowErrors.nombre)
-                        setRowErrors((er) => ({ ...er, nombre: undefined }));
-                    }}
-                    placeholder="Ingrese el tipo de animal"
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                      rowErrors.nombre
-                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                        : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                    }`}
-                    maxLength={75}
-                  />
-                </div>
-              )}
+  {/* Cantidad */}
+  <div className="w-full md:w-[160px]">
+    <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Cantidad</label>
+    <input
+      type="number"
+      value={currentAnimal.cantidad}
+      onChange={(e) => {
+        setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value });
+        if (rowErrors.cantidad) setRowErrors((er) => ({ ...er, cantidad: undefined }));
+      }}
+      className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+        rowErrors.cantidad
+          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+          : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+      }`}
+      placeholder="Cantidad"
+      min="1"
+    />
+    <FieldError
+      msg={
+        rowErrors.cantidad ||
+        (forceValidation &&
+          formValues.animales.length === 0 &&
+          !(Number(currentAnimal.cantidad) > 0)
+          ? "La cantidad debe ser al menos 1"
+          : "")
+      }
+    />
+  </div>
 
-              {/* Cantidad */}
-              <div className="w-40">
-                <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                  Cantidad
-                </label>
-                <input
-                  type="number"
-                  value={currentAnimal.cantidad}
-                  onChange={(e) => {
-                    setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value });
-                    if (rowErrors.cantidad)
-                      setRowErrors((er) => ({ ...er, cantidad: undefined }));
-                  }}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                    rowErrors.cantidad
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  }`}
-                  placeholder="Cantidad"
-                  min="1"
-                />
-              </div>
+  {/* Botón Agregar */}
+  <div className="w-full md:w-[7rem] shrink-0">
+    {/* label fantasma para igualar altura con los otros campos */}
+    <label className="block text-xs font-medium mb-1 opacity-0 select-none">Acción</label>
+    <button
+      type="button"
+      onClick={agregarAnimal}
+      className="h-10 w-full px-4 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+    >
+      Agregar
+    </button>
+    {/* placeholder para igualar FieldError (h-5) */}
+    <p className="mt-1 h-5 text-sm text-transparent select-none">placeholder</p>
+  </div>
+</div>
 
-              {/* Botón Agregar */}
-              <button
-                type="button"
-                onClick={agregarAnimal}
-               className=" px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-              >
-                Agregar
-              </button>
-            </div>
-
-            {/* Errores debajo de los campos */}
-            {(rowErrors.nombre || rowErrors.cantidad) && (
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <FieldError msg={rowErrors.nombre} />
-                </div>
-                {showOtroInput && <div className="flex-1" />}
-                <div className="w-40">
-                  <FieldError msg={rowErrors.cantidad} />
-                </div>
-                <div className="w-[88px]" /> {/* Espacio del botón */}
-              </div>
-            )}
-          </div>
         </div>
-
-        {/* Mensaje de error si no hay animales */}
-        {(forceValidation || animalesError) && animalesError && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <p className="text-sm text-red-600">{animalesError}</p>
-          </div>
-        )}
 
         {/* Tabla de animales agregados */}
         {Array.isArray(formValues.animales) && formValues.animales.length > 0 && (
