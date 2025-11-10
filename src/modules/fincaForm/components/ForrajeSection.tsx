@@ -161,10 +161,19 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
         </h3>
       </div>
 
-      <div className="p-6 space-y-4">
-        <p className="text-sm text-gray-600">
+      <div className="p-6 space-y-1 mb-3">
+        <p className="block text-sm font-medium text-[#4A4A4A] mb-3 space-y-6">
           Agrega cada forraje utilizado. Puedes registrar múltiples entradas. *
         </p>
+        <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+            i
+          </span>
+          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+            Después de ingresar completar los campos (Tipo, Variedad, Hectáreas y Utilización) y presiona el botón{" "}
+            <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo en la tabla.
+          </p>
+        </div>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-3">
@@ -173,7 +182,7 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
         )}
 
         {/* Draft */}
-        <div className="grid md:grid-cols-5 gap-4 items-start">
+        <div className="grid md:grid-cols-5 gap-4 items-start space-y-6">
           {/* Tipo */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">

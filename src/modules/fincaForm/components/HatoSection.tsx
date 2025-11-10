@@ -284,7 +284,7 @@ function FieldError({ msg }: { msg?: string }) {
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Tipo de explotación <span className="text-red-500">*</span>
+              Tipo de explotación*
             </label>
             <input
               type="text"
@@ -337,116 +337,127 @@ function FieldError({ msg }: { msg?: string }) {
         {/* Agregar animales */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Agregar animales al hato <span className="text-red-500">*</span>
+            Agregar animales al hato *
           </label>
+          {/* Mensaje de instrucción (usa tu paleta) */}
+          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E]  text-white text-xs font-bold">
+              i
+            </span>
+            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Después de ingresar el tipo de animal y la cantidad, presiona el botón{" "}
+              <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo en la tabla.
+            </p>
+          </div>
+
         {/* Fila: select(+otro) | cantidad | botón (sin arbitrary props) */}
-<div className="flex flex-col md:flex-row md:items-end gap-4">
-  {/* Selector + (opcional) Otro en misma columna */}
-  <div className="flex-1 min-w-0">
-    <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-      Tipo de animal
-    </label>
-    <select
-      value={currentAnimal.nombre}
-      onChange={(e) => handleAnimalChange(e.target.value)}
-      className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-        rowErrors.nombre
-          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-          : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-      }`}
-    >
-      {TIPOS_ANIMAL.map((t) => (
-        <option key={t.value} value={t.value}>{t.label}</option>
-      ))}
-    </select>
-    <FieldError
-      msg={
-        rowErrors.nombre ||
-        (forceValidation &&
-          formValues.animales.length === 0 &&
-          (!currentAnimal.nombre || (showOtroInput && !otroAnimal))
-          ? "Debe seleccionar un tipo de animal"
-          : "")
-      }
-    />
+            <div className="flex flex-col md:flex-row md:items-end gap-4">
+              {/* Selector + (opcional) Otro en misma columna */}
+              <div className="flex-1 min-w-0">
+                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                  Tipo de animal
+                </label>
+                <select
+                  value={currentAnimal.nombre}
+                  onChange={(e) => handleAnimalChange(e.target.value)}
+                  className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                    rowErrors.nombre
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  }`}
+                >
+                  {TIPOS_ANIMAL.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+                <FieldError
+                  msg={
+                    rowErrors.nombre ||
+                    (forceValidation &&
+                      formValues.animales.length === 0 &&
+                      (!currentAnimal.nombre || (showOtroInput && !otroAnimal))
+                      ? "Debe seleccionar un tipo de animal"
+                      : "")
+                  }
+                />
 
-    {showOtroInput && (
-      <>
-        <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-          Especifique el tipo
-        </label>
-        <input
-          type="text"
-          value={otroAnimal}
-          onChange={(e) => {
-            setOtroAnimal(e.target.value);
-            if (rowErrors.nombre) setRowErrors((er) => ({ ...er, nombre: undefined }));
-          }}
-          placeholder="Ingrese el tipo de animal"
-          className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-            rowErrors.nombre
-              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-              : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-          }`}
-          maxLength={75}
-        />
-        <FieldError
-          msg={
-            rowErrors.nombre ||
-            (forceValidation && formValues.animales.length === 0 && showOtroInput && !otroAnimal
-              ? "Ingrese el tipo de animal"
-              : "")
-          }
-        />
-      </>
-    )}
-  </div>
+                {showOtroInput && (
+                  <>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      Especifique el tipo
+                    </label>
+                    <input
+                      type="text"
+                      value={otroAnimal}
+                      onChange={(e) => {
+                        setOtroAnimal(e.target.value);
+                        if (rowErrors.nombre) setRowErrors((er) => ({ ...er, nombre: undefined }));
+                      }}
+                      placeholder="Ingrese el tipo de animal"
+                      className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                        rowErrors.nombre
+                          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                          : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                      }`}
+                      maxLength={75}
+                    />
+                    <FieldError
+                      msg={
+                        rowErrors.nombre ||
+                        (forceValidation && formValues.animales.length === 0 && showOtroInput && !otroAnimal
+                          ? "Ingrese el tipo de animal"
+                          : "")
+                      }
+                    />
+                  </>
+                )}
+              </div>
 
-  {/* Cantidad */}
-  <div className="w-full md:w-[160px]">
-    <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Cantidad</label>
-    <input
-      type="number"
-      value={currentAnimal.cantidad}
-      onChange={(e) => {
-        setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value });
-        if (rowErrors.cantidad) setRowErrors((er) => ({ ...er, cantidad: undefined }));
-      }}
-      className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-        rowErrors.cantidad
-          ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-          : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-      }`}
-      placeholder="Cantidad"
-      min="1"
-    />
-    <FieldError
-      msg={
-        rowErrors.cantidad ||
-        (forceValidation &&
-          formValues.animales.length === 0 &&
-          !(Number(currentAnimal.cantidad) > 0)
-          ? "La cantidad debe ser al menos 1"
-          : "")
-      }
-    />
-  </div>
+              {/* Cantidad */}
+              <div className="w-full md:w-[160px]">
+                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cantidad</label>
+                <input
+                  type="number"
+                  value={currentAnimal.cantidad}
+                  onChange={(e) => {
+                    setCurrentAnimal({ ...currentAnimal, cantidad: e.target.value });
+                    if (rowErrors.cantidad) setRowErrors((er) => ({ ...er, cantidad: undefined }));
+                  }}
+                  className={`h-10 w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+                    rowErrors.cantidad
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                  }`}
+                  placeholder="Cantidad"
+                  min="1"
+                />
+                <FieldError
+                  msg={
+                    rowErrors.cantidad ||
+                    (forceValidation &&
+                      formValues.animales.length === 0 &&
+                      !(Number(currentAnimal.cantidad) > 0)
+                      ? "La cantidad debe ser al menos 1"
+                      : "")
+                  }
+                />
+              </div>
 
-  {/* Botón Agregar */}
-  <div className="w-full md:w-[7rem] shrink-0">
-    {/* label fantasma para igualar altura con los otros campos */}
-    <label className="block text-xs font-medium mb-1 opacity-0 select-none">Acción</label>
-    <button
-      type="button"
-      onClick={agregarAnimal}
-      className="h-10 w-full px-4 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-    >
-      Agregar
-    </button>
-    {/* placeholder para igualar FieldError (h-5) */}
-    <p className="mt-1 h-5 text-sm text-transparent select-none">placeholder</p>
-  </div>
-</div>
+              {/* Botón Agregar */}
+              <div className="w-full md:w-[7rem] shrink-0">
+                {/* label fantasma para igualar altura con los otros campos */}
+                <label className="block text-xs font-medium mb-1 opacity-0 select-none">Acción</label>
+                <button
+                  type="button"
+                  onClick={agregarAnimal}
+                  className="h-10 w-full px-4 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+                >
+                  Agregar
+                </button>
+                {/* placeholder para igualar FieldError (h-5) */}
+                <p className="mt-1 h-5 text-sm text-transparent select-none">placeholder</p>
+              </div>
+            </div>
 
         </div>
 

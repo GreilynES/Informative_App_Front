@@ -116,7 +116,7 @@ export function FuenteAguaSection({ form, onChange, showErrors = false }: Fuente
 
       <div className="p-6 space-y-8">
         <div>
-          <label className="block text-lg font-medium text-[#4A4A4A] mb-3">
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             ¿Qué fuentes de agua existen en la finca? *
           </label>
           <textarea
@@ -132,7 +132,7 @@ export function FuenteAguaSection({ form, onChange, showErrors = false }: Fuente
               setFuentesError(validateFuentes(e.target.value));
             }}
             placeholder="Ejemplos: Pozo, Naciente, Quebrada La Esperanza, Río Grande…&#10;(Puedes separar por coma o una por línea)"
-            className={`w-full min-h-[112px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+            className={`text-sm w-full min-h-[112px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
               (showErrors || fuentesTouched) && fuentesError
                 ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                 : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
@@ -146,7 +146,7 @@ export function FuenteAguaSection({ form, onChange, showErrors = false }: Fuente
         </div>
 
         <div>
-          <label className="block text-lg font-medium text-[#4A4A4A] mb-3">
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             ¿Qué tipos de riego para forraje o cultivos tiene en su finca? *
           </label>
           <textarea
@@ -162,7 +162,7 @@ export function FuenteAguaSection({ form, onChange, showErrors = false }: Fuente
               setRiegoError(validateRiego(e.target.value));
             }}
             placeholder="Ejemplos: Gravedad, Aspersión, Goteo, Riego por manguera…&#10;(Puedes separar por coma o una por línea)"
-            className={`w-full min-h-[112px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+            className={`text-sm w-full min-h-[112px] px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
               (showErrors || riegoTouched) && riegoError
                 ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                 : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"

@@ -83,7 +83,7 @@ export function RegistroSection({ form, onChange, showErrors = false }: Registro
 
       <div className="p-6 space-y-6">
         <div>
-          <p className="text-sm font-medium text-[#4A4A4A] mb-3">
+          <p className="block text-sm font-medium text-[#4A4A4A] mb-3">
             ¿Lleva registros en su finca? Marque todas las que posee. *
           </p>
 
