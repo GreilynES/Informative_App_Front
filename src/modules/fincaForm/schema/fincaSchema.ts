@@ -35,14 +35,37 @@ export const geografiaSchema = z.object({
 
 // Campos del Propietario (solo se aplican si NO es el solicitante)
 export const propietarioFieldsSchema = z.object({
-    propietarioCedula: z.string().min(8, "Cédula del propietario debe tener al menos 8 dígitos").trim(),
-    propietarioNombre: z.string().min(1, "Nombre del propietario es obligatorio").trim(),
-    propietarioApellido1: z.string().min(1, "Primer apellido es obligatorio").trim(),
-    propietarioApellido2: z.string().min(1, "Segundo apellido es obligatorio").trim(),
-    propietarioTelefono: z.string().min(8, "Teléfono debe tener al menos 8 dígitos").trim(),
-    propietarioEmail: z.string().email("Email inválido").trim(),
-    propietarioDireccion: z.string().optional(),
-  });
+  propietarioCedula: z.string().min(8, "Cédula del propietario debe tener al menos 8 dígitos").trim(),
+  propietarioNombre: z.string().min(1, "Nombre del propietario es obligatorio").trim(),
+  propietarioApellido1: z.string().min(1, "Primer apellido es obligatorio").trim(),
+  propietarioApellido2: z.string().min(1, "Segundo apellido es obligatorio").trim(),
+  propietarioTelefono: z.string().min(8, "Teléfono debe tener al menos 8 dígitos").trim(),
+  propietarioEmail: z.string().email("Email inválido").trim(),
+  propietarioFechaNacimiento: z.string()
+    .min(1, "Fecha de nacimiento es obligatoria")
+    .refine((fecha) => {
+      if (!fecha) return false;
+      
+      const fechaNacimiento = new Date(fecha);
+      const hoy = new Date();
+      
+      // Calcular edad
+      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+      const mesActual = hoy.getMonth();
+      const mesNacimiento = fechaNacimiento.getMonth();
+      
+      // Ajustar si aún no ha cumplido años este año
+      if (mesActual < mesNacimiento || 
+          (mesActual === mesNacimiento && hoy.getDate() < fechaNacimiento.getDate())) {
+        edad--;
+      }
+      
+      return edad >= 18;
+    }, {
+      message: "El propietario debe ser mayor de 18 años"
+    }),
+  propietarioDireccion: z.string().optional(),
+});
 
 
 // Schema completo de finca

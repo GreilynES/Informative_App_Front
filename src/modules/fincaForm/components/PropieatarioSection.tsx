@@ -271,7 +271,31 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
                   const year = today.getFullYear();
                   const month = String(today.getMonth() + 1).padStart(2, '0');
                   const day = String(today.getDate()).padStart(2, '0');
-                  const maxDate = `${year}-${month}-${day}`;
+                  
+                  // Fecha máxima: hace 18 años desde hoy
+                  const maxYear = year - 18;
+                  const maxDate = `${maxYear}-${month}-${day}`;
+                  
+                  // Validar edad mínima
+                  const validarEdad = (fecha: string): boolean => {
+                    if (!fecha) return false;
+                    
+                    const fechaNacimiento = new Date(fecha);
+                    const hoy = new Date();
+                    
+                    let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+                    const mesActual = hoy.getMonth();
+                    const mesNacimiento = fechaNacimiento.getMonth();
+                    
+                    if (mesActual < mesNacimiento || 
+                        (mesActual === mesNacimiento && hoy.getDate() < fechaNacimiento.getDate())) {
+                      edad--;
+                    }
+                    
+                    return edad >= 18;
+                  };
+                  
+                  const esMenorDeEdad = fprop.state.value && !validarEdad(fprop.state.value);
                   
                   return (
                     <div>
@@ -284,8 +308,15 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
                         onChange={(e) => fprop.handleChange(e.target.value)}
                         onBlur={fprop.handleBlur}
                         max={maxDate}
-                        className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
+                          esMenorDeEdad ? "border-red-500" : "border-[#CFCFCF]"
+                        }`}
                       />
+                      {esMenorDeEdad && (
+                        <p className="text-sm text-red-600 mt-1">
+                          El propietario debe ser mayor de 18 años
+                        </p>
+                      )}
                     </div>
                   );
                 }}
