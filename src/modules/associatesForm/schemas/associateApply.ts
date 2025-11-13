@@ -68,9 +68,29 @@ const propietarioConditionalSchema = z.object({
     }),
   propietarioEmail: z.string().optional().or(z.literal("")),
   propietarioDireccion: z.string().optional().or(z.literal("")),
-  propietarioFechaNacimiento: z.string().optional().or(z.literal("")),
+  propietarioFechaNacimiento: z.string()
+    .optional()
+    .or(z.literal(""))
+    .refine((fecha) => {
+      if (!fecha || fecha === "") return true; // Opcional si esPropietario es true
+      
+      const fechaNacimiento = new Date(fecha);
+      const hoy = new Date();
+      
+      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+      const mesActual = hoy.getMonth();
+      const mesNacimiento = fechaNacimiento.getMonth();
+      
+      if (mesActual < mesNacimiento || 
+          (mesActual === mesNacimiento && hoy.getDate() < fechaNacimiento.getDate())) {
+        edad--;
+      }
+      
+      return edad >= 18;
+    }, {
+      message: "El propietario debe ser mayor de 18 años"
+    }),
 });
-
 /* ────────────────────────────────────────────────────────────────────────────
    ACTIVIDADES / INFRAESTRUCTURA 
 ──────────────────────────────────────────────────────────────────────────── */

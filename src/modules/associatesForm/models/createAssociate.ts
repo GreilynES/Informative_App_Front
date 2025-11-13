@@ -94,6 +94,7 @@ export interface CreateSolicitudDto {
   }>;
 
   tipoCerca?: {
+    alambrePuas: boolean;
     viva: boolean;
     electrica: boolean;
     pMuerto: boolean;
@@ -207,6 +208,7 @@ export interface SolicitudResponse {
         cantidad: number;
       }>;
       tipoCerca?: {
+        alambrePuas: boolean;
         viva: boolean;
         electrica: boolean;
         pMuerto: boolean;

@@ -88,6 +88,16 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
             ¿Qué cultivos o actividades tiene en su finca? *
           </label>
 
+              <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+              i
+            </span>
+          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Después de ingresar de escribir la actividad o cultivo y presiona{" "}
+              <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo. También puedes usar la tecla Enter.
+            </p>
+          </div>
+
           <div className="flex gap-2 items-start">
             <div className="flex-1">
               <input
@@ -121,7 +131,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
             <button
               type="button"
               onClick={agregarActividad}
-              className="px-6 py-2 bg-[#708C3E] text-white rounded-md hover:bg-[#5d7334] transition-colors"
+              className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
             >
               Agregar
             </button>
@@ -138,7 +148,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
                   <button
                     type="button"
                     onClick={() => eliminarActividad(item)}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-[#c52424] hover:text-[#8d1a1a] "
                   >
                     ×
                   </button>

@@ -240,7 +240,6 @@ if (necesidadesObs) {
 
   // TODO: Observaciones e interés - agregar al backend si es necesario
   console.log('[Hook] 📝 Observaciones:', necesidadesObs.observaciones);
-  console.log('[Hook] 📝 Interés:', necesidadesObs.interes);
 }
 
   // ========== NUEVOS CAMPOS: Características Físicas ==========
@@ -249,9 +248,10 @@ if (necesidadesObs) {
     // 1. Mapear tipos de cerca a tipoCerca (estructura booleana)
     if (Array.isArray(caracteristicasFisicas.tiposCerca) && caracteristicasFisicas.tiposCerca.length > 0) {
       payload.tipoCerca = {
+        alambrePuas: caracteristicasFisicas.tiposCerca.includes('Alambre de púas'),
         viva: caracteristicasFisicas.tiposCerca.includes('Viva'),
         electrica: caracteristicasFisicas.tiposCerca.includes('Eléctrica'),
-        pMuerto: caracteristicasFisicas.tiposCerca.includes('P. muerto'),
+        pMuerto: caracteristicasFisicas.tiposCerca.includes('Muerta'),
       };
     }
 

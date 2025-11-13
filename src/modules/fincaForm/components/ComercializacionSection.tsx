@@ -62,6 +62,15 @@ export function ComercializacionSection({ form, showErrors = false }: Comerciali
         <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
           Canales de comercialización: * 
         </label>
+        <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E]  text-white text-xs font-bold">
+              i
+          </span>
+          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+            Selecciona uno o varios canales. Para agregar otro, escríbelo y presiona{" "}
+            <span className="font-semibold text-[#708C3E]">Agregar</span> o la tecla <span className="font-semibold">Enter</span>.
+          </p>
+        </div>
 
         <div className="space-y-2">
           {["Subastas", "Carnicerías", "Empacadoras", "Otras fincas"].map((canal) => (

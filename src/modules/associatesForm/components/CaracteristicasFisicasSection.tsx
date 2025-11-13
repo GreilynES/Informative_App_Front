@@ -99,6 +99,15 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             Tipos de cerca:
           </label>
+         <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+            i
+          </span>
+          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+            Marca los tipos de cerca que aplican. Para otro tipo, escríbelo y presiona{" "}
+            <span className="font-semibold text-[#708C3E]">Agregar</span>.
+          </p>
+        </div>
 
           <div className="space-y-2">
             {["Alambre de púas", "Eléctrica", "Viva", "Muerta"].map((cerca) => (
@@ -165,6 +174,15 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             Equipos disponibles:
           </label>
+          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+            i
+            </span>
+          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+            Selecciona los equipos que tiene la finca. Para otro equipo, escríbelo y presiona{" "}
+            <span className="font-semibold text-[#708C3E]">Agregar</span>.
+          </p>
+          </div>
 
           <div className="space-y-2">
             {["Tractor", "Picadora", "Mezcladora", "Bomba de agua"].map((equipo) => (
