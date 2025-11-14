@@ -637,6 +637,14 @@ export function Steps({
                       <span className="text-gray-500">Opcional - No adjuntado</span>
                     )}
                   </p>
+                  <p className="text-sm">
+                    <span className="text-gray-500">Documento adicional:</span>{" "}
+                    {files?.documentoAdicional ? (
+                      <span className="text-green-600">✓ {files.documentoAdicional.name}</span>
+                    ) : (
+                      <span className="text-gray-500">Opcional - No adjuntado</span>
+                    )}
+                  </p>
                 </div>
               </div>
             </div>
