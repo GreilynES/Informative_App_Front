@@ -6,9 +6,29 @@ import ServicesPage from '../modules/services/ServicesPage'
 import { ScrollReveal } from '../shared/animations/Scroll'
 import FAQPage from '../modules/faq/FAQPage'
 import { useAutoRefreshSection } from '../shared/hooks/useAutoRefreshSection'
+import { useSearch } from '@tanstack/react-router'
+import { useEffect } from 'react'
 
 export default function HomePage() {
+  const search = useSearch({ from: '/' });
   useAutoRefreshSection()
+
+  useEffect(() => {
+    if (search.section) {
+      setTimeout(() => {
+        const element = document.getElementById(search.section);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+    } else {      // Si no hay sección, ir al top
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [search.section]);
+
+  useAutoRefreshSection();
 
   return (
     <>

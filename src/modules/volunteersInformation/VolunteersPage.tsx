@@ -1,5 +1,3 @@
-// src/modules/volunteersInformation/VolunteersPage.tsx
-
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
 import { Stepper } from "../volunteersForm/components/Stepper";
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm";
@@ -10,6 +8,7 @@ import { HeaderSection } from "./components/HeaderSection";
 import { useVolunteersPage } from "./hooks/useVolunteersPage";
 import { RequirementsSection } from "./components/RequerimentsSection";
 import { Steps } from "../volunteersForm/components/Steps";
+import { useNavigate } from "@tanstack/react-router";
 
 export default function VolunteersPage() {
   const {
@@ -30,6 +29,7 @@ export default function VolunteersPage() {
 
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useVolunteersPage();
+  const navigate = useNavigate();
 
   const { 
     form: formOrganizacion, 
@@ -124,6 +124,7 @@ export default function VolunteersPage() {
         behavior: "smooth",
         block: "start",
       });
+      navigate({ to: '/' });
     }, 300);
   };
 

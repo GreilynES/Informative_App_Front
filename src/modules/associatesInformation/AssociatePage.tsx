@@ -7,8 +7,11 @@ import { BenefitsSection } from "./components/BenefitsSection";
 import { Steps } from "../associatesForm/components/Steps";
 import { useAssociateApply } from "../associatesForm/hooks/useAssociateApply";
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook";
+import { useNavigate } from "@tanstack/react-router";
+
 
 export default function AssociatesPage() {
+  const navigate = useNavigate();
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useAssociatesPage();
   const [showForm, setShowForm] = useState(false);
@@ -19,6 +22,7 @@ export default function AssociatesPage() {
   const { form, mutation } = useAssociateApply(() => {
     setStep(1);
     setShowForm(false);
+    navigate({ to: '/'});
   });
 
   if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
@@ -165,3 +169,4 @@ export default function AssociatesPage() {
     </div>
   );
 }
+
