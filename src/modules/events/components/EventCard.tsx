@@ -1,9 +1,88 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Calendar, X } from "lucide-react"
 import { formatDateToWords } from "../../../shared/utils/formatDate"
 
 export function EventCard({ event }: any) {
   const [showModal, setShowModal] = useState(false)
+
+  // Bloquear scroll cuando el modal está abierto
+  useEffect(() => {
+    if (!showModal) return
+
+    const originalOverflow = document.body.style.overflow
+    const originalPosition = document.body.style.position
+    const scrollY = window.scrollY
+    
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.body.style.position = originalPosition
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [showModal])
+
+  const modalContent = showModal ? (
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      style={{ zIndex: 99999 }}
+      onClick={() => setShowModal(false)}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header del modal */}
+        <div className="relative h-64 bg-gradient-to-br from-[#F2F7D8] to-[#DDE9BB]">
+          <img
+            src={event.illustration || "/placeholder.svg"}
+            alt={event.title}
+            className="object-cover w-full h-full opacity-70"
+          />
+          <button
+            onClick={() => setShowModal(false)}
+            className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+          >
+            <X className="h-6 w-6 text-[#2E321B]" />
+          </button>
+        </div>
+
+        {/* Contenido del modal */}
+        <div className="p-8">
+          <div className="flex items-center gap-3 text-[#6F8C1F] mb-4">
+            <Calendar className="h-6 w-6" />
+            <p className="font-bold text-lg">{formatDateToWords(event.date)}</p>
+          </div>
+
+          <h3 className="text-3xl font-bold text-[#2E321B] mb-6 leading-tight">
+            {event.title}
+          </h3>
+
+          <div className="prose max-w-none">
+            <p className="text-[#2E321B] text-lg leading-relaxed mb-6 break-words whitespace-normal">
+              {event.description}
+            </p>
+          </div>
+
+          {/* Botón de cerrar */}
+          <div className="flex justify-end mt-8">
+            <button
+              onClick={() => setShowModal(false)}
+              className="px-6 py-3 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null
 
   return (
     <>
@@ -21,16 +100,15 @@ export function EventCard({ event }: any) {
           {/* Content Section */}
           <div className="p-8 lg:p-12 flex flex-col justify-between">
             <div className="flex flex-col items-start gap-3 text-[#6F8C1F] mb-4">
-              <div className="flex  items-start gap-3 text-[#6F8C1F] ">
+              <div className="flex items-start gap-3 text-[#6F8C1F]">
                 <Calendar className="h-6 w-6" />
                 <p className="font-bold text-lg">{formatDateToWords(event.date)}</p>
               </div>
-           
 
               <h3 className="text-3xl font-bold text-[#2E321B] mb-4 leading-tight">
                 {event.title}
               </h3>
-          </div>
+            </div>
             {/* Botón para abrir modal */}
             <button
               onClick={() => setShowModal(true)}
@@ -42,51 +120,8 @@ export function EventCard({ event }: any) {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-300">
-            {/* Header del modal */}
-            <div className="relative h-64 bg-gradient-to-br from-[#F2F7D8] to-[#DDE9BB]">
-              <img
-                src={event.illustration || "/placeholder.svg"}
-                alt={event.title}
-                className="object-cover w-full h-full opacity-70"
-              />
-              <button
-                onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
-              >
-                <X className="h-6 w-6 text-[#2E321B]" />
-              </button>
-            </div>
-
-            {/* Contenido del modal */}
-            <div className="p-8">
-              <div className="flex items-center gap-3 text-[#6F8C1F] mb-4">
-                <Calendar className="h-6 w-6" />
-                <p className="font-bold text-lg">{formatDateToWords(event.date)}</p>
-              </div>
-
-              <div className="prose max-w-none">
-                <p className="text-[#2E321B] text-lg leading-relaxed mb-6 break-words whitespace-normal">
-                  {event.description}
-                </p>
-              </div>
-
-              {/* Botón de cerrar */}
-              <div className="flex justify-end mt-8">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-3 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal renderizado con portal */}
+      {showModal && createPortal(modalContent, document.body)}
     </>
   )
 }
