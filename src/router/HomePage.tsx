@@ -13,22 +13,23 @@ export default function HomePage() {
   const search = useSearch({ from: '/' });
   useAutoRefreshSection()
 
-  useEffect(() => {
-    if (search.section) {
-      setTimeout(() => {
-        const element = document.getElementById(search.section);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      }, 100);
-    } else {      // Si no hay sección, ir al top
+    useEffect(() => {
+    // ✅ Si no hay sección, o queremos "Principal", nos quedamos arriba
+    if (!search.section || search.section === 'PrincipalPage') {
       window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
     }
-  }, [search.section]);
 
-  useAutoRefreshSection();
+    // ✅ Si viene una sección específica (?section=AboutUsPage, EventsPage, etc.)
+    setTimeout(() => {
+      const element = document.getElementById(search.section as string);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
+  }, [search.section]);
 
   return (
     <>
