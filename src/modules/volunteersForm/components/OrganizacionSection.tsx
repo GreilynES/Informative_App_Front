@@ -51,7 +51,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Nombre de la organización <span className="text-red-500">*</span>
+            Nombre de la organización *
           </label>
           <form.Field
             name="organizacion.nombre"
@@ -85,7 +85,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Número de voluntarios */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Número estimado de voluntarios <span className="text-red-500">*</span>
+            Número estimado de voluntarios *
           </label>
           <form.Field
             name="organizacion.numeroVoluntarios"
@@ -126,7 +126,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Cédula jurídica */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cédula jurídica <span className="text-red-500">*</span>
+            Cédula jurídica *
           </label>
           <form.Field
             name="organizacion.cedulaJuridica"
@@ -160,7 +160,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Tipo de organización */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Tipo de organización <span className="text-red-500">*</span>
+            Tipo de organización *
           </label>
 
           <form.Field
@@ -227,7 +227,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Dirección */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Dirección de la organización <span className="text-red-500">*</span>
+            Dirección de la organización *
           </label>
           <form.Field
             name="organizacion.direccion"
@@ -261,7 +261,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Teléfono */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Teléfono de la organización <span className="text-red-500">*</span>
+            Teléfono de la organización *
           </label>
           <form.Field
             name="organizacion.telefono"
@@ -296,7 +296,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         {/* Email institucional con verificación de duplicado */}
         <div className="relative">
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Correo electrónico institucional <span className="text-red-500">*</span>
+            Correo electrónico institucional *
           </label>
           <form.Field
             name="organizacion.email"

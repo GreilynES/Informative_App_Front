@@ -29,7 +29,7 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
     return (
       <div>
         <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
+          {label} {required && <span className="text-black-500">*</span>}
         </label>
         <div className="relative">
           <input

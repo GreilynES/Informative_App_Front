@@ -217,7 +217,7 @@ export const DisponibilidadAreasSection = forwardRef<
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Periodo de disponibilidad de inicio <span className="text-red-500">*</span>
+                Periodo de disponibilidad de inicio *
               </label>
               <input
                 type="date"
@@ -232,7 +232,7 @@ export const DisponibilidadAreasSection = forwardRef<
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Periodo de disponibilidad fin <span className="text-red-500">*</span>
+                Periodo de disponibilidad fin *
               </label>
               <input
                 type="date"
@@ -359,7 +359,7 @@ export const DisponibilidadAreasSection = forwardRef<
 
           <div className="p-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Describa los objetivos o razón social de su organización <span className="text-red-500">*</span>
+              Describa los objetivos o razón social de su organización *
             </label>
             <textarea
               value={razonSocial}

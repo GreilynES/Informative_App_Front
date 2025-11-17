@@ -1,67 +1,93 @@
-// components/Services/serviceModal.tsx
+import { useEffect } from "react"
+import { createPortal } from "react-dom"
+import { X } from "lucide-react"
 import type { Service } from "../models/ServicesType"
-import { useState } from "react"
 
-export function ServicesModal({
-  content,
-  onClose,
-}: {
+interface ServicesModalProps {
   content: Service
   onClose: () => void
-}) {
-  const [imgOk, setImgOk] = useState(true)
+}
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-      <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4"
+export function ServicesModal({ content, onClose }: ServicesModalProps) {
+  // Bloquear scroll del body cuando el modal está abierto
+  useEffect(() => {
+    // Guardar el overflow y position actuales
+    const originalOverflow = document.body.style.overflow
+    const originalPosition = document.body.style.position
+    const scrollY = window.scrollY
+    
+    // Bloquear scroll
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    
+    // Restaurar scroll cuando se desmonte el componente
+    return () => {
+      document.body.style.overflow = originalOverflow
+      document.body.style.position = originalPosition
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [])
+
+  const modalContent = (
+    <div 
+      className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      style={{ zIndex: 99999 }}
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 md:p-8 max-h-[70vh] overflow-auto">
-          {/* Imagen arriba, con contenedor fijo. Si falla la carga, mostramos un placeholder del mismo alto (NO ocultamos la sección). */}
-          <div className="w-full h-48 rounded-lg overflow-hidden mb-6 bg-[#F5F7EC] flex items-center justify-center">
-            {content.image && imgOk ? (
-              <img
-                src={content.image}
-                alt="Imagen del servicio"
-                className="w-full h-full object-cover"
-                onError={() => setImgOk(false)}
-              />
-            ) : (
-              <span className="text-sm text-[#475C1D]/70 px-4 text-center">
-                Imagen no disponible
-              </span>
-            )}
+        {/* Header con imagen */}
+        {content.image && (
+          <div className="relative h-64 w-full overflow-hidden rounded-t-2xl">
+            <img
+              src={content.image}
+              alt={content.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          </div>
+        )}
+
+        {/* Botón cerrar */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all duration-200 z-10"
+          aria-label="Cerrar modal"
+        >
+          <X className="w-6 h-6 text-[#2E321B]" />
+        </button>
+
+        {/* Contenido */}
+        <div className="p-8">
+          <h2 className="text-3xl font-bold text-[#2E321B] mb-6">
+            {content.title}
+          </h2>
+          
+          <div className="prose prose-lg max-w-none">
+            <p className="text-[#2E321B] leading-relaxed whitespace-pre-wrap">
+              {content.modalDescription}
+            </p>
           </div>
 
-          <p
-            className="text-[#2E321B] text-base leading-relaxed whitespace-pre-wrap"
-            style={{
-              overflowWrap: "anywhere",   // fuerza saltos incluso sin espacios
-              wordBreak: "break-word",    // refuerzo extra para navegadores
-              maxWidth: "100%",           // nunca excede el ancho del modal
-            }}
-          >
-            {content.modalDescription}
-          </p>
-
-          <div className="flex justify-end mt-6">
+          {/* Botón cerrar inferior */}
+          <div className="mt-8 flex justify-end">
             <button
               onClick={onClose}
-              className="px-6 py-2 rounded-lg bg-[#475C1D] text-white font-semibold hover:bg-[#2E321B] transition"
+              className="px-6 py-3 bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-lg font-medium transition-all duration-200"
             >
               Cerrar
             </button>
           </div>
         </div>
       </div>
-
-      {/* cierra clickeando fuera */}
-      <button
-        aria-label="Cerrar modal"
-        className="fixed inset-0 -z-10"
-        onClick={onClose}
-      />
     </div>
   )
+
+  return createPortal(modalContent, document.body)
 }

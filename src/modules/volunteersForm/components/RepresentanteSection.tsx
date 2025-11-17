@@ -70,7 +70,7 @@ export function RepresentanteSection({
         {/* Cédula */}
         <div className="relative">
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cédula <span className="text-red-500">*</span>
+            Cédula *
           </label>
           <form.Field
             name="organizacion.representante.persona.cedula"
@@ -177,7 +177,7 @@ export function RepresentanteSection({
         <div className="grid md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-              Nombre <span className="text-red-500">*</span>
+              Nombre *
             </label>
             <form.Field
               name="organizacion.representante.persona.nombre"
@@ -205,7 +205,7 @@ export function RepresentanteSection({
 
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-              Primer Apellido <span className="text-red-500">*</span>
+              Primer Apellido *
             </label>
             <form.Field
               name="organizacion.representante.persona.apellido1"
@@ -233,7 +233,7 @@ export function RepresentanteSection({
 
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-              Segundo Apellido <span className="text-red-500">*</span>
+              Segundo Apellido *
             </label>
             <form.Field
               name="organizacion.representante.persona.apellido2"
@@ -263,7 +263,7 @@ export function RepresentanteSection({
         {/* Cargo */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cargo/Posición <span className="text-red-500">*</span>
+            Cargo/Posición *
           </label>
           <form.Field
             name="organizacion.representante.cargo"
@@ -292,7 +292,7 @@ export function RepresentanteSection({
         {/* Teléfono */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Teléfono del representante <span className="text-red-500">*</span>
+            Teléfono del representante *
           </label>
           <form.Field
             name="organizacion.representante.persona.telefono"
@@ -321,7 +321,7 @@ export function RepresentanteSection({
         {/* Email */}
         <div className="relative">
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Correo del representante <span className="text-red-500">*</span>
+            Correo del representante *
           </label>
           <form.Field
             name="organizacion.representante.persona.email"

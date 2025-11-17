@@ -67,4 +67,21 @@ const apiConfig = {
   },
 };
 
+export async function apiFormData<T>(
+  endpoint: string,
+  formData: FormData
+): Promise<T> {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || `Error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export default apiConfig;

@@ -9,6 +9,17 @@ export function PrincipalCard({ event }: { event: EventData }) {
     return null
   }
 
+  const handleScrollToEvents = (e: React.MouseEvent) => {
+    e.preventDefault()
+    const eventsSection = document.getElementById('EventsPage')
+    if (eventsSection) {
+      eventsSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+      })
+    }
+  }
+
   return (
     <div className="relative">
       {/* Pin decorativo */}
@@ -39,9 +50,7 @@ export function PrincipalCard({ event }: { event: EventData }) {
         {/* Sección del título con etiqueta en columna */}
         <div className="p-4 pb-2">
           <div className="flex flex-col items-start">
-            {" "}
-            {/* Contenedor flex-col para apilar */}
-            {/* Etiqueta "Destacado" - Ahora con color de fondo y texto más sutil */}
+            {/* Etiqueta "Destacado" */}
             <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full mb-1">
               Destacado
             </span>
@@ -53,47 +62,34 @@ export function PrincipalCard({ event }: { event: EventData }) {
         {/* Contenedor de la imagen y la fecha superpuesta */}
         <div className="relative px-4 pb-4 overflow-hidden rounded-b-lg">
           <img
-            src={
-              event.illustration ||
-              "/placeholder.svg?height=180&width=350&query=cattle auction event" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg" ||
-              "/placeholder.svg"
-            }
-            alt="Subasta de ganado"
+            src={event.illustration || "/placeholder.svg"}
+            alt={event.title}
             className="w-full h-60 object-cover rounded-lg transition-transform duration-300"
           />
           {/* Fecha del evento sobre la foto - POSICIONADO EN LA PARTE INFERIOR */}
-          <div className="absolute bottom-6 left-6 text-white px-3 py-1 rounded-md flex items-center space-x-2 ">
+          <div className="absolute bottom-6 left-6 text-white px-3 py-1 rounded-md flex items-center space-x-2">
             <CalendarDays className="w-5 h-5" />
-            <span className="text-2xl font-extrabold">{formatDateToWords(event.date, {
-              locale: "es-CR",
-              capitalize: true,
-              commaBeforeYear: false, // 👉 "Viernes 3 de octubre de 2025"
-            })}</span>
+            <span className="text-2xl font-extrabold">
+              {formatDateToWords(event.date, {
+                locale: "es-CR",
+                capitalize: true,
+                commaBeforeYear: false,
+              })}
+            </span>
           </div>
         </div>
 
         {/* Sección "Saber más" como botón */}
         <div className="px-4 pb-4 pt-2 flex justify-end">
-          <div className="px-4 pb-4 pt-2 flex justify-end">
-             <a href="#EventsPage" > 
-              <RippleButton
-                size="sm"
-                className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200"
-              >
-                <span>Saber más</span>
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </RippleButton>
-            </a>
-          </div>
+          <button onClick={handleScrollToEvents}>
+            <RippleButton
+              size="sm"
+              className="bg-[#6F8C1F] text-white hover:bg-[#475C1D] transition-colors duration-200"
+            >
+              <span>Saber más</span>
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </RippleButton>
+          </button>
         </div>
       </motion.div>
     </div>
