@@ -63,7 +63,7 @@ export default function AssociatesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5]">
+    <div className="min-h-screen bg-[#FAF9F5] pt-14">
       {/* Modal de aviso importante */}
       {showModal && (
         <div
