@@ -10,7 +10,6 @@ function normalize(s: string) {
 export default function AboutUsPage() {
   const { data: aboutUs = [], isLoading } = useAboutUs();
 
-  // Muestra "Cargando..." solo si además no hay data todavía
   if (isLoading && aboutUs.length === 0) {
     return (
       <section className="min-h-screen relative overflow-hidden flex items-center justify-center">
@@ -24,7 +23,7 @@ export default function AboutUsPage() {
   const getByTitle = (needle: string) =>
     aboutUs.find((item) => normalize(item.title).includes(normalize(needle)));
 
-  const somos  = getByTitle("Quiénes Somos") || getByTitle("Quienes Somos") || getByTitle("Somos");
+  const somos = getByTitle("Quiénes Somos") || getByTitle("Quienes Somos") || getByTitle("Somos");
   const mision = getByTitle("Misión") || getByTitle("Mision");
   const vision = getByTitle("Visión") || getByTitle("Vision");
 
@@ -59,7 +58,7 @@ export default function AboutUsPage() {
         )}
 
         {/* Misión y Visión */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
           {mision && (
             <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-150">
               <AboutUsCard
