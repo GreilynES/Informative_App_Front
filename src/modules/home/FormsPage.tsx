@@ -1,39 +1,99 @@
 import { ArrowRight, FileText, Heart } from "lucide-react"
-import { useRouter } from '@tanstack/react-router'
+import { useRouter } from "@tanstack/react-router"
 
 export default function FormsPage() {
   const router = useRouter()
 
+  const bgUrl =
+    "https://res.cloudinary.com/dyigmavwq/image/upload/v1768145394/IMG_3060_ncj62f.jpg"
+
   return (
-    <section className="min-h-screen bg-[#FAFDF4] py-20 px-16">
-      <div className="text-center mb-16">
-        <h2 className="text-4xl md:text-5xl font-bold text-[#2E321B] mb-6">
-          Forma parte de la Cámara de Ganaderos de <br />Hojancha
-        </h2>
-        <div className="w-24 h-1.25 bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F] mx-auto mb-4" />
+    <section
+      className="relative min-h-screen py-20 px-6 sm:px-10 lg:px-16 overflow-hidden"
+      style={{
+        backgroundImage: `url(${bgUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Overlay */}
+      <div aria-hidden="true" className="absolute inset-0">
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(900px_520px_at_50%_38%,rgba(0,0,0,0.15),rgba(0,0,0,0.55))]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/45" />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-16">
+      {/* Header */}
+      <div className="relative z-10 text-center mb-14">
+        <div className="inline-flex flex-col items-center rounded-2xl px-6 py-5 shadow-[0_18px_55px_-30px_rgba(0,0,0,0.65)]">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl font-semibold tracking-tight leading-[1.05] text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.60)]">
+            Forma parte de la Cámara de Ganaderos <br className="hidden sm:block" />
+            de Hojancha
+          </h2>
+
+          <div className="mt-4 h-1 w-28 rounded-full bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F]" />
+        </div>
+      </div>
+
+      <div className="relative z-10 grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-12">
         {/* ASOCIADOS CARD */}
-        <div className="group relative overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 rounded-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#A9C86E]/20 to-[#475C1D]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+        <div
+          className="
+            group relative overflow-hidden rounded-2xl
+            isolate transform-gpu
+            shadow-[0_22px_70px_-40px_rgba(0,0,0,0.80)]
+            transition-all duration-500
+            hover:-translate-y-2 hover:shadow-[0_30px_90px_-46px_rgba(0,0,0,0.85)]
+          "
+        >
+          {/* 1) Blur (mantiene el glass) */}
+          <div
+            className="
+              absolute inset-0 rounded-2xl
+              bg-white/10
+              [backdrop-filter:blur(18px)]
+              [-webkit-backdrop-filter:blur(18px)]
+            "
+          />
+
+          {/* 2) Homogenizer (OCULTA la costura del blur) */}
+          <div className="absolute inset-0 rounded-2xl bg-white/[0.06]" />
+
+          {/* 3) Borde suave */}
+          <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/15" />
+
+          {/* Hover wash */}
+          <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#7A944B]/16 via-transparent to-transparent" />
+          </div>
+
           <div className="p-8 relative z-10">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#7A944B] to-[#475C1D] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <FileText className="w-8 h-8 text-white" />
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/80 border border-white/25 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                <FileText className="w-7 h-7 text-[#475C1D]" />
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.45)]">
+                  ASOCIADOS
+                </h3>
+                <p className="mt-1 text-white/80 leading-relaxed">
+                  Membresía oficial con derechos y beneficios exclusivos
+                </p>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-[#2E321B] mb-4">ASOCIADOS</h3>
-            <p className="text-[#2E321B] mb-6 leading-relaxed">
-              Membresía oficial con derechos y beneficios exclusivos
-            </p>
-            <div className="bg-gradient-to-r from-[#7A944B]/15 to-[#475C1D]/20 rounded-xl p-6 mb-6 border border-[#D8B769]/50">
-              <p className="text-[#2E321B] font-semibold leading-relaxed">
+
+            <div className="rounded-xl p-6 mb-6 bg-white/75 ring-1 ring-white/18">
+              <p className="text-[#2E321B]/90 font-medium leading-relaxed">
                 Como asociado tendrás acceso completo a todos nuestros servicios, derecho a voto en asambleas,
                 participación en la toma de decisiones y acceso a beneficios exclusivos para miembros.
               </p>
             </div>
+
             <button
-              onClick={() => router.navigate({ to: '/associates' })}
-              className="w-full bg-gradient-to-r from-[#7A944B] to-[#475C1D] hover:from-[#6A853E] hover:to-[#3A4D17] text-white font-bold py-3 rounded-xl shadow-xl group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+              onClick={() => router.navigate({ to: "/associates" })}
+              className="w-full rounded-xl bg-[#475C1D] hover:bg-[#3A4D17] text-white font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#BFD76F]/45 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
             >
               Formulario
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
@@ -42,24 +102,62 @@ export default function FormsPage() {
         </div>
 
         {/* VOLUNTARIOS CARD */}
-        <div className="group relative overflow-hidden bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2 rounded-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#E7C56D]/20 to-[#C1A548]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+        <div
+          className="
+            group relative overflow-hidden rounded-2xl
+            isolate transform-gpu
+            shadow-[0_22px_70px_-40px_rgba(0,0,0,0.80)]
+            transition-all duration-500
+            hover:-translate-y-2 hover:shadow-[0_30px_90px_-46px_rgba(0,0,0,0.85)]
+          "
+        >
+          {/* 1) Blur */}
+          <div
+            className="
+              absolute inset-0 rounded-2xl
+              bg-white/12
+              [backdrop-filter:blur(14px)]
+              [-webkit-backdrop-filter:blur(14px)]
+            "
+          />
+
+          {/* 2) Homogenizer */}
+          <div className="absolute inset-0 rounded-2xl bg-white/[0.06]" />
+
+          {/* 3) Borde */}
+          <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/15" />
+
+          {/* Hover wash */}
+          <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#E7C56D]/16 via-transparent to-transparent" />
+          </div>
+
           <div className="p-8 relative z-10">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#E7C56D] to-[#C1A548] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <Heart className="w-8 h-8 text-white" />
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/80 border border-white/25 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                <Heart className="w-7 h-7 text-[#A9882A]" />
+              </div>
+
+              <div>
+                <h3 className="text-2xl font-bold text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.45)]">
+                  VOLUNTARIOS
+                </h3>
+                <p className="mt-1 text-white/80 leading-relaxed">
+                  Colaboración flexible en proyectos específicos y adaptables
+                </p>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-[#2E321B] mb-4">VOLUNTARIOS</h3>
-            <p className="text-[#2E321B] mb-6 leading-relaxed">
-              Colaboración flexible en proyectos específicos
-            </p>
-            <div className="bg-gradient-to-br from-[#FDF7E6] to-[#FCF3D6] rounded-xl p-6 mb-6 border border-[#E7C56D]/50">
-              <p className="text-[#2E321B]/90 font-semibold leading-relaxed">
-                Como voluntario podrás colaborar en nuestros proyectos sociales, participar en actividades comunitarias y contribuir con tu tiempo y habilidades según tu disponibilidad.
+
+            <div className="rounded-xl p-6 mb-6 bg-white/75 ring-1 ring-white/18">
+              <p className="text-[#2E321B]/90 font-medium leading-relaxed">
+                Como voluntario podrás colaborar en nuestros proyectos sociales, participar en actividades
+                comunitarias y contribuir con tu tiempo y habilidades según tu disponibilidad.
               </p>
             </div>
+
             <button
-              onClick={() => router.navigate({ to: '/volunteers' })}
-              className="w-full bg-gradient-to-r from-[#E7C56D] to-[#C1A548] hover:from-[#DAB45B] hover:to-[#A9882A] text-white font-bold py-3 rounded-xl shadow-xl group-hover:shadow-xl transition-all duration-300 flex items-center justify-center"
+              onClick={() => router.navigate({ to: "/volunteers" })}
+              className="w-full rounded-xl bg-[#C1A548] hover:bg-[#A9882A] text-white font-bold py-3 shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E7C56D]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-black/20"
             >
               Formulario
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
