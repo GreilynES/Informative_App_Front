@@ -129,7 +129,7 @@ export default function VolunteersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5]">
+    <div className="min-h-screen bg-[#FAF9F5] pt-14">
       <HeaderSection title={data.headerTitle} description={data.headerDescription} />
 
       <div className="max-w-6xl mx-auto">
