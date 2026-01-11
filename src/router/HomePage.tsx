@@ -33,11 +33,11 @@ export default function HomePage() {
 
   return (
     <>
-      {/* <ScrollReveal direction="fade" duration={800}>
+      <ScrollReveal direction="fade" duration={800}>
         <div id="PrincipalPage">
           <PrincipalPage />
         </div>
-      </ScrollReveal> */}
+      </ScrollReveal> 
 
       <div id="AboutUsPage">
         <ScrollReveal direction="up" delay={100} duration={700}>
