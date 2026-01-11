@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 
 import {
@@ -8,7 +8,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../../ui/accordion";
-import { Section } from "../../ui/section";
+import { Section } from "lucide-react";
+
 
 interface FAQItemProps {
   question: string;
