@@ -17,10 +17,60 @@ export function ServicesCard({ service, openModal }: any) {
   const Icon = getServiceIcon(service.id)
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
+    <article
+      className="
+        group
+        relative
+        flex
+        flex-col
+        overflow-hidden
+        rounded-3xl
+        border
+        border-gray-200
+        bg-white
+        shadow-sm
+        transition-all
+        duration-700
+        ease-out
+        hover:-translate-y-2
+        hover:shadow-lg
+      "
+    >
+      {/* Línea superior reactiva */}
+      <div
+        className="
+          h-px
+          w-full
+          bg-gradient-to-r
+          from-transparent
+          via-[#D9E2B6]
+          to-transparent
+          transition-all
+          duration-500
+          ease-out
+          group-hover:h-[3px]
+          group-hover:via-[#8FAF3C]
+        "
+      />
+
       <div className="flex flex-col p-8 h-full">
         {/* Icono */}
-        <div className="mb-6 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100">
+        <div
+          className="
+            mb-6
+            inline-flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-xl
+            bg-gray-100
+            transition-colors
+            duration-500
+            ease-out
+            group-hover:bg-[#F5F7EC]
+          "
+        >
           <Icon className="h-5 w-5 text-[#6F8C1F]" />
         </div>
 
@@ -45,7 +95,16 @@ export function ServicesCard({ service, openModal }: any) {
               service.cardDescription ?? ""
             )
           }
-          className="mt-6 w-fit text-sm font-medium text-[#6F8C1F] hover:underline"
+          className="
+            mt-6
+            w-fit
+            text-sm
+            font-medium
+            text-[#6F8C1F]
+            transition-colors
+            duration-300
+            hover:underline
+          "
         >
           Más información →
         </button>
