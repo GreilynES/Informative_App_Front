@@ -53,13 +53,12 @@ export default function FAQPage() {
     <div className="min-h-screen white-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
       <div className="mx-auto max-w-5xl px-4 py-30">
         <header className="mb-20 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-[#2E321B] sm:text-5xl">
+          <div className="text-center space-y-3">
+          <p className="text-sm font-medium text-muted-foreground">Estamos para ayudarte</p>
+          <h1 className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4">
             Preguntas frecuentes
           </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-base text-[#2D2D2D] sm:text-lg">
-            Aquí respondemos las dudas más comunes. Si no encontrás lo que buscás,
-            escribinos y con gusto te ayudamos.
-          </p>
+          </div>
         </header>
 
         <div className="mx-auto max-w-3xl">

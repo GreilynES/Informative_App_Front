@@ -45,7 +45,7 @@ export default function AboutUsPage() {
       <div className="relative mx-auto w-full max-w-6xl px-4 py-16 md:py-24 space-y-10">
         {/* Header */}
         <div className="text-center space-y-3">
-          <p className="text-sm font-medium text-muted-foreground">Cámara de Ganaderos</p>
+          <p className="text-sm font-medium text-muted-foreground">Conócenos</p>
           <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
             Sobre nosotros
           </h1>
