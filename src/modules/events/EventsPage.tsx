@@ -21,7 +21,7 @@ const cardVariants = {
   center: {
     x: "0%",
     opacity: 1,
-    scale: 1.4,
+    scale: 1.0,
     rotateY: 0,
     zIndex: 10,
     transition: {
@@ -63,7 +63,8 @@ const cardVariants = {
     },
   }),
 }
-const ANIM_MS = 800
+
+const ANIM_MS = 600
 const AUTO_MS = 10000
 
 export default function EventsPage() {
@@ -76,7 +77,6 @@ export default function EventsPage() {
   const [direction, setDirection] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
 
-  // ✅ Nuevo: saber si el modal está abierto (pausar autoplay)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const isModalOpenRef = useRef(false)
   useEffect(() => {
@@ -119,7 +119,6 @@ export default function EventsPage() {
     }, ANIM_MS)
   }, [])
 
-  // ✅ Helpers para autoplay: detener / programar / reiniciar
   const stopAuto = useCallback(() => {
     if (autoTimerRef.current) {
       clearTimeout(autoTimerRef.current)
@@ -130,49 +129,41 @@ export default function EventsPage() {
   const scheduleAuto = useCallback(() => {
     stopAuto()
 
-    // no programes si no aplica
     if (!hasEvents || total <= 1) return
     if (isModalOpenRef.current) return
 
     autoTimerRef.current = setTimeout(() => {
-      // si justo se abrió modal o está animando, NO avances; solo reprograma
       if (!isModalOpenRef.current && !isAnimatingRef.current) {
         setDirection(1)
         lockAnimation()
         setPage((p) => p + 1)
       }
-      // reprograma el siguiente tick
       scheduleAuto()
     }, AUTO_MS)
   }, [hasEvents, total, lockAnimation, stopAuto])
 
-  // ✅ Llamar esto en cualquier interacción del usuario (flechas/dots)
-  const userInteracted = useCallback(() => {
-    // reinicia el conteo desde 0 (pero solo si NO hay modal abierto)
-    if (isModalOpenRef.current) {
-      stopAuto()
-      return
-    }
-    scheduleAuto()
-  }, [scheduleAuto, stopAuto])
-
   const paginate = useCallback(
     (dir: -1 | 1) => {
       if (!hasEvents || isAnimatingRef.current) return
+      
+      stopAuto()
+      
       setDirection(dir)
       lockAnimation()
       setPage((p) => p + dir)
 
-      // ✅ reinicia autoplay después del click
-      userInteracted()
+      setTimeout(() => {
+        if (!isModalOpenRef.current) {
+          scheduleAuto()
+        }
+      }, ANIM_MS + 100)
     },
-    [hasEvents, lockAnimation, userInteracted]
+    [hasEvents, lockAnimation, stopAuto, scheduleAuto]
   )
 
   const goPrev = () => paginate(-1)
   const goNext = () => paginate(1)
 
-  // ✅ Autoplay: se pausa cuando modal abre, y se reanuda al cerrar (reiniciando conteo)
   useEffect(() => {
     if (!hasEvents || total <= 1) {
       stopAuto()
@@ -184,7 +175,6 @@ export default function EventsPage() {
       return
     }
 
-    // cuando está cerrado, arranca/reinicia el timer
     scheduleAuto()
 
     return () => stopAuto()
@@ -226,7 +216,7 @@ export default function EventsPage() {
     <div className="min-h-screen justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
       <div className="relative min-h-screen overflow-hidden">
         <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-24 py-8 sm:py-10 md:py-12">
-          <div className="mx-auto max-w-3xl text-center mb-12 sm:mb-16 md:mb-20 lg:mb-2">
+          <div className="mx-auto max-w-3xl text-center mb-6 sm:mb-8 md:mb-12 lg:mb-2">
             {/* CHIP */}
             <div className="mx-auto inline-flex items-center rounded-full border border-[#A7C4A0] bg-white/70 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#1F3D2B] backdrop-blur-sm shadow-lg">
               <span className="relative flex h-2 w-2 mr-2">
@@ -245,149 +235,15 @@ export default function EventsPage() {
           </div>
 
           <div className="relative">
-            <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2 sm:gap-3 lg:block">
-              {/* Flecha izquierda (MOBILE) */}
-              <div className="flex justify-center lg:hidden">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={goPrev}
-                  disabled={!hasEvents}
-                  className="
-                    h-10 w-10 rounded-full p-0
-                    border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
-                    hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
-                    disabled:opacity-30 disabled:cursor-not-allowed
-                    backdrop-blur-md shadow-xl
-                    transition-all duration-300 hover:scale-110
-                  "
-                  aria-label="Anterior"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </Button>
-              </div>
-
-              {/* Contenedor del carrusel */}
-              <div className="relative flex items-center justify-center">
-                <div className="relative w-full max-w-6xl lg:px-24">
-                  <div className="relative h-[520px] sm:h-[540px] md:h-[560px] lg:h-[580px] flex items-center justify-center">
-                    <AnimatePresence initial={false} custom={direction} mode="sync">
-                      {/* LEFT CARD */}
-                      <motion.div
-                        key={`left-${page - 1}`}
-                        className="absolute hidden md:block w-[75%] md:w-[65%] lg:w-[60%] pointer-events-none"
-                        variants={cardVariants}
-                        initial="enter"
-                        animate="left"
-                        exit="exit"
-                        custom={direction}
-                        style={{ transformOrigin: "center center" }}
-                      >
-                        <div className="brightness-90 saturate-90 transition-all duration-300">
-                          <EventCard event={left} />
-                        </div>
-                      </motion.div>
-
-                      {/* CENTER CARD */}
-                      <motion.div
-                        key={`center-${page}`}
-                        className="
-                          absolute
-                          w-[88%] sm:w-[80%] md:w-[75%] lg:w-[72%]
-                          mx-auto
-                        "
-                        variants={cardVariants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        custom={direction}
-                        style={{ transformOrigin: "center center" }}
-                      >
-                        {/* ✅ aquí avisamos cuando el modal abre/cierra */}
-                        <EventCard
-                          event={current}
-                          onModalChange={(open: boolean) => setIsModalOpen(open)}
-                        />
-                      </motion.div>
-
-                      {/* RIGHT CARD */}
-                      <motion.div
-                        key={`right-${page + 1}`}
-                        className="absolute hidden md:block w-[75%] md:w-[65%] lg:w-[60%] pointer-events-none"
-                        variants={cardVariants}
-                        initial="enter"
-                        animate="right"
-                        exit="exit"
-                        custom={direction}
-                        style={{ transformOrigin: "center center" }}
-                      >
-                        <div className="brightness-90 saturate-90 transition-all duration-300">
-                          <EventCard event={right} />
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
-                  </div>
-
-                  {/* dots */}
-                  <div className="mt-16 sm:mt-20 md:mt-24 lg:mt-0 flex justify-center gap-1.5">
-                    {rtEvents.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          if (isAnimatingRef.current) return
-                          const dir = i > index ? 1 : -1
-                          setDirection(dir)
-                          lockAnimation()
-                          setPage((p) => p - mod(p, total) + i)
-
-                          // ✅ reinicia conteo después del click
-                          userInteracted()
-                        }}
-                        className={[
-                          "rounded-full transition-all duration-300",
-                          i === index
-                            ? "h-2.5 w-10 bg-gradient-to-r from-[#2F5F0B] to-[#6D8B37] shadow-lg shadow-[#8FAE5A]/30"
-                            : "h-2.5 w-2.5 bg-[#1F3D2B]/18 hover:bg-[#1F3D2B]/28 hover:w-6",
-                        ].join(" ")}
-                        aria-label={`Ir al evento ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Flecha derecha (MOBILE) */}
-              <div className="flex justify-center lg:hidden">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={goNext}
-                  disabled={!hasEvents}
-                  className="
-                    h-10 w-10 rounded-full p-0
-                    border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
-                    hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
-                    disabled:opacity-30 disabled:cursor-not-allowed
-                    backdrop-blur-md shadow-xl
-                    transition-all duration-300 hover:scale-110
-                  "
-                  aria-label="Siguiente"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </Button>
-              </div>
-
-              {/* DESKTOP flechas */}
+            {/* Flechas MOBILE - Posicionadas absolutamente */}
+            <div className="lg:hidden absolute left-2 top-1/2 -translate-y-1/2 z-30">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={goPrev}
                 disabled={!hasEvents}
                 className="
-                  hidden lg:flex
-                  absolute left-0 top-1/2 -translate-y-1/2 z-30
-                  -translate-x-24
-                  h-12 w-12 rounded-full p-0
+                  h-10 w-10 rounded-full p-0
                   border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
                   hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
                   disabled:opacity-30 disabled:cursor-not-allowed
@@ -396,19 +252,18 @@ export default function EventsPage() {
                 "
                 aria-label="Anterior"
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
+            </div>
 
+            <div className="lg:hidden absolute right-2 top-1/2 -translate-y-1/2 z-30">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={goNext}
                 disabled={!hasEvents}
                 className="
-                  hidden lg:flex
-                  absolute right-0 top-1/2 -translate-y-1/2 z-30
-                  translate-x-24
-                  h-12 w-12 rounded-full p-0
+                  h-10 w-10 rounded-full p-0
                   border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
                   hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
                   disabled:opacity-30 disabled:cursor-not-allowed
@@ -417,9 +272,146 @@ export default function EventsPage() {
                 "
                 aria-label="Siguiente"
               >
-                <ChevronRight className="h-6 w-6" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
+
+            {/* Contenedor del carrusel */}
+            <div className="relative flex items-center justify-center">
+              <div className="relative w-full max-w-6xl lg:px-24">
+                <div className="relative h-[480px] sm:h-[500px] md:h-[520px] lg:h-[580px] flex items-center justify-center">
+                  <AnimatePresence initial={false} custom={direction} mode="sync">
+                    {/* LEFT CARD */}
+                    <motion.div
+                      key={`left-${page - 1}`}
+                      className="absolute hidden md:block w-[75%] md:w-[65%] lg:w-[60%] pointer-events-none"
+                      variants={cardVariants}
+                      initial="enter"
+                      animate="left"
+                      exit="exit"
+                      custom={direction}
+                      style={{ transformOrigin: "center center" }}
+                    >
+                      <div className="brightness-90 saturate-90 transition-all duration-300">
+                        <EventCard event={left} />
+                      </div>
+                    </motion.div>
+
+                    {/* CENTER CARD */}
+                    <motion.div
+                      key={`center-${page}`}
+                      className="
+                        absolute
+                        w-[92%] sm:w-[85%] md:w-[75%] lg:w-[72%]
+                        mx-auto
+                      "
+                      variants={cardVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      custom={direction}
+                      style={{ transformOrigin: "center center" }}
+                    >
+                      <EventCard
+                        event={current}
+                        onModalChange={(open: boolean) => setIsModalOpen(open)}
+                      />
+                    </motion.div>
+
+                    {/* RIGHT CARD */}
+                    <motion.div
+                      key={`right-${page + 1}`}
+                      className="absolute hidden md:block w-[75%] md:w-[65%] lg:w-[60%] pointer-events-none"
+                      variants={cardVariants}
+                      initial="enter"
+                      animate="right"
+                      exit="exit"
+                      custom={direction}
+                      style={{ transformOrigin: "center center" }}
+                    >
+                      <div className="brightness-90 saturate-90 transition-all duration-300">
+                        <EventCard event={right} />
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* dots */}
+                <div className="mt-8 sm:mt-12 md:mt-16 lg:mt-0 flex justify-center gap-1.5">
+                  {rtEvents.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (isAnimatingRef.current) return
+                        
+                        stopAuto()
+                        
+                        const dir = i > index ? 1 : -1
+                        setDirection(dir)
+                        lockAnimation()
+                        setPage((p) => p - mod(p, total) + i)
+
+                        setTimeout(() => {
+                          if (!isModalOpenRef.current) {
+                            scheduleAuto()
+                          }
+                        }, ANIM_MS + 100)
+                      }}
+                      className={[
+                        "rounded-full transition-all duration-300",
+                        i === index
+                          ? "h-2.5 w-10 bg-gradient-to-r from-[#2F5F0B] to-[#6D8B37] shadow-lg shadow-[#8FAE5A]/30"
+                          : "h-2.5 w-2.5 bg-[#1F3D2B]/18 hover:bg-[#1F3D2B]/28 hover:w-6",
+                      ].join(" ")}
+                      aria-label={`Ir al evento ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* DESKTOP flechas */}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={goPrev}
+              disabled={!hasEvents}
+              className="
+                hidden lg:flex
+                absolute left-0 top-1/2 -translate-y-1/2 z-30
+                -translate-x-24
+                h-12 w-12 rounded-full p-0
+                border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
+                hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
+                disabled:opacity-30 disabled:cursor-not-allowed
+                backdrop-blur-md shadow-xl
+                transition-all duration-300 hover:scale-110
+              "
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={goNext}
+              disabled={!hasEvents}
+              className="
+                hidden lg:flex
+                absolute right-0 top-1/2 -translate-y-1/2 z-30
+                translate-x-24
+                h-12 w-12 rounded-full p-0
+                border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
+                hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
+                disabled:opacity-30 disabled:cursor-not-allowed
+                backdrop-blur-md shadow-xl
+                transition-all duration-300 hover:scale-110
+              "
+              aria-label="Siguiente"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </Button>
           </div>
         </div>
       </div>
