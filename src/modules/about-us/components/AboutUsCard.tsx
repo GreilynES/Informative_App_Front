@@ -1,3 +1,6 @@
+import * as React from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
 interface Props {
   icon: React.ReactNode
   title: string
@@ -5,13 +8,27 @@ interface Props {
 }
 
 export function AboutUsCard({ icon, title, description }: Props) {
+  const safeDescription = description?.trim()
+
   return (
-    <div className="bg-[#FAFDF4]/90 backdrop-blur-sm p-6 rounded-xl shadow-xl border border-[#DDE9BB] transition-all hover:shadow-2xl hover:-translate-y-1">
-      <div className="flex items-center mb-4">
-        <div className="p-3 bg-[#6F8C1F] rounded-xl mr-4 shadow-lg">{icon}</div>
-        <h3 className="text-xl font-bold text-[#2E321B]">{title}</h3>
-      </div>
-      <p className="text-md text-[#475C1D] font-semibold leading-relaxed">{description}</p>
-    </div>
+    <Card className="border-muted/60 shadow-sm">
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#D9E2B6] to-transparent" />
+      <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl
+          border border-[#D9E2B6]
+          bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]"
+        >
+          {icon}
+        </div>
+        <CardTitle className="text-lg">{title}</CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        <p className="text-sm md:text-base leading-relaxed text-muted-foreground whitespace-pre-line">
+          {safeDescription || "Sin información disponible por el momento."}
+        </p>
+      </CardContent>
+    </Card>
   )
 }
