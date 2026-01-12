@@ -189,7 +189,7 @@ export default function EventsPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8FAE5A] opacity-60"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2F5F0B]"></span>
               </span>
-              <span>Eventos en vivo</span>
+              <span>Eventos presenciales</span>
             </div>
 
             {/* TITLE */}
