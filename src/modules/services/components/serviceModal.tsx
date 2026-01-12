@@ -74,16 +74,6 @@ export function ServicesModal({ content, onClose }: ServicesModalProps) {
               {content.modalDescription}
             </p>
           </div>
-
-          {/* Botón cerrar inferior */}
-          <div className="mt-8 flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white rounded-lg font-medium transition-all duration-200"
-            >
-              Cerrar
-            </button>
-          </div>
         </div>
       </div>
     </div>

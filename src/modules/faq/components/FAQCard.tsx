@@ -19,7 +19,7 @@ export function FAQCard({ faqs }: FAQCardProps) {
           key={faq.id ?? index}
           value={(faq.id ?? `item-${index + 1}`).toString()}
         >
-          <AccordionTrigger className="text-lg sm:text-l font-medium">
+          <AccordionTrigger className="text-lg sm:text-l font-medium text-[#2E321B]">
             {faq.question}
           </AccordionTrigger>
 
