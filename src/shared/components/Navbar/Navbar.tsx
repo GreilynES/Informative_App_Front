@@ -81,7 +81,7 @@ export default function Navbar({ thresholdPx = 12, heroOffsetPx = 80 }: NavbarPr
   return (
     <nav
       className={[
-        "fixed top-0 w-full z-50 transition-all duration-300 px-4 md:px-46",
+        "fixed top-0 w-full z-50 transition-all duration-300 px-4 md:px-36",
         visible
           ? "translate-y-0 opacity-100 pointer-events-auto"
           : "-translate-y-14 opacity-0 pointer-events-none",
@@ -89,7 +89,7 @@ export default function Navbar({ thresholdPx = 12, heroOffsetPx = 80 }: NavbarPr
         // ✅ SOLO PALETA
         isHeroTheme
           ? "bg-transparent text-[#FAFDF4] shadow-none"
-          : "bg-[#FFFCE6]/90 backdrop-blur-md text-[#1F3D2B] shadow-md shadow-[#0B0B0B]/10",
+          : "bg-[#FAFDF4]/90 backdrop-blur-md text-[#1F3D2B] shadow-md shadow-[#0B0B0B]/10",
       ].join(" ")}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between relative py-4">
