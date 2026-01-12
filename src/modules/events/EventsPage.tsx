@@ -76,9 +76,8 @@ export default function EventsPage() {
   const [direction, setDirection] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
 
- const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
+  const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isAnimatingRef = useRef(false)
   useEffect(() => {
@@ -150,7 +149,7 @@ const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     return () => {
       if (animTimerRef.current) clearTimeout(animTimerRef.current)
-if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
+      if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
     }
   }, [])
 
@@ -180,33 +179,28 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
   const right = rtEvents[nextIndex]
 
   return (
-    <div className="min-h-screen text-white justify-center">
-       <div className="relative min-h-screen overflow-hidden bg-[#FFFCE6]">
-
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1F3D2B] via-[#162D20] to-[#0F1E14]" />
-          <div className="absolute inset-0 bg-[radial-gradient(900px_520px_at_50%_32%,rgba(191,215,111,0.14),transparent_70%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(1200px_680px_at_50%_40%,transparent_35%,rgba(0,0,0,0.35)_100%)]" />
-          <div className="absolute inset-0 bg-black/10" />
-        </div>
-
+    <div className="min-h-screen justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
+      <div className="relative min-h-screen overflow-hidden">
         <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-24 py-8 sm:py-10 md:py-12">
           <div className="mx-auto max-w-3xl text-center mb-6 sm:mb-24 md:mb-10 lg:mb-0">
-            <div className="mx-auto inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white/90 backdrop-blur-sm shadow-lg">
+            {/* CHIP */}
+            <div className="mx-auto inline-flex items-center rounded-full border border-[#A7C4A0] bg-white/70 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#1F3D2B] backdrop-blur-sm shadow-lg">
               <span className="relative flex h-2 w-2 mr-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#BFD76F] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#BFD76F]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8FAE5A] opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2F5F0B]"></span>
               </span>
-              Eventos en vivo
+              <span>Eventos en vivo</span>
             </div>
 
+            {/* TITLE */}
             <h2 className="mt-3 sm:mt-4 text-2xl sm:text-6xl md:text-5xl lg:text-5xl xl:text-6xl font-semibold leading-tight px-4">
-              <span className="bg-clip-text text-[#FAFDF4]">Próximos eventos</span>
+              <span className="text-[#1F3D2B] drop-shadow-[0_1px_0_rgba(250,253,244,0.9)]">
+                Próximos eventos
+              </span>
             </h2>
           </div>
 
           <div className="relative">
-            {/* MOBILE/TABLET: flecha | card | flecha */}
             <div className="grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-2 sm:gap-3 lg:block">
               {/* Flecha izquierda (MOBILE) */}
               <div className="flex justify-center lg:hidden">
@@ -217,8 +211,8 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                   disabled={!hasEvents}
                   className="
                     h-10 w-10 rounded-full p-0
-                    border-2 border-white/20 bg-white/10 text-white
-                    hover:bg-white/20 hover:border-white/30
+                    border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
+                    hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
                     disabled:opacity-30 disabled:cursor-not-allowed
                     backdrop-blur-md shadow-xl
                     transition-all duration-300 hover:scale-110
@@ -231,7 +225,6 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
 
               {/* Contenedor del carrusel */}
               <div className="relative flex items-center justify-center">
-                {/* ✅ ZONA SEGURA EN DESKTOP para que el scale 1.4 no invada las flechas */}
                 <div className="relative w-full max-w-6xl lg:px-24">
                   <div className="relative h-[520px] sm:h-[540px] md:h-[560px] lg:h-[580px] flex items-center justify-center">
                     <AnimatePresence initial={false} custom={direction} mode="sync">
@@ -246,7 +239,7 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                         custom={direction}
                         style={{ transformOrigin: "center center" }}
                       >
-                        <div className="brightness-80 transition-all duration-300">
+                        <div className="brightness-90 saturate-90 transition-all duration-300">
                           <EventCard event={left} />
                         </div>
                       </motion.div>
@@ -280,7 +273,7 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                         custom={direction}
                         style={{ transformOrigin: "center center" }}
                       >
-                        <div className="brightness-80 transition-all duration-300">
+                        <div className="brightness-90 saturate-90 transition-all duration-300">
                           <EventCard event={right} />
                         </div>
                       </motion.div>
@@ -302,8 +295,8 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                         className={[
                           "rounded-full transition-all duration-300",
                           i === index
-                            ? "h-2.5 w-10 bg-gradient-to-r from-[#ffffff] to-[#b7bea4] shadow-lg shadow-[#BFD76F]/50"
-                            : "h-2.5 w-2.5 bg-white/30 hover:bg-white/50 hover:w-6",
+                            ? "h-2.5 w-10 bg-gradient-to-r from-[#2F5F0B] to-[#6D8B37] shadow-lg shadow-[#8FAE5A]/30"
+                            : "h-2.5 w-2.5 bg-[#1F3D2B]/18 hover:bg-[#1F3D2B]/28 hover:w-6",
                         ].join(" ")}
                         aria-label={`Ir al evento ${i + 1}`}
                       />
@@ -321,8 +314,8 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                   disabled={!hasEvents}
                   className="
                     h-10 w-10 rounded-full p-0
-                    border-2 border-white/20 bg-white/10 text-white
-                    hover:bg-white/20 hover:border-white/30
+                    border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
+                    hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
                     disabled:opacity-30 disabled:cursor-not-allowed
                     backdrop-blur-md shadow-xl
                     transition-all duration-300 hover:scale-110
@@ -333,7 +326,7 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                 </Button>
               </div>
 
-              {/* DESKTOP: flechas flotantes, pero MÁS AFUERA (no encima del card) */}
+              {/* DESKTOP flechas */}
               <Button
                 type="button"
                 variant="ghost"
@@ -344,8 +337,8 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                   absolute left-0 top-1/2 -translate-y-1/2 z-30
                   -translate-x-24
                   h-12 w-12 rounded-full p-0
-                  border-2 border-white/20 bg-white/10 text-white
-                  hover:bg-white/20 hover:border-white/30
+                  border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
+                  hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
                   disabled:opacity-30 disabled:cursor-not-allowed
                   backdrop-blur-md shadow-xl
                   transition-all duration-300 hover:scale-110
@@ -365,8 +358,8 @@ if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
                   absolute right-0 top-1/2 -translate-y-1/2 z-30
                   translate-x-24
                   h-12 w-12 rounded-full p-0
-                  border-2 border-white/20 bg-white/10 text-white
-                  hover:bg-white/20 hover:border-white/30
+                  border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
+                  hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
                   disabled:opacity-30 disabled:cursor-not-allowed
                   backdrop-blur-md shadow-xl
                   transition-all duration-300 hover:scale-110
