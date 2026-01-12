@@ -73,14 +73,14 @@ export function EventCard({ event }: any) {
 
   return (
     <>
-       <div className="overflow-hidden bg-white/90 relative rounded-xl shadow-lg h-full min-h-full">
+       <div className="overflow-hidden relative rounded-xl shadow-lg h-full min-h-full">
         <div className="grid lg:grid-cols-2 gap-0 h-full">
           {/* Image Section */}
           <div className="relative h-44 sm:h-52 md:h-60 lg:h-full bg-gradient-to-br from-[#F2F7D8] to-[#DDE9BB] flex-shrink-0">
             <img
               src={event.illustration || "/placeholder.svg"}
               alt={event.title}
-              className="object-cover w-full h-full opacity-60"
+              className="object-cover w-full h-full "
             />
           </div>
 

@@ -5,7 +5,7 @@ export default function FormsPage() {
   const router = useRouter()
 
   const bgUrl =
-    "https://res.cloudinary.com/dyigmavwq/image/upload/v1768145394/IMG_3060_ncj62f.jpg"
+    "https://res.cloudinary.com/dyigmavwq/image/upload/v1768196080/unnamed_p0ymqu.jpg"
 
   return (
     <section
@@ -26,13 +26,11 @@ export default function FormsPage() {
 
       {/* Header */}
       <div className="relative z-10 text-center mb-14">
-        <div className="inline-flex flex-col items-center rounded-2xl px-6 py-5 shadow-[0_18px_55px_-30px_rgba(0,0,0,0.65)]">
+        <div className="inline-flex flex-col items-center rounded-2xl px-6 py-5">
           <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl font-semibold tracking-tight leading-[1.05] text-white drop-shadow-[0_10px_25px_rgba(0,0,0,0.60)]">
             Forma parte de la Cámara de Ganaderos <br className="hidden sm:block" />
             de Hojancha
           </h2>
-
-          <div className="mt-4 h-1 w-28 rounded-full bg-gradient-to-r from-[#BFD76F] to-[#6F8C1F]" />
         </div>
       </div>
 
