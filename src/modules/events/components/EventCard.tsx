@@ -5,9 +5,18 @@ import { CardContent } from "@/components/ui/card"
 import { formatDateToWords } from "@/shared/utils/formatDate"
 import { Button } from "@/components/ui/button"
 
+type Props = {
+  event: any
+  onModalChange?: (open: boolean) => void
+}
 
-export function EventCard({ event }: any) {
+export function EventCard({ event, onModalChange }: Props) {
   const [showModal, setShowModal] = useState(false)
+
+  // ✅ avisar al padre cuando abre/cierra (para pausar/reanudar autoplay)
+  useEffect(() => {
+    onModalChange?.(showModal)
+  }, [showModal, onModalChange])
 
   // Bloquear scroll cuando el modal está abierto
   useEffect(() => {
@@ -73,7 +82,7 @@ export function EventCard({ event }: any) {
 
   return (
     <>
-       <div className="overflow-hidden relative rounded-xl shadow-lg h-full min-h-full">
+      <div className="overflow-hidden relative rounded-xl shadow-lg h-full min-h-full">
         <div className="grid lg:grid-cols-2 gap-0 h-full">
           {/* Image Section */}
           <div className="relative h-44 sm:h-52 md:h-60 lg:h-full bg-gradient-to-br from-[#F2F7D8] to-[#DDE9BB] flex-shrink-0">
@@ -98,17 +107,17 @@ export function EventCard({ event }: any) {
                 {event.title}
               </h3>
 
-              <p className="
-                text-[#2E321B]/65
-                text-[10px] sm:text-[11px] md:text-xs
-                leading-tight
-                line-clamp-5
-                text-pretty
-              ">
+              <p
+                className="
+                  text-[#2E321B]/65
+                  text-[10px] sm:text-[11px] md:text-xs
+                  leading-tight
+                  line-clamp-5
+                  text-pretty
+                "
+              >
                 {event.description}
               </p>
-
-
             </div>
 
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[#DDE9BB] flex-shrink-0">

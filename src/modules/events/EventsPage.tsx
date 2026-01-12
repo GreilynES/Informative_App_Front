@@ -25,9 +25,9 @@ const cardVariants = {
     rotateY: 0,
     zIndex: 10,
     transition: {
-      duration: 0.8,
-      ease: [0.34, 1.56, 0.64, 1] as const,
-      opacity: { duration: 0.4 },
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      opacity: { duration: 0.3 },
     },
   },
   left: {
@@ -37,8 +37,8 @@ const cardVariants = {
     rotateY: 20,
     zIndex: 0,
     transition: {
-      duration: 0.8,
-      ease: [0.34, 1.56, 0.64, 1] as const,
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
     },
   },
   right: {
@@ -48,8 +48,8 @@ const cardVariants = {
     rotateY: -20,
     zIndex: 0,
     transition: {
-      duration: 0.8,
-      ease: [0.34, 1.56, 0.64, 1] as const,
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
     },
   },
   exit: (direction: number) => ({
@@ -58,13 +58,13 @@ const cardVariants = {
     scale: 0.75,
     rotateY: direction < 0 ? 25 : -25,
     transition: {
-      duration: 0.8,
-      ease: [0.34, 1.56, 0.64, 1] as const,
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
     },
   }),
 }
-
 const ANIM_MS = 800
+const AUTO_MS = 10000
 
 export default function EventsPage() {
   const { events, isLoading } = useEventsSubastaFirst()
@@ -75,6 +75,13 @@ export default function EventsPage() {
   const [page, setPage] = useState(0)
   const [direction, setDirection] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+
+  // ✅ Nuevo: saber si el modal está abierto (pausar autoplay)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const isModalOpenRef = useRef(false)
+  useEffect(() => {
+    isModalOpenRef.current = isModalOpen
+  }, [isModalOpen])
 
   const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -112,39 +119,76 @@ export default function EventsPage() {
     }, ANIM_MS)
   }, [])
 
+  // ✅ Helpers para autoplay: detener / programar / reiniciar
+  const stopAuto = useCallback(() => {
+    if (autoTimerRef.current) {
+      clearTimeout(autoTimerRef.current)
+      autoTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleAuto = useCallback(() => {
+    stopAuto()
+
+    // no programes si no aplica
+    if (!hasEvents || total <= 1) return
+    if (isModalOpenRef.current) return
+
+    autoTimerRef.current = setTimeout(() => {
+      // si justo se abrió modal o está animando, NO avances; solo reprograma
+      if (!isModalOpenRef.current && !isAnimatingRef.current) {
+        setDirection(1)
+        lockAnimation()
+        setPage((p) => p + 1)
+      }
+      // reprograma el siguiente tick
+      scheduleAuto()
+    }, AUTO_MS)
+  }, [hasEvents, total, lockAnimation, stopAuto])
+
+  // ✅ Llamar esto en cualquier interacción del usuario (flechas/dots)
+  const userInteracted = useCallback(() => {
+    // reinicia el conteo desde 0 (pero solo si NO hay modal abierto)
+    if (isModalOpenRef.current) {
+      stopAuto()
+      return
+    }
+    scheduleAuto()
+  }, [scheduleAuto, stopAuto])
+
   const paginate = useCallback(
     (dir: -1 | 1) => {
       if (!hasEvents || isAnimatingRef.current) return
       setDirection(dir)
       lockAnimation()
       setPage((p) => p + dir)
+
+      // ✅ reinicia autoplay después del click
+      userInteracted()
     },
-    [hasEvents, lockAnimation]
+    [hasEvents, lockAnimation, userInteracted]
   )
 
   const goPrev = () => paginate(-1)
   const goNext = () => paginate(1)
 
+  // ✅ Autoplay: se pausa cuando modal abre, y se reanuda al cerrar (reiniciando conteo)
   useEffect(() => {
-    if (!hasEvents || total <= 1) return
-
-    const schedule = () => {
-      autoTimerRef.current = setTimeout(() => {
-        if (!isAnimatingRef.current) {
-          setDirection(1)
-          lockAnimation()
-          setPage((p) => p + 1)
-        }
-        schedule()
-      }, 10000)
+    if (!hasEvents || total <= 1) {
+      stopAuto()
+      return
     }
 
-    schedule()
-
-    return () => {
-      if (autoTimerRef.current) window.clearTimeout(autoTimerRef.current)
+    if (isModalOpen) {
+      stopAuto()
+      return
     }
-  }, [hasEvents, total, lockAnimation])
+
+    // cuando está cerrado, arranca/reinicia el timer
+    scheduleAuto()
+
+    return () => stopAuto()
+  }, [hasEvents, total, isModalOpen, scheduleAuto, stopAuto])
 
   useEffect(() => {
     return () => {
@@ -259,7 +303,11 @@ export default function EventsPage() {
                         custom={direction}
                         style={{ transformOrigin: "center center" }}
                       >
-                        <EventCard event={current} />
+                        {/* ✅ aquí avisamos cuando el modal abre/cierra */}
+                        <EventCard
+                          event={current}
+                          onModalChange={(open: boolean) => setIsModalOpen(open)}
+                        />
                       </motion.div>
 
                       {/* RIGHT CARD */}
@@ -291,6 +339,9 @@ export default function EventsPage() {
                           setDirection(dir)
                           lockAnimation()
                           setPage((p) => p - mod(p, total) + i)
+
+                          // ✅ reinicia conteo después del click
+                          userInteracted()
                         }}
                         className={[
                           "rounded-full transition-all duration-300",
