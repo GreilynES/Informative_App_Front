@@ -21,7 +21,7 @@ export function AboutUsCard({ icon, title, description }: Props) {
         >
           {icon}
         </div>
-        <CardTitle className="text-lg">{title}</CardTitle>
+        <CardTitle className="text-lg text-[#2E321B]">{title}</CardTitle>
       </CardHeader>
 
       <CardContent>

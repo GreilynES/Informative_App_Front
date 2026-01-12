@@ -46,7 +46,7 @@ export default function AboutUsPage() {
         {/* Header */}
         <div className="text-center space-y-3">
           <p className="text-sm font-medium text-muted-foreground">Cámara de Ganaderos</p>
-          <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4">
             Sobre nosotros
           </h1>
         </div>
