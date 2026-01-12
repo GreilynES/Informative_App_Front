@@ -182,7 +182,7 @@ export default function EventsPage() {
     <div className="min-h-screen justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
       <div className="relative min-h-screen overflow-hidden">
         <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-24 py-8 sm:py-10 md:py-12">
-          <div className="mx-auto max-w-3xl text-center mb-6 sm:mb-24 md:mb-10 lg:mb-0">
+          <div className="mx-auto max-w-3xl text-center mb-12 sm:mb-16 md:mb-20 lg:mb-2">
             {/* CHIP */}
             <div className="mx-auto inline-flex items-center rounded-full border border-[#A7C4A0] bg-white/70 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#1F3D2B] backdrop-blur-sm shadow-lg">
               <span className="relative flex h-2 w-2 mr-2">
@@ -193,7 +193,7 @@ export default function EventsPage() {
             </div>
 
             {/* TITLE */}
-            <h2 className="mt-3 sm:mt-4 text-2xl sm:text-6xl md:text-5xl lg:text-5xl xl:text-6xl font-semibold leading-tight px-4">
+            <h2 className="mt-3 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold leading-tight px-4">
               <span className="text-[#1F3D2B] drop-shadow-[0_1px_0_rgba(250,253,244,0.9)]">
                 Próximos eventos
               </span>
@@ -281,7 +281,7 @@ export default function EventsPage() {
                   </div>
 
                   {/* dots */}
-                  <div className="mt-6 sm:mt-26 md:mt-16 lg:mt-0 flex justify-center gap-1.5">
+                  <div className="mt-16 sm:mt-20 md:mt-24 lg:mt-0 flex justify-center gap-1.5">
                     {rtEvents.map((_, i) => (
                       <button
                         key={i}

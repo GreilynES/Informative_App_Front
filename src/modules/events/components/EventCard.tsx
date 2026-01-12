@@ -94,13 +94,21 @@ export function EventCard({ event }: any) {
                 </p>
               </div>
 
-              <h3 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-[#2E321B] leading-tight text-balance tracking-tight line-clamp-2">
+              <h3 className="text-base sm:text-lg md:text-xl lg:text-1xl font-bold text-[#2E321B] leading-tight text-balance tracking-tight line-clamp-2">
                 {event.title}
               </h3>
 
-              <p className="text-[#2E321B]/70 text-xs sm:text-sm md:text-base leading-relaxed line-clamp-3 text-pretty">
+              <p className="
+                text-[#2E321B]/65
+                text-[10px] sm:text-[11px] md:text-xs
+                leading-tight
+                line-clamp-5
+                text-pretty
+              ">
                 {event.description}
               </p>
+
+
             </div>
 
             <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[#DDE9BB] flex-shrink-0">
