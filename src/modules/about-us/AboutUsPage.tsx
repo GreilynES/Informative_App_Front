@@ -1,84 +1,94 @@
-import { Users, Target, Eye } from "lucide-react";
-import { AboutUsCard } from "./components/AboutUsCard";
-import AboutUsBackground from "./components/AboutUsBackground";
-import { useAboutUs } from "./hooks/useAboutUs";
+import { Users, Target, Eye } from "lucide-react"
+import { AboutUsCard } from "./components/AboutUsCard"
+import AboutUsBackground from "./components/AboutUsBackground"
+import { useAboutUs } from "./hooks/useAboutUs"
 
 function normalize(s: string) {
-  return s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  return s
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .trim()
+}
+
+// match flexible por palabras clave
+function matchesAnyTitle(title: string, needles: string[]) {
+  const t = normalize(title)
+  return needles.some((n) => t.includes(normalize(n)))
 }
 
 export default function AboutUsPage() {
-  const { data: aboutUs = [], isLoading } = useAboutUs();
+  const { data: aboutUs = [], isLoading } = useAboutUs()
 
   if (isLoading && aboutUs.length === 0) {
-    return (
-      <section className="min-h-screen relative overflow-hidden flex items-center justify-center">
-        <AboutUsBackground />
-        <p className="relative z-10 text-center text-white text-2xl font-semibold">Cargando...</p>
-      </section>
-    );
+    return <p className="text-center text-muted-foreground py-20">Cargando...</p>
   }
 
-  // Match robusto por si vienen títulos con/sin tildes
-  const getByTitle = (needle: string) =>
-    aboutUs.find((item) => normalize(item.title).includes(normalize(needle)));
+  const findSection = (needles: string[]) =>
+    aboutUs.find((item) => matchesAnyTitle(item.title, needles))
 
-  const somos = getByTitle("Quiénes Somos") || getByTitle("Quienes Somos") || getByTitle("Somos");
-  const mision = getByTitle("Misión") || getByTitle("Mision");
-  const vision = getByTitle("Visión") || getByTitle("Vision");
+  const somos = findSection([
+    "quienes somos",
+    "quiénes somos",
+    "somos",
+    "historia",
+    "sobre nosotros",
+  ])
+
+  const mision = findSection(["mision", "misión", "nuestra mision", "nuestro proposito"])
+  const vision = findSection(["vision", "visión", "nuestra vision"])
 
   return (
-    <section id="AboutUsPage" className="min-h-screen relative overflow-hidden">
-      {/* Background - Fixed para evitar parpadeos */}
-      <div className="absolute inset-0 will-change-transform">
-        <AboutUsBackground />
-      </div>
+    <section className="relative">
+      <AboutUsBackground />
 
-      {/* Main Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-12">
-        <div className="text-center space-y-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#FAFDF4] mb-6 drop-shadow-[2px_3px_6px_rgba(20,20,20,1)]">
-            Sobre Nosotros
-          </h2>
-          <p className="text-xl font-semibold text-[#FAFDF4] max-w-3xl mx-auto leading-relaxed drop-shadow-[1px_2px_4px_rgba(30,30,30,0.9)]">
-            Asociación Cámara de Ganaderos de Hojancha: compromiso con el bienestar animal, el desarrollo rural y la
-            innovación sostenible en el sector pecuario.
-          </p>
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-16 md:py-24 space-y-10">
+        {/* Header */}
+        <div className="text-center space-y-3">
+          <p className="text-sm font-medium text-muted-foreground">Conócenos</p>
+          <h1 className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4">
+            Sobre nosotros
+          </h1>
         </div>
 
-        {/* Historia */}
-        {somos && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <AboutUsCard
-              icon={<Users className="w-6 h-6 text-white" />}
-              title={somos.title}
-              description={somos.description}
-            />
-          </div>
+        {/* Si por alguna razón no llegó data útil, mostramos aviso (no deja la página “vacía”) */}
+        {!somos && !mision && !vision && (
+          <p className="text-center text-muted-foreground">
+            Aún no hay información publicada para esta sección.
+          </p>
         )}
 
-        {/* Misión y Visión */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
-          {mision && (
-            <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-150">
+        {/* Layout: izquierda Misión/Visión – derecha Quiénes Somos */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Izquierda */}
+          <div className="flex flex-col gap-6">
+            {mision && (
               <AboutUsCard
-                icon={<Target className="w-5 h-5 text-white" />}
+                icon={<Target className="h-5 w-5" />}
                 title={mision.title}
                 description={mision.description}
               />
-            </div>
-          )}
-          {vision && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-150">
+            )}
+
+            {vision && (
               <AboutUsCard
-                icon={<Eye className="w-5 h-5 text-white" />}
+                icon={<Eye className="h-5 w-5" />}
                 title={vision.title}
                 description={vision.description}
               />
-            </div>
+            )}
+          </div>
+
+          {/* Derecha */}
+          {somos && (
+            <AboutUsCard
+              icon={<Users className="h-5 w-5" />}
+              title={somos.title}
+              description={somos.description}
+            />
           )}
         </div>
       </div>
     </section>
-  );
+  )
 }
