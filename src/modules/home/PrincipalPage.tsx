@@ -22,7 +22,7 @@ export default function PrincipalPage() {
       {/* 🔔 FIRST VISIT NOTICE */}
       <FirstVisitNotice
         event={subastaEvent}
-        durationMs={7000}
+        durationMs={15000}
         closeDelayMs={300}
         storage="session"
         onViewMore={() => {

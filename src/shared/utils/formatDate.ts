@@ -1,4 +1,5 @@
-// utils/formatDate.ts
+import { parseISO, parse } from "date-fns";
+
 function isValidDate(d: Date) {
     return d instanceof Date && !Number.isNaN(d.getTime());
   }
@@ -35,9 +36,16 @@ function isValidDate(d: Date) {
   
       // ISO o yyyy-mm-dd (con o sin tiempo)
       // Ej: 2025-05-15, 2025-05-15T00:00:00Z
-      const isoLike = /^\d{4}-\d{2}-\d{2}/.test(s);
+    const isoLike = /^\d{4}-\d{2}-\d{2}/.test(s);
       if (isoLike) {
-        const d = new Date(s);
+        // ✅ Caso 1: viene solo fecha "yyyy-MM-dd" (NO usar new Date)
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+          const d = parse(s, "yyyy-MM-dd", new Date()); // ✅ parse local (no mueve el día)
+          return isValidDate(d) ? d : null;
+        }
+
+        // ✅ Caso 2: viene ISO completo con hora/Z → parseISO
+        const d = parseISO(s);
         return isValidDate(d) ? d : null;
       }
     }
