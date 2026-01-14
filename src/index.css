@@ -148,3 +148,80 @@
   animation: whatsapp-float 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   will-change: transform;
 }
+
+/* SweetAlert2 - Theme Cámara Ganaderos */
+
+.swal2-popup.camara-popup {
+  border-radius: 18px !important;
+  border: 1px solid rgba(167, 196, 160, 0.35) !important; /* #A7C4A0 */
+  box-shadow: 0 20px 50px rgba(11, 11, 11, 0.35) !important; /* #0B0B0B */
+  padding: 22px 22px 18px !important;
+  font-family: inherit !important;
+}
+
+.swal2-title.camara-title {
+  color: #1f3d2b !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.swal2-html-container.camara-text {
+  color: rgba(31, 61, 43, 0.82) !important;
+  line-height: 1.45 !important;
+  margin-top: 6px !important;
+}
+
+.swal2-popup.camara-glass {
+  background: rgba(44, 63, 24, 0.55) !important; /* #2C3F18/55 */
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(167, 196, 160, 0.25) !important;
+}
+
+.swal2-title.camara-title--on-dark,
+.swal2-html-container.camara-text--on-dark {
+  color: #fafdf4 !important; /* warm white */
+}
+
+.swal2-loader.camara-loader {
+  border-color: rgba(250, 253, 244, 0.22) !important;
+  border-top-color: #faf7c6 !important; /* crema */
+}
+
+.swal2-timer-progress-bar.camara-progress {
+  background: rgba(214, 229, 200, 0.75) !important; /* #D6E5C8 */
+}
+
+.swal2-confirm.camara-confirm {
+  border-radius: 999px !important;
+  padding: 10px 16px !important;
+  font-weight: 700 !important;
+  background: #1f3d2b !important;
+  color: #fafdf4 !important;
+  border: 1px solid rgba(167, 196, 160, 0.35) !important;
+  box-shadow: 0 10px 22px rgba(11, 11, 11, 0.18) !important;
+}
+
+.swal2-confirm.camara-confirm:hover {
+  background: #162d20 !important;
+  transform: translateY(-1px);
+}
+
+.swal2-cancel.camara-cancel {
+  border-radius: 999px !important;
+  padding: 10px 16px !important;
+  font-weight: 700 !important;
+  background: rgba(242, 237, 154, 0.25) !important; /* #F2ED9A */
+  color: #1f3d2b !important;
+  border: 1px solid rgba(167, 196, 160, 0.45) !important;
+}
+
+.swal2-icon.camara-icon-success {
+  border-color: rgba(109, 139, 55, 0.45) !important; /* #6D8B37 */
+  color: #2f5f0b !important; /* #2F5F0B */
+}
+
+.swal2-icon.camara-icon-error {
+  border-color: rgba(194, 183, 79, 0.55) !important; /* #C2B74F */
+  color: #7a6f1a !important; /* #7A6F1A */
+}

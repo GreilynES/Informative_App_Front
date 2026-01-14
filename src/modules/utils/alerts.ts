@@ -20,77 +20,104 @@ import Swal from "sweetalert2";
   document.head.appendChild(style);
 })();
 
-/* ──────────────────────────────────────────────────────────────────────────── */
-/*                              Helpers de flujo                               */
-/* ──────────────────────────────────────────────────────────────────────────── */
+/* ─/* Helpers de flujo */
 
-/**
- * Muestra un modal de CARGA bloqueante.
- * Incluye un auto-timeout de seguridad para que nunca quede pegado.
- */
-export const showLoading = (text = "Cargando datos...") => {
+export const showLoading = (
+  text = "Cargando datos...",
+  opts?: { note?: string }
+) => {
+  const note =
+    opts?.note ??
+    "Por favor, no cierres esta pestaña ni actualices la página mientras finalizamos el proceso."
+
   const p = Swal.fire({
     title: text,
+    html: `<div style="margin-top:10px; font-size:12px; opacity:.9;">
+            ${note}
+           </div>`,
     allowOutsideClick: false,
     allowEscapeKey: false,
-    didOpen: () => {
-      Swal.showLoading();
+    showConfirmButton: false,
+    background: "transparent",
+    customClass: {
+      popup: "camara-popup camara-glass",
+      title: "camara-title camara-title--on-dark",
+      htmlContainer: "camara-text camara-text--on-dark",
+      loader: "camara-loader",
+      timerProgressBar: "camara-progress",
     },
-    background: "#FAF9F5",
-  });
+    didOpen: () => {
+      Swal.showLoading()
+const loader = Swal.getContainer()?.querySelector(".swal2-loader") as HTMLElement | null;
+      if (loader) loader.classList.add("camara-loader")
+    },
+  })
+
+  // ⛑️ auto-timeout (de seguridad)
   setTimeout(() => {
-    if (Swal.isVisible()) {
-      Swal.close();
-    }
-  }, 8000);
+    if (Swal.isVisible()) Swal.close()
+  }, 10000)
 
-  return p;
-};
+  return p
+}
 
-/**
- * Cierra la carga (si hubiera) y muestra éxito breve.
- */
+
 export const stopLoadingWithSuccess = async (
   message = "Operación realizada correctamente"
 ) => {
-  // cerramos cualquier loading previo
   Swal.close();
+
   return Swal.fire({
     icon: "success",
-    title: "Completado",
+    title: "Listo",
     text: message,
-    timer: 900,
+    timer: 1200,
     timerProgressBar: true,
     showConfirmButton: false,
     allowOutsideClick: false,
     allowEscapeKey: false,
-    background: "#FAF9F5",
+    background: "#FFFCE6", // crema menos amarillo que FAF9F5
+    customClass: {
+      popup: "camara-popup",
+      title: "camara-title",
+      htmlContainer: "camara-text",
+      icon: "camara-icon-success",
+      timerProgressBar: "camara-progress",
+    },
   });
 };
 
-/**
- * Cierra la carga (si hubiera) y muestra error con confirmación.
- */
 export const stopLoadingWithError = async (
   message = "Ocurrió un error. Intenta de nuevo."
 ) => {
-  // cerramos cualquier loading previo
   Swal.close();
+
   return Swal.fire({
     icon: "error",
-    title: "Error",
-    text: message,
-    confirmButtonColor: "#708C3E",
-    customClass: { confirmButton: "no-border-button" },
-    background: "#FAF9F5",
+    title: "No se pudo completar",
+    html: `<div style="text-align:left; margin-top:8px;">
+            <div style="opacity:.9">${message}</div>
+            <div style="margin-top:10px; font-size:12px; opacity:.85;">
+              Tip: revisá tu conexión e intentá nuevamente.
+            </div>
+          </div>`,
+    showCancelButton: false,
+    confirmButtonText: "Entendido",
+    allowOutsideClick: false,
+    allowEscapeKey: true,
+    background: "#FFFCE6",
+    customClass: {
+      popup: "camara-popup",
+      title: "camara-title",
+      htmlContainer: "camara-text",
+      confirmButton: "camara-confirm",
+      icon: "camara-icon-error",
+    },
+    buttonsStyling: false, // importante para que tome tus clases
   });
 };
 
-
-
-/* ──────────────────────────────────────────────────────────────────────────── */
-/*                 ESPECÍFICOS PARA “Enviar solicitud” del paso 7              */
-/* ──────────────────────────────────────────────────────────────────────────── */
+/* Específico submit */
 
 export const submitSolicitudFlow = async <T>(
   action: () => Promise<T>,
@@ -106,21 +133,18 @@ export const submitSolicitudFlow = async <T>(
 ) => {
   await showLoading(loadingText);
 
-  // indicador para no cerrar el modal de éxito/error en el finally
   let handled = false;
 
   try {
     const result = await action();
-    await stopLoadingWithSuccess(successText); // cierra loading y muestra éxito
+    await stopLoadingWithSuccess(successText);
     handled = true;
     return { ok: true, result };
   } catch (err) {
-    await stopLoadingWithError(errorText); // cierra loading y muestra error
+    await stopLoadingWithError(errorText);
     handled = true;
     return { ok: false, error: err };
   } finally {
-    if (!handled && Swal.isVisible()) {
-      Swal.close();
-    }
+    if (!handled && Swal.isVisible()) Swal.close();
   }
 };

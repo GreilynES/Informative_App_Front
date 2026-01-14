@@ -1,53 +1,57 @@
-import { useEffect, useRef } from "react";
-import type { FieldLike, FormLike } from "../../../shared/types/form-lite";
-import { showLoading, stopLoadingWithSuccess } from "../../utils/alerts";
-
+import { useEffect, useRef } from "react"
+import type { FieldLike, FormLike } from "../../../shared/types/form-lite"
+import Swal from "sweetalert2"
+import { showLoading, stopLoadingWithSuccess } from "../../utils/alerts"
 
 export function TermsAndSubmit({
   form,
   isSubmitting,
   prevStep,
 }: {
-  form: FormLike;
-  isSubmitting?: boolean;
-  prevStep: () => void;
+  form: FormLike
+  isSubmitting?: boolean
+  prevStep: () => void
 }) {
-  const wasSubmittingRef = useRef(false);
+  const wasSubmittingRef = useRef(false)
+
   useEffect(() => {
     if (isSubmitting && !wasSubmittingRef.current) {
-      wasSubmittingRef.current = true;
-      showLoading("Enviando solicitud...");
+      wasSubmittingRef.current = true
+
+      // ✅ Loading solo aquí (una vez)
+      showLoading("Enviando solicitud...")
     }
+
     if (!isSubmitting && wasSubmittingRef.current) {
-      wasSubmittingRef.current = false;
-      stopLoadingWithSuccess("Solicitud enviada correctamente.");
-    }
-  }, [isSubmitting]);
+      wasSubmittingRef.current = false
 
-
-  const handleSubmitClick = () => {
-    if (!isSubmitting && form.state?.values?.acceptTerms) {
-      showLoading("Enviando solicitud...");
+      // ✅ Cierra loading y muestra éxito
+      stopLoadingWithSuccess("Solicitud enviada correctamente.")
     }
-  };
+  }, [isSubmitting])
+
+  // ✅ si el componente se desmonta (porque navegas), cerrá cualquier modal abierto
+  useEffect(() => {
+    return () => {
+      if (Swal.isVisible()) Swal.close()
+    }
+  }, [])
 
   const err =
-    form.state?.errors?.acceptTerms || form.state?.meta?.errors?.acceptTerms?.[0]?.message;
+    form.state?.errors?.acceptTerms || form.state?.meta?.errors?.acceptTerms?.[0]?.message
 
   return (
     <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
       <h2 className="text-3xl font-bold text-[#708C3E] text-center">Confirmación de Solicitud</h2>
 
       <div className="space-y-6 text-[#4A4A4A] mt-6">
-        <form.Field 
+        <form.Field
           name="acceptTerms"
           validators={{
             onChange: ({ value }: any) => {
-              if (!value) {
-                return 'Debes aceptar los términos y condiciones para continuar';
-              }
-              return undefined;
-            }
+              if (!value) return "Debes aceptar los términos y condiciones para continuar"
+              return undefined
+            },
           }}
         >
           {(f: FieldLike<boolean>) => (
@@ -58,10 +62,11 @@ export function TermsAndSubmit({
                 onChange={(e) => f.handleChange(e.target.checked)}
                 onBlur={f.handleBlur}
                 className="mt-1"
-                style={{ accentColor: '#708C3E' }}
+                style={{ accentColor: "#708C3E" }}
               />
               <span className="text-sm">
-                Confirmo mi consentimiento para que mis datos personales sean utilizados para el registro de mi solicitud de asociado. 
+                Confirmo mi consentimiento para que mis datos personales sean utilizados para el registro de mi solicitud
+                de asociado.
               </span>
             </label>
           )}
@@ -77,9 +82,10 @@ export function TermsAndSubmit({
         >
           Volver
         </button>
+
+        {/* ✅ sin onClick; el submit lo controla el form */}
         <button
           type="submit"
-          onClick={handleSubmitClick}  
           disabled={isSubmitting || !form.state.values.acceptTerms}
           className="px-6 py-2 rounded bg-[#708C3E] text-white shadow hover:opacity-95 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
@@ -87,5 +93,5 @@ export function TermsAndSubmit({
         </button>
       </div>
     </div>
-  );
+  )
 }

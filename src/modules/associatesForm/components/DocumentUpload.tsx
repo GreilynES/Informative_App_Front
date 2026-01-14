@@ -16,7 +16,7 @@ export function DocumentUpload({ form }: DocumentUploadProps) {
           {(f: any) => (
             <div>
               <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-                Copia de Cédula *
+                Copia de Cédula 
               </label>
               <div className="relative">
                 <input
@@ -75,7 +75,7 @@ export function DocumentUpload({ form }: DocumentUploadProps) {
           {(f: any) => (
             <div>
               <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-                Copia del Plano de la Finca *
+                Copia del Plano de la Finca 
               </label>
               <div className="relative">
                 <input

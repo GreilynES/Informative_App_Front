@@ -210,7 +210,6 @@ if (viasAcceso && Array.isArray(viasAcceso.accesos) && viasAcceso.accesos.length
   payload.accesos = viasAcceso.accesos.map((nombre: string) => ({
     nombre: nombre.trim(),
   }));
-  console.log('[Hook] ✅ accesos AGREGADOS:', payload.accesos);
 }
 
 // ========== NUEVOS CAMPOS: Comercialización ==========
@@ -219,7 +218,6 @@ if (comercializacion && Array.isArray(comercializacion.canales) && comercializac
   payload.canales = comercializacion.canales.map((nombre: string) => ({
     nombre: nombre.trim(),
   }));
-  console.log('[Hook] ✅ canales AGREGADOS:', payload.canales);
 }
 
 // ========== NUEVOS CAMPOS: Necesidades ==========
@@ -235,11 +233,8 @@ if (necesidadesObs) {
 
   if (necesidadesValidas.length > 0) {
     payload.necesidades = necesidadesValidas;
-    console.log('[Hook] ✅ necesidades AGREGADAS:', payload.necesidades);
   }
 
-  // TODO: Observaciones e interés - agregar al backend si es necesario
-  console.log('[Hook] 📝 Observaciones:', necesidadesObs.observaciones);
 }
 
   // ========== NUEVOS CAMPOS: Características Físicas ==========
@@ -300,8 +295,6 @@ if (necesidadesObs) {
       };
     }
   }
-
-  console.log("[Hook] Payload final:", JSON.stringify(payload, null, 2));
   return payload;
 }
 
@@ -313,7 +306,6 @@ if (necesidadesObs) {
 export function useAssociateApply(onSuccess?: () => void) {
   const mutation = useMutation({
     mutationFn: async (values: AssociateApplyValues) => {
-      console.log("[Hook] Iniciando envío de solicitud...");
 
       // 1) Crear solicitud con TODO el payload
       const payload = mapToSolicitudPayload(values);
@@ -325,14 +317,12 @@ export function useAssociateApply(onSuccess?: () => void) {
       if (!idSolicitud) {
         throw new Error("No se recibió el ID de la solicitud");
       }
-      console.log("[Hook] Solicitud creada con ID:", idSolicitud);
 
       // 3) Subir documentos (si hay)
       const cedula = values.idCopy instanceof File ? values.idCopy : undefined;
       const planoFinca = values.farmMap instanceof File ? values.farmMap : undefined;
 
       if (cedula || planoFinca) {
-        console.log("[Hook] Subiendo documentos...");
         await uploadDocuments(idSolicitud, { cedula, planoFinca });
         console.log("[Hook] Documentos subidos exitosamente");
       } else {
@@ -341,8 +331,8 @@ export function useAssociateApply(onSuccess?: () => void) {
 
       return response;
     },
-    onSuccess: (data) => {
-      console.log("[Hook] Solicitud creada exitosamente:", data);
+    onSuccess: (_data) => {
+      console.log("[Hook] Solicitud creada exitosamente:");
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -438,7 +428,6 @@ export function useAssociateApply(onSuccess?: () => void) {
       },
     },
     onSubmit: async ({ value, formApi }) => {
-      console.log("[Hook] Submit iniciado");
       try {
         await mutation.mutateAsync(value as any);
         console.log("[Hook] Submit exitoso, reseteando formulario...");
