@@ -96,7 +96,7 @@ export function ActividadesInfraestructuraSection({
               i
             </span>
             <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Después de ingresar de escribir la actividad o cultivo y presiona{" "}
+              Después de ingresar la actividad o cultivo y presiona{" "}
               <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo.
               También puedes usar la tecla Enter.
             </p>
