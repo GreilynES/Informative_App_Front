@@ -21,7 +21,7 @@ const cardVariants = {
   center: {
     x: "0%",
     opacity: 1,
-    scale: 1.4,
+    scale: 1.3,
     rotateY: 0,
     zIndex: 10,
     transition: {
@@ -215,8 +215,8 @@ export default function EventsPage() {
   return (
     <div className="min-h-screen justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
       <div className="relative min-h-screen overflow-hidden">
-        <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-24 py-8 sm:py-10 md:py-12">
-          <div className="mx-auto max-w-3xl text-center mb-6 sm:mb-8 md:mb-12 lg:mb-2">
+        <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-24 py-8 sm:py-10 md:py-12 lg:py-16">
+          <div className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-12 lg:mb-0">
             {/* CHIP */}
             <div className="mx-auto inline-flex items-center rounded-full border border-[#A7C4A0] bg-white/70 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#1F3D2B] backdrop-blur-sm shadow-lg">
               <span className="relative flex h-2 w-2 mr-2">
@@ -227,49 +227,35 @@ export default function EventsPage() {
             </div>
 
             {/* TITLE */}
-            <h2 className="mt-3 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-semibold leading-tight px-4">
+            <h2 className="mt-3 sm:mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-semibold leading-tight px-2">
               <span className="text-[#1F3D2B] drop-shadow-[0_1px_0_rgba(250,253,244,0.9)]">
                 Próximos eventos
               </span>
             </h2>
           </div>
 
-          <div className="relative">
+          <div className="relative mt-4 sm:mt-6 md:mt-8 lg:mt-0">
             {/* Flechas MOBILE - Posicionadas absolutamente */}
-            <div className="lg:hidden absolute left-2 top-1/2 -translate-y-1/2 z-30">
+            <div className="lg:hidden absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={goPrev}
                 disabled={!hasEvents}
-                className="
-                  h-10 w-10 rounded-full p-0
-                  border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
-                  hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
-                  disabled:opacity-30 disabled:cursor-not-allowed
-                  backdrop-blur-md shadow-xl
-                  transition-all duration-300 hover:scale-110
-                "
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
                 aria-label="Anterior"
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
             </div>
 
-            <div className="lg:hidden absolute right-2 top-1/2 -translate-y-1/2 z-30">
+            <div className="lg:hidden absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={goNext}
                 disabled={!hasEvents}
-                className="
-                  h-10 w-10 rounded-full p-0
-                  border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
-                  hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
-                  disabled:opacity-30 disabled:cursor-not-allowed
-                  backdrop-blur-md shadow-xl
-                  transition-all duration-300 hover:scale-110
-                "
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
                 aria-label="Siguiente"
               >
                 <ChevronRight className="h-5 w-5" />
@@ -277,9 +263,9 @@ export default function EventsPage() {
             </div>
 
             {/* Contenedor del carrusel */}
-            <div className="relative flex items-center justify-center">
+            <div className="relative flex items-center justify-center px-3 sm:px-4 md:px-0">
               <div className="relative w-full max-w-6xl lg:px-24">
-                <div className="relative h-[480px] sm:h-[500px] md:h-[520px] lg:h-[580px] flex items-center justify-center">
+                <div className="relative h-[540px] sm:h-[560px] md:h-[580px] lg:h-[580px] flex items-center justify-center">
                   <AnimatePresence initial={false} custom={direction} mode="sync">
                     {/* LEFT CARD */}
                     <motion.div
@@ -300,11 +286,7 @@ export default function EventsPage() {
                     {/* CENTER CARD */}
                     <motion.div
                       key={`center-${page}`}
-                      className="
-                        absolute
-                        w-[92%] sm:w-[85%] md:w-[75%] lg:w-[72%]
-                        mx-auto
-                      "
+                      className="absolute w-[92%] sm:w-[86%] md:w-[75%] lg:w-[72%] mx-auto"
                       variants={cardVariants}
                       initial="enter"
                       animate="center"
@@ -337,7 +319,7 @@ export default function EventsPage() {
                 </div>
 
                 {/* dots */}
-                <div className="mt-8 sm:mt-12 md:mt-16 lg:mt-0 flex justify-center gap-1.5">
+                <div className="mt-6 sm:mt-15 md:mt-10 lg:mt-0 flex justify-center gap-1.5">
                   {rtEvents.map((_, i) => (
                     <button
                       key={i}
@@ -376,17 +358,7 @@ export default function EventsPage() {
               variant="ghost"
               onClick={goPrev}
               disabled={!hasEvents}
-              className="
-                hidden lg:flex
-                absolute left-0 top-1/2 -translate-y-1/2 z-30
-                -translate-x-24
-                h-12 w-12 rounded-full p-0
-                border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
-                hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
-                disabled:opacity-30 disabled:cursor-not-allowed
-                backdrop-blur-md shadow-xl
-                transition-all duration-300 hover:scale-110
-              "
+              className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-30 -translate-x-24 h-12 w-12 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
               aria-label="Anterior"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -397,17 +369,7 @@ export default function EventsPage() {
               variant="ghost"
               onClick={goNext}
               disabled={!hasEvents}
-              className="
-                hidden lg:flex
-                absolute right-0 top-1/2 -translate-y-1/2 z-30
-                translate-x-24
-                h-12 w-12 rounded-full p-0
-                border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B]
-                hover:bg-[#D6E5C8] hover:border-[#8FAE5A]
-                disabled:opacity-30 disabled:cursor-not-allowed
-                backdrop-blur-md shadow-xl
-                transition-all duration-300 hover:scale-110
-              "
+              className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-30 translate-x-24 h-12 w-12 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
               aria-label="Siguiente"
             >
               <ChevronRight className="h-6 w-6" />

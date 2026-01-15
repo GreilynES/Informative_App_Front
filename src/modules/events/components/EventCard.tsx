@@ -66,6 +66,12 @@ export function EventCard({ event, onModalChange }: Props) {
 
         {/* Contenido del modal */}
         <div className="p-6 sm:p-8">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#F2F7D8] rounded-lg border border-[#DDE9BB] w-fit">
+            <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#6F8C1F] flex-shrink-0" />
+            <p className="font-semibold text-xs text-[#6F8C1F]">
+              {formatDateToWords(event.date)}
+            </p>
+          </div>
           <h3 className="text-2xl sm:text-3xl font-bold text-[#2E321B] mb-4 sm:mb-6 leading-tight">
             {event.title}
           </h3>
@@ -135,8 +141,7 @@ export function EventCard({ event, onModalChange }: Props) {
                   rounded-md
                 "
               >
-                Ver detalles del evento
-                <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                Ver más detalles 
               </Button>
             </div>
           </CardContent>
