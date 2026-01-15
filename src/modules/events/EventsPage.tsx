@@ -21,7 +21,7 @@ const cardVariants = {
   center: {
     x: "0%",
     opacity: 1,
-    scale: 1.0,
+    scale: 1.4,
     rotateY: 0,
     zIndex: 10,
     transition: {
@@ -65,7 +65,7 @@ const cardVariants = {
 }
 
 const ANIM_MS = 600
-const AUTO_MS = 10000
+const AUTO_MS = 15000
 
 export default function EventsPage() {
   const { events, isLoading } = useEventsSubastaFirst()

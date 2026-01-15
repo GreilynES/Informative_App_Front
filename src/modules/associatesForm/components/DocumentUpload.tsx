@@ -112,8 +112,8 @@ export function DocumentUpload({ form }: DocumentUploadProps) {
 
         <div>
           <p className="text-sm font-medium text-[#4A4A4A] leading-relaxed">
-            Por favor, en caso de ser un nuevo asociado, adjunte una copia de su
-            cédula o pasaporte y una copia del Plano de la Finca o Contrato.
+            Por favor, no olvide adjuntar una copia de su cédula o 
+            pasaporte y una copia del Plano de la Finca o Contrato.
           </p>
           <p className="mt-2 text-xs text-[#4A4A4A]/70">
             Formatos permitidos: PDF, JPG, PNG (máximo 5MB por archivo).
