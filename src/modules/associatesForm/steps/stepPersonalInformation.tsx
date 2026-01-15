@@ -200,7 +200,7 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
             >
               {(f: any) => (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cédula *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cédula o Pasaporte*</label>
                   <div className="relative">
                     <input
                       type="text"

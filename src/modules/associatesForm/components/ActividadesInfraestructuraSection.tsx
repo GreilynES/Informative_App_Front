@@ -7,25 +7,31 @@ interface ActividadesInfraestructuraSectionProps {
   showErrors?: boolean;
 }
 
-export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestructuraSectionProps) {
+export function ActividadesInfraestructuraSection({
+  form,
+}: ActividadesInfraestructuraSectionProps) {
   const existentes = (form as any).state?.values?.actividadesInfraestructura || {};
 
   const [actividades, setActividades] = useState<string[]>(existentes.cultivos || []);
   const [cultivo, setCultivo] = useState<string>("");
   const [cultivoError, setCultivoError] = useState<string | null>(null);
 
-  const [aparatos, setAparatos] = useState<string>(existentes.aparatos?.toString() || "0");
+  // ✅ NUEVO: Apartos (divisiones de la finca)
+  const [apartos, setApartos] = useState<string>(existentes.apartos?.toString() || "0");
+
+  const [comederos, setComederos] = useState<string>(existentes.comederos?.toString() || "0");
   const [bebederos, setBebederos] = useState<string>(existentes.bebederos?.toString() || "0");
   const [saleros, setSaleros] = useState<string>(existentes.saleros?.toString() || "0");
 
   useEffect(() => {
     (form as any).setFieldValue("actividadesInfraestructura", {
       cultivos: actividades,
-      aparatos: parseInt(aparatos, 10) || 0,
+      apartos: parseInt(apartos, 10) || 0, // ✅ NUEVO
+      comederos: parseInt(comederos, 10) || 0,
       bebederos: parseInt(bebederos, 10) || 0,
       saleros: parseInt(saleros, 10) || 0,
     });
-  }, [actividades, aparatos, bebederos, saleros, form]);
+  }, [actividades, apartos, comederos, bebederos, saleros, form]);
 
   const agregarActividad = () => {
     const trimmed = cultivo.trim();
@@ -57,16 +63,13 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
 
   // ✅ Función helper para manejar inputs numéricos
   const handleNumericInput = (value: string, setter: (val: string) => void) => {
-    // Permitir solo números
     const cleaned = value.replace(/\D/g, "");
-    
-    // Si está vacío, poner "0"
+
     if (cleaned === "") {
       setter("0");
       return;
     }
 
-    // Remover ceros a la izquierda
     const parsed = parseInt(cleaned, 10);
     setter(parsed.toString());
   };
@@ -88,13 +91,14 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
             ¿Qué cultivos o actividades tiene en su finca? *
           </label>
 
-              <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
             <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
               i
             </span>
-          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Después de ingresar de escribir la actividad o cultivo y presiona{" "}
-              <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo. También puedes usar la tecla Enter.
+              <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo.
+              También puedes usar la tecla Enter.
             </p>
           </div>
 
@@ -123,9 +127,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
                     : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]",
                 ].join(" ")}
               />
-              {cultivoError && (
-                <p className="mt-1 text-sm text-red-600">{cultivoError}</p>
-              )}
+              {cultivoError && <p className="mt-1 text-sm text-red-600">{cultivoError}</p>}
             </div>
 
             <button
@@ -148,7 +150,7 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
                   <button
                     type="button"
                     onClick={() => eliminarActividad(item)}
-                    className="text-[#c52424] hover:text-[#8d1a1a] "
+                    className="text-[#c52424] hover:text-[#8d1a1a]"
                   >
                     ×
                   </button>
@@ -159,62 +161,66 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+            Ingrese la cantidad de apartos en los que está dividido su finca *
+          </label>
+
+          <input
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={apartos}
+            onChange={(e) => handleNumericInput(e.target.value, setApartos)}
+            onFocus={(e) => e.target.select()}
+            className="w-full md:w-1/3 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+          />
+          
+        </div>
+
+        <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             ¿Qué tipo de equipo para la producción posee? Escriba la cantidad *
           </label>
 
           <div className="grid md:grid-cols-3 gap-4">
-            {/* ✅ Aparatos */}
+            {/* ✅ Comederos */}
             <div>
-              <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                Apartos
-              </label>
+              <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Comederos</label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                value={aparatos}
-                onChange={(e) => handleNumericInput(e.target.value, setAparatos)}
-                onFocus={(e) => {
-                  // Seleccionar todo al hacer foco para fácil reemplazo
-                  e.target.select();
-                }}
+                value={comederos}
+                onChange={(e) => handleNumericInput(e.target.value, setComederos)}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
             </div>
 
             {/* ✅ Bebederos */}
             <div>
-              <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                Bebederos
-              </label>
+              <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Bebederos</label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={bebederos}
                 onChange={(e) => handleNumericInput(e.target.value, setBebederos)}
-                onFocus={(e) => {
-                  e.target.select();
-                }}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
             </div>
 
             {/* ✅ Saleros */}
             <div>
-              <label className="block text-xs font-medium text-[#4A4A4A] mb-1">
-                Saleros
-              </label>
+              <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Saleros</label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={saleros}
                 onChange={(e) => handleNumericInput(e.target.value, setSaleros)}
-                onFocus={(e) => {
-                  e.target.select();
-                }}
+                onFocus={(e) => e.target.select()}
                 className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               />
             </div>

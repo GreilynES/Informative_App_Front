@@ -185,7 +185,7 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
           </div>
 
           <div className="space-y-2">
-            {["Tractor", "Picadora", "Mezcladora", "Bomba de agua"].map((equipo) => (
+            {["Tractor", "Picadora", "Motobomba", "Bomba de agua"].map((equipo) => (
               <div key={equipo} className="flex items-center gap-3">
                 <input
                   type="checkbox"

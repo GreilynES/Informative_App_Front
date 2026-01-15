@@ -175,13 +175,13 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
       }));
     }
 
-    // 2. Mapear infraestructura (aparatos, bebederos, saleros) a otrosEquipos
+    // 2. Mapear infraestructura (apartos, bebederos, saleros y comederos) a otrosEquipos
     const equiposInfra: any[] = [];
 
-    if (actividadesInfra.aparatos > 0) {
+    if (actividadesInfra.apartos > 0) {
       equiposInfra.push({
-        nombreEquipo: 'Aparatos',
-        cantidad: actividadesInfra.aparatos,
+        nombreEquipo: 'Apartos',
+        cantidad: actividadesInfra.apartos,
       });
     }
 
@@ -198,6 +198,13 @@ function mapToSolicitudPayload(values: AssociateApplyValues): CreateSolicitudDto
         cantidad: actividadesInfra.saleros,
       });
     }
+
+    if (actividadesInfra.comederos > 0) {
+      equiposInfra.push({
+        nombreEquipo: 'Comederos',
+        cantidad: actividadesInfra.comederos,
+      });
+    } 
 
     if (equiposInfra.length > 0) {
       payload.otrosEquipos = [...(payload.otrosEquipos || []), ...equiposInfra];

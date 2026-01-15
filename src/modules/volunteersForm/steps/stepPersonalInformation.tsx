@@ -144,7 +144,7 @@ export function StepPersonalInformation({
             {/* Cédula */}
             <div className="relative">
               <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                Cédula *
+                Cédula o Pasaporte*
               </label>
               <input
                 id="idNumber"

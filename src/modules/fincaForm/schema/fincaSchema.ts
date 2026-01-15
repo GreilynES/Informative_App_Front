@@ -27,8 +27,8 @@ export const geografiaSchema = z.object({
     .min(1, "El distrito es requerido"),
   
   caserio: z.string()
+    .min(1, "El caserio es requerido")
     .max(100, "Máximo 100 caracteres")
-    .optional()
     .or(z.literal("")),
 });
 

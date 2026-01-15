@@ -3,13 +3,15 @@ import { ZodError } from "zod";
 import type { FormLike } from "../../../shared/types/form-lite";
 import { geografiaSchema } from "../schema/fincaSchema";
 import { useGeografia } from "../hooks/useGeografia";
+import type { RefObject } from "react";
 
 interface GeografiaSectionProps {
   form: FormLike;
   forceValidation?: boolean;
+   caserioRef?: RefObject<HTMLDivElement | null>;
 }
 
-export function GeografiaSection({ form, forceValidation = false }: GeografiaSectionProps) {
+export function GeografiaSection({ form, forceValidation = false, caserioRef, }: GeografiaSectionProps) {
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   
   const {
@@ -54,6 +56,10 @@ export function GeografiaSection({ form, forceValidation = false }: GeografiaSec
 
       if (!values.distrito || values.distrito.trim().length === 0) {
         errors.distrito = "El distrito es requerido";
+      }
+
+      if (!values.caserio || values.caserio.trim().length === 0) {
+        errors.caserio = "El caserío es requerido";
       }
 
       setLocalErrors(errors);
@@ -216,30 +222,54 @@ export function GeografiaSection({ form, forceValidation = false }: GeografiaSec
           </form.Field>
 
           {/* Caserío */}
-          <form.Field 
-            name="caserio"
-            validators={{ onChange: ({ value }: any) => validateField("caserio", value) }}
-          >
-            {(f: any) => (
-              <div>
-                <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                  Caserío (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={f.state.value || ""}
-                  onChange={(e) => f.handleChange(e.target.value)}
-                  onBlur={f.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Nombre del caserío"
-                  maxLength={100}
-                />
-                {f.state.meta.errors?.length > 0 && (
-                  <p className="text-sm text-red-600 mt-1">{f.state.meta.errors[0]}</p>
-                )}
-              </div>
-            )}
-          </form.Field>
+          {/* Caserío */}
+<form.Field
+  name="caserio"
+  validators={{ onChange: ({ value }: any) => validateField("caserio", value) }}
+>
+  {(f: any) => {
+    const showError = (f.state.meta.errors?.length > 0 || localErrors.caserio);
+
+    return (
+      <div ref={caserioRef} className="scroll-mt-28">
+        <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+          Caserío (dirección exacta)*
+        </label>
+
+        <input
+          type="text"
+          value={f.state.value || ""}
+          onChange={(e) => {
+            f.handleChange(e.target.value);
+
+            // ✅ si ya escribió, quitamos el error local
+            if (localErrors.caserio) {
+              setLocalErrors((prev) => {
+                const { caserio, ...rest } = prev;
+                return rest;
+              });
+            }
+          }}
+          onBlur={f.handleBlur}
+          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
+            showError
+              ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+              : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+          }`}
+          placeholder="Nombre del caserío"
+          maxLength={100}
+        />
+
+        {showError && (
+          <p className="text-sm text-red-600 mt-1">
+            {localErrors.caserio || f.state.meta.errors[0]}
+          </p>
+        )}
+      </div>
+    );
+  }}
+</form.Field>
+
         </div>
       </div>
     </div>

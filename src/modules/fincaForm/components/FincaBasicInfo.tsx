@@ -134,6 +134,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                     }`}
                     placeholder="Ej: 12345"
                     maxLength={50}
+                    min={1}
                   />
                   {showError && (
                     <p className="text-sm text-red-600 mt-1">

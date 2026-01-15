@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
 import type { ForrajeItem } from "../models/forrajeInfoType";
 import { forrajeItemSchema } from "../../fincaForm/schema/fincaSchema";
@@ -51,19 +51,99 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
     utilizacion: false,
   });
 
+  // ====== NUEVO: área finca desde el form ======
+  const areaFincaHa = useMemo(() => {
+    const raw = (form as any).state?.values?.areaHa;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }, [(form as any).state?.values?.areaHa]);
+
+  const totalHaForrajes = useMemo(() => {
+    return forrajes.reduce((acc, f) => acc + (Number(f.hectareas) || 0), 0);
+  }, [forrajes]);
+
+  const disponibleHa = useMemo(() => {
+    if (areaFincaHa <= 0) return 0;
+    return Math.max(0, areaFincaHa - totalHaForrajes);
+  }, [areaFincaHa, totalHaForrajes]);
+
+  // ====== NUEVO: validación contra finca (sin clamp, solo avisar) ======
+  const validateAgainstFincaArea = (hectareasNuevo: number) => {
+    if (areaFincaHa <= 0) {
+      return {
+        ok: false,
+        msg: "Primero ingrese el área (hectáreas) de la finca para poder registrar forrajes.",
+      };
+    }
+
+    if (hectareasNuevo <= 0) {
+      return { ok: false, msg: "Las hectáreas del forraje deben ser mayores a 0." };
+    }
+
+    if (hectareasNuevo > areaFincaHa) {
+      return {
+        ok: false,
+        msg: `No se permite agregar ${hectareasNuevo.toFixed(
+          2
+        )} ha porque la finca tiene ${areaFincaHa.toFixed(2)} ha.`,
+      };
+    }
+
+    const totalSiAgrega = totalHaForrajes + hectareasNuevo;
+    if (totalSiAgrega > areaFincaHa) {
+      return {
+        ok: false,
+        msg: `No se permite agregar ${hectareasNuevo.toFixed(
+          2
+        )} ha porque la suma total sería ${totalSiAgrega.toFixed(
+          2
+        )} ha y supera el área de la finca (${areaFincaHa.toFixed(
+          2
+        )} ha). Disponible: ${disponibleHa.toFixed(2)} ha.`,
+      };
+    }
+
+    return { ok: true, msg: "" };
+  };
+
   // Sincroniza con el form global
   useEffect(() => {
     (form as any).setFieldValue("forrajes", forrajes);
-    
+
     // Validar si showErrors está activo
     if (showErrors && forrajes.length === 0) {
       setError("Debe agregar al menos un tipo de forraje");
     } else {
-      setError(null);
+      // No borres un error de área excedida si existe
+      // (lo controlamos en el useEffect de abajo)
+      if (error === "Debe agregar al menos un tipo de forraje") {
+        setError(null);
+      }
     }
-    
+
     onChange?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forrajes, form, onChange, showErrors]);
+
+  // ====== NUEVO: si el usuario baja el área y queda en exceso, avisar ======
+  useEffect(() => {
+    if (areaFincaHa > 0 && totalHaForrajes > areaFincaHa) {
+      setError(
+        `La suma de hectáreas de forrajes (${totalHaForrajes.toFixed(
+          2
+        )} ha) supera el área de la finca (${areaFincaHa.toFixed(
+          2
+        )} ha). Ajuste los forrajes o el área.`
+      );
+    } else {
+      // Si no hay exceso, solo mantenemos el error "Debe agregar..." si corresponde
+      if (showErrors && forrajes.length === 0) {
+        setError("Debe agregar al menos un tipo de forraje");
+      } else {
+        setError(null);
+      }
+    }
+  }, [areaFincaHa, totalHaForrajes, showErrors, forrajes.length]);
 
   // ---- Helpers ----
   const validateDraft = (draft: ForrajeDraft) => {
@@ -103,6 +183,16 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
       setError(
         "Por favor complete todos los campos correctamente (las hectáreas deben ser mayores a 0)."
       );
+      return;
+    }
+
+    // ====== NUEVO: Validación contra área finca (no agrega si se pasa) ======
+    const haNuevo = Number(currentForraje.hectareas) || 0;
+    const rule = validateAgainstFincaArea(haNuevo);
+
+    if (!rule.ok) {
+      setErrors((prev) => ({ ...prev, hectareas: rule.msg })); // error debajo
+      setError(rule.msg); // banner arriba
       return;
     }
 
@@ -165,6 +255,7 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
         <p className="block text-sm font-medium text-[#4A4A4A] mb-3 space-y-6">
           Agrega cada forraje utilizado. Puedes registrar múltiples entradas. *
         </p>
+
         <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
           <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
             i
@@ -172,6 +263,17 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
           <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
             Después de ingresar completar los campos (Tipo, Variedad, Hectáreas y Utilización) y presiona el botón{" "}
             <span className="font-semibold text-[#708C3E]">Agregar</span> para registrarlo en la tabla.
+          </p>
+        </div>
+
+        {/* Resumen área / total / disponible */}
+        <div className="mb-3 flex items-center justify-between rounded-md border border-[#efefef] bg-white px-3 py-2">
+          <p className="text-sm text-[#4A4A4A]">
+            Área finca: <span className="font-semibold">{areaFincaHa.toFixed(2)}</span> ha
+          </p>
+          <p className="text-sm text-[#4A4A4A]">
+            Total forrajes: <span className="font-semibold">{totalHaForrajes.toFixed(2)}</span> ha ·
+            Disponible: <span className="font-semibold">{disponibleHa.toFixed(2)}</span> ha
           </p>
         </div>
 
@@ -185,14 +287,10 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
         <div className="grid md:grid-cols-5 gap-4 items-start space-y-6">
           {/* Tipo */}
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Tipo *
-            </label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Tipo *</label>
             <select
               value={currentForraje.tipoForraje}
-              onChange={(e) =>
-                setCurrentForraje({ ...currentForraje, tipoForraje: e.target.value })
-              }
+              onChange={(e) => setCurrentForraje({ ...currentForraje, tipoForraje: e.target.value })}
               onBlur={(e) => onBlurField("tipoForraje", e.target.value)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
                 shouldShowFieldError("tipoForraje")
@@ -212,9 +310,7 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
 
           {/* Variedad */}
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Variedad *
-            </label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Variedad *</label>
             <input
               type="text"
               value={currentForraje.variedad}
@@ -237,21 +333,28 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
 
           {/* Hectáreas */}
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Hectáreas *
-            </label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Hectáreas *</label>
             <input
               type="number"
               step="0.01"
               min="0"
               placeholder="0.00"
               value={currentForraje.hectareas || ""}
-              onChange={(e) =>
+              onChange={(e) => {
+                const v = parseFloat(e.target.value);
                 setCurrentForraje({
                   ...currentForraje,
-                  hectareas: parseFloat(e.target.value) || 0,
-                })
-              }
+                  hectareas: Number.isFinite(v) ? v : 0,
+                });
+
+                // Limpia el error si estaba puesto y el user está corrigiendo
+                if (errors.hectareas) {
+                  setErrors((prev) => ({ ...prev, hectareas: undefined }));
+                }
+                if (error && error.includes("No se permite agregar")) {
+                  setError(null);
+                }
+              }}
               onBlur={(e) => onBlurField("hectareas", parseFloat(e.target.value) || 0)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
                 shouldShowFieldError("hectareas")
@@ -259,14 +362,11 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
                   : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               }`}
             />
-            <FieldError msg={shouldShowFieldError("hectareas") ? errors.hectareas : undefined} />
           </div>
 
           {/* Utilización */}
           <div>
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Utilización *
-            </label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Utilización *</label>
             <input
               type="text"
               value={currentForraje.utilizacion}
@@ -289,9 +389,7 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
 
           {/* Botón */}
           <div className="flex flex-col">
-            <label className="block text-sm font-medium text-[#4A4A4A] mb-1 invisible">
-              Acción
-            </label>
+            <label className="block text-sm font-medium text-[#4A4A4A] mb-1 invisible">Acción</label>
             <button
               type="button"
               onClick={agregarForraje}
@@ -324,7 +422,9 @@ export function ForrajeSection({ form, onChange, showErrors = false }: ForrajeSe
                   >
                     <td className="px-4 py-3 text-sm text-[#4A4A4A]">{f.tipoForraje}</td>
                     <td className="px-4 py-3 text-sm text-[#4A4A4A]">{f.variedad}</td>
-                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{f.hectareas}</td>
+                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">
+                      {(Number(f.hectareas) || 0).toFixed(2)}
+                    </td>
                     <td className="px-4 py-3 text-sm text-[#4A4A4A]">{f.utilizacion}</td>
                     <td className="px-4 py-3 text-center">
                       <button

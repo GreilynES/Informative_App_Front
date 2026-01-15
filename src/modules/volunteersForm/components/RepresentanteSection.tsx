@@ -70,7 +70,7 @@ export function RepresentanteSection({
         {/* Cédula */}
         <div className="relative">
           <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cédula *
+            Cédula o Pasaporte*
           </label>
           <form.Field
             name="organizacion.representante.persona.cedula"

@@ -87,7 +87,7 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
               "Corral de manejo",
               "Bodega",
               "Sala de ordeño",
-              "Tanque de enfriamiento",
+              "Reservorio de agua",
               "Biodigestor",
               "Sistema de tratamiento de aguas",
             ].map((infra) => (

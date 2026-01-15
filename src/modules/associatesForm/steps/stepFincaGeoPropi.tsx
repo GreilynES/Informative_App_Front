@@ -25,6 +25,7 @@ export function Step2({ form, onNext, onPrev}: Step2Props) {
   // Refs individuales para cada sección
   const fincaRef = useRef<HTMLDivElement>(null);
   const geografiaRef = useRef<HTMLDivElement>(null);
+  const caserioRef = useRef<HTMLDivElement>(null);
   const propietarioRef = useRef<HTMLDivElement>(null);
   const hatoRef = useRef<HTMLDivElement>(null);
 
@@ -36,12 +37,25 @@ export function Step2({ form, onNext, onPrev}: Step2Props) {
         block: 'start',
         inline: 'nearest'
       });
-    } else if (errors.geografia && geografiaRef.current) {
-      geografiaRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start',
-        inline: 'nearest'
-      });
+   } else if (errors.geografia) {
+  // ✅ si el problema es caserío, ir directo al input
+  const values = (form as any).state?.values || {};
+  const caserioMissing = !values.caserio || String(values.caserio).trim().length === 0;
+
+  if (caserioMissing && caserioRef.current) {
+    caserioRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+      inline: "nearest",
+    });
+  } else if (geografiaRef.current) {
+    geografiaRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+      inline: "nearest",
+    });
+  }
+
     } else if (errors.propietario && propietarioRef.current) {
       propietarioRef.current.scrollIntoView({ 
         behavior: 'smooth', 
@@ -75,9 +89,10 @@ export function Step2({ form, onNext, onPrev}: Step2Props) {
 
     // Validar geografía
     const geografiaValid =
-      (values.provincia?.length ?? 0) >= 1 &&
-      (values.canton?.length ?? 0) >= 1 &&
-      (values.distrito?.length ?? 0) >= 1;
+  (values.provincia?.length ?? 0) >= 1 &&
+  (values.canton?.length ?? 0) >= 1 &&
+  (values.distrito?.length ?? 0) >= 1 &&
+  (values.caserio?.length ?? 0) >= 1; 
 
     // Validar propietario si no es propietario
     let propietarioValid = true;
@@ -140,11 +155,11 @@ export function Step2({ form, onNext, onPrev}: Step2Props) {
 
       {/* Sección 2: Geografía con ref y scroll-margin */}
       <div ref={geografiaRef} className="scroll-mt-24">
-        <GeografiaSection form={form} forceValidation={intentoAvanzar} />
+        <GeografiaSection form={form} forceValidation={intentoAvanzar} caserioRef={caserioRef}/>
         {intentoAvanzar && erroresPorSeccion.geografia && (
           <div className="mt-2 px-6">
             <p className="text-sm text-red-600">
-              Seleccione la provincia, cantón y distrito
+              Seleccione la provincia, cantón y distrito e ingrese el caserío
             </p>
           </div>
         )}
