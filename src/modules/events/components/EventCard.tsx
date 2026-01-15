@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
-import { ArrowRight, Calendar, X } from "lucide-react"
+import { Calendar, X } from "lucide-react"
 import { CardContent } from "@/components/ui/card"
 import { formatDateToWords } from "@/shared/utils/formatDate"
 import { Button } from "@/components/ui/button"
