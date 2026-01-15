@@ -16,8 +16,27 @@ function getServiceIcon(serviceId: number): LucideIcon {
 export function ServicesCard({ service, openModal }: any) {
   const Icon = getServiceIcon(service.id)
 
+  const handleOpen = () => {
+    openModal(
+      service.id,
+      service.title,
+      service.modalDescription ?? "",
+      service.image ?? "",
+      service.cardDescription ?? ""
+    )
+  }
+
   return (
     <article
+      onClick={handleOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          handleOpen()
+        }
+      }}
       className="
         group
         relative
@@ -86,15 +105,10 @@ export function ServicesCard({ service, openModal }: any) {
 
         {/* CTA */}
         <button
-          onClick={() =>
-            openModal(
-              service.id,
-              service.title,
-              service.modalDescription ?? "",
-              service.image ?? "",
-              service.cardDescription ?? ""
-            )
-          }
+          onClick={(e) => {
+            e.stopPropagation()
+            handleOpen()
+          }}
           className="
             mt-6
             w-fit
