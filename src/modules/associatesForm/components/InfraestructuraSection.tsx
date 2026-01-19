@@ -126,13 +126,13 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
             </div>
 
             {infraestructuras.length > 0 && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-xs text-blue-800 font-medium mb-2">Infraestructura seleccionada:</p>
+              <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+                <p className="text-xs text-[#8B6C2E] font-medium mb-2">Infraestructura seleccionada:</p>
                 <div className="flex flex-wrap gap-2">
                   {infraestructuras.map((infra, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700"
+                      className="inline-flex items-center gap-1 bg-white border border-[#F5E6C5] rounded-lg px-3 py-1 text-xs text-[#8B6C2E]"
                     >
                       {infra}
                     </span>
@@ -145,7 +145,14 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
 
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Corriente eléctrica:</label>
-
+          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+              i
+            </span>
+            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Marca una o más opciones si aplican.
+            </p>
+          </div>
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <input
@@ -157,7 +164,7 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
                 style={{ accentColor: "#708C3E" }}
               />
               <label htmlFor="electrica-publica" className="text-sm text-[#4A4A4A]">
-                Pública (ICE)
+                Pública
               </label>
             </div>
 
@@ -171,7 +178,7 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
                 style={{ accentColor: "#708C3E" }}
               />
               <label htmlFor="electrica-privada" className="text-sm text-[#4A4A4A]">
-                Privada (planta eléctrica/solar)
+                Privada
               </label>
             </div>
           </div>

@@ -32,7 +32,7 @@ export function CustomSelect({
         {({ open }) => (
           <>
             <ListboxButton 
-              className="relative w-full cursor-pointer rounded-xl bg-white py-3 pl-4 pr-10 text-left border border-[#E6E1D6] shadow-sm hover:border-[#5B732E] focus:outline-none focus:ring-2 focus:ring-[#5B732E]/20 focus:border-[#5B732E] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative w-full cursor-pointer rounded-lg bg-white py-2.5 pl-4 pr-10 text-left border border-[#E6E1D6] shadow-sm hover:border-[#5B732E] focus:outline-none focus:ring-2 focus:ring-[#5B732E]/20 focus:border-[#5B732E] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className={`block truncate text-sm ${!selected ? 'text-gray-400' : 'text-[#2E321B] font-medium'}`}>
                 {selected ? selected.label : placeholder}
@@ -47,7 +47,7 @@ export function CustomSelect({
 
             <ListboxOptions
               modal={false}
-              className="absolute mt-2 w-full max-h-60 overflow-auto rounded-xl bg-white py-2 shadow-xl border border-[#E6E1D6] focus:outline-none"
+              className="absolute mt-2 w-full max-h-60 overflow-auto rounded-lg bg-white py-2 shadow-xl border border-[#E6E1D6] focus:outline-none"
               style={{ zIndex }} // 👈 Usa el z-index dinámico
             >
               {options.map((option) => (

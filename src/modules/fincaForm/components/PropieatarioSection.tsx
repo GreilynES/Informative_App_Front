@@ -1,32 +1,37 @@
-// src/modules/fincaForm/components/PropieatarioSection.tsx
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
-import { usePropietarioSection } from "../hooks/usePropietario";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { usePropietarioSection } from "../hooks/usePropietario"
+import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface PropietarioSectionProps {
-  form: FormLike;
+  form: FormLike
 }
 
 export function PropietarioSection({ form }: PropietarioSectionProps) {
-  const {
-    isLoadingCedula,
-    cedulaError,
-    searchMessage,
-    emailError,
-    handleCedulaLookup,
-    handleEmailChange,
-  } = usePropietarioSection({ form });
+  const { isLoadingCedula, cedulaError, searchMessage,  handleCedulaLookup } =
+    usePropietarioSection({ form })
 
-  // Estado local para evitar re-renders infinitos
-  const [esPropietario, setEsPropietario] = useState(true);
+  const [esPropietario, setEsPropietario] = useState(true)
 
-  // Sincronizar con el form solo cuando cambie
   useEffect(() => {
-    const formValue = (form as any).state?.values?.esPropietario;
+    const formValue = (form as any).state?.values?.esPropietario
     if (formValue !== undefined && formValue !== esPropietario) {
-      setEsPropietario(formValue);
+      setEsPropietario(formValue)
     }
-  }, [(form as any).state?.values?.esPropietario]);
+  }, [(form as any).state?.values?.esPropietario, esPropietario])
+
+  const [emailError, setEmailError] = useState<string>("")
+
+  function handleEmailChange(value: string) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (value && !emailRegex.test(value)) {
+      setEmailError("Por favor ingrese un email válido")
+    } else {
+      setEmailError("")
+    }
+  }
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -44,7 +49,6 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
       </div>
 
       <div className="p-6 space-y-4">
-        {/* Soy el propietario */}
         <form.Field name="esPropietario">
           {(f: any) => (
             <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-md">
@@ -53,9 +57,9 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
                 type="checkbox"
                 checked={!!f.state.value}
                 onChange={(e) => {
-                  const newValue = e.target.checked;
-                  f.handleChange(newValue);
-                  setEsPropietario(newValue);
+                  const newValue = e.target.checked
+                  f.handleChange(newValue)
+                  setEsPropietario(newValue)
                 }}
                 onBlur={f.handleBlur}
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
@@ -68,40 +72,38 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
           )}
         </form.Field>
 
-        {/* Sección condicional de datos del propietario */}
         {esPropietario ? (
-          <div className="text-sm text-gray-600 italic">
-            Como usted es el propietario, se usarán sus datos personales.
-          </div>
+          <div className="text-sm text-gray-600 italic">Como usted es el propietario, se usarán sus datos personales.</div>
         ) : (
           <div className="space-y-4 border-t pt-4">
             <p className="text-sm font-medium text-[#4A4A4A]">Datos del Propietario:</p>
 
-            {/* Cédula + búsqueda */}
             <form.Field name="propietarioCedula">
               {(fprop: any) => (
                 <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                    Cédula del Propietario *
-                  </label>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cédula del Propietario *</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={fprop.state.value || ""}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        fprop.handleChange(value);
+                        const value = e.target.value.replace(/\D/g, "")
+                        fprop.handleChange(value)
                       }}
                       onBlur={fprop.handleBlur}
                       className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                       placeholder="Número de cédula"
                       maxLength={12}
                     />
-                    <button
+
+                    <Button
                       type="button"
+                      size="sm"
                       onClick={() => handleCedulaLookup(fprop.state.value)}
                       disabled={isLoadingCedula || !fprop.state.value}
-                      className="px-4 py-2 bg-[#708C3E] text-white rounded-md hover:bg-[#5a7132] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      className={`${btn.primary} ${btn.disabledSoft} h-10 w-10 p-0`}
+                      aria-label="Buscar cédula"
+                      title="Buscar"
                     >
                       {isLoadingCedula ? (
                         <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
@@ -121,23 +123,13 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
                           />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                          />
-                        </svg>
+                        <Search className="size-5" />
                       )}
-                    </button>
+                    </Button>
                   </div>
+
                   {searchMessage && (
-                    <p
-                      className={`text-sm mt-1 ${
-                        searchMessage.includes("✓") ? "text-green-600" : "text-gray-600"
-                      }`}
-                    >
+                    <p className={`text-sm mt-1 ${searchMessage.includes("✓") ? "text-green-600" : "text-gray-600"}`}>
                       {searchMessage}
                     </p>
                   )}

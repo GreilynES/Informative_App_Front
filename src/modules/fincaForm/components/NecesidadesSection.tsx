@@ -52,7 +52,7 @@ export function NecesidadesSection({ form, showErrors = false }: NecesidadesSect
         {/* Necesidades/Mejoras */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Mencione las necesidades o mejoras que su finca requiere actualmente (hasta 5, al menos 1): *
+            Mencione las necesidades o mejoras que su finca requiere actualmente (Al menos una): *
           </label>
 
           <div className="space-y-3">

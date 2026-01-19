@@ -88,8 +88,8 @@ export function NucleoFamiliarSection({ form }: NucleoFamiliarSectionProps) {
         </div>
 
         {total > 0 && (
-          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-sm text-green-800">
+          <div className="mt-4 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+            <p className="text-sm text-[#8B6C2E]">
               <span className="font-semibold">Total personas en el núcleo familiar: {total}</span>
               {hombres > 0 && ` (${hombres} ${hombres === 1 ? 'hombre' : 'hombres'}`}
               {hombres > 0 && mujeres > 0 && ', '}

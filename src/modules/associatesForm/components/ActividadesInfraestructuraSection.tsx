@@ -144,9 +144,9 @@ export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestr
               {actividades.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-1.5 bg-white border border-[#CFCFCF] rounded-full px-3 py-1"
+                  className="flex items-center gap-1 bg-white border border-[#CFCFCF] rounded-lg px-3 py-1"
                 >
-                  <span className="text-sm text-[#4A4A4A]">{item}</span>
+                  <span className="text-sm text-[#4A4A4A] uppercase">{item}</span>
 
                   <Button
                     type="button"

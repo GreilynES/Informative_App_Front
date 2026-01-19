@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Plus, Trash2 } from "lucide-react"
 import { btn } from "@/shared/ui/buttonStyles"
 import { CustomSelect } from "@/shared/ui/CustomSelect"
+import type { ColumnDef } from "@tanstack/react-table"
+import { GenericTable } from "@/shared/ui/GenericTable"
 
 interface HatoFormProps {
   form: FormLike
@@ -233,6 +235,44 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
 
   const animalSelectOptions = TIPOS_ANIMAL.map((t) => ({ value: t.value, label: t.label }))
 
+   const animalColumns = React.useMemo<ColumnDef<Row, any>[]>(() => {
+    return [
+      {
+        header: "Tipo de Animal",
+        accessorKey: "nombre",
+        size: 280,
+        cell: ({ getValue }) => (
+          <span className="text-sm text-[#4A4A4A]">{String(getValue() ?? "")}</span>
+        ),
+      },
+      {
+        header: "Cantidad",
+        accessorKey: "cantidad",
+        size: 160,
+        cell: ({ getValue }) => (
+          <span className="text-sm text-[#4A4A4A]">{String(getValue() ?? "")}</span>
+        ),
+      },
+      {
+        header: "Acción",
+        id: "accion",
+        size: 220,
+        cell: ({ row }) => (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => eliminarAnimal(row.original.id)}
+            className="border-[#E6C3B4] text-[#8C3A33] hover:bg-[#E6C3B4]/40 hover:text-[#8C3A33]"
+          >
+            <Trash2 className="size-4" />
+            Eliminar
+          </Button>
+        ),
+      },
+    ]
+  }, [eliminarAnimal])
+
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]" data-hato-section>
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
@@ -383,9 +423,9 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
               />
             </div>
 
-            <div className="w-full md:w-[8.5rem] shrink-0">
+            <div className="w-full md:w-[8rem] shrink-0">
               <label className="block text-xs font-medium mb-1 opacity-0 select-none">Acción</label>
-              <Button type="button" size="sm" onClick={agregarAnimal} className={`${btn.primary} ${btn.disabledSoft} w-full`}>
+              <Button type="button" variant="outline" size="sm" onClick={agregarAnimal} className={btn.outlineGreen}>
                 <Plus className="size-4" />
                 Agregar
               </Button>
@@ -395,49 +435,20 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
         </div>
 
         {Array.isArray(formValues.animales) && formValues.animales.length > 0 && (
-          <div className="overflow-x-auto border border-[#CFCFCF] rounded-md">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#4A4A4A]">Tipo de Animal</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#4A4A4A]">Cantidad</th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-[#4A4A4A]">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {formValues.animales.map((animal: Row, idx: number) => (
-                  <tr
-                    key={animal.id || idx}
-                    className={idx !== formValues.animales.length - 1 ? "border-b border-[#CFCFCF]" : ""}
-                  >
-                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.nombre}</td>
-                    <td className="px-4 py-3 text-sm text-[#4A4A4A]">{animal.cantidad}</td>
-                    <td className="px-4 py-3 text-center">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => eliminarAnimal(animal.id)}
-                        className="border-[#E6C3B4] text-[#8C3A33] hover:bg-[#E6C3B4]/40 hover:text-[#8C3A33]"
-                      >
-                        <Trash2 className="size-4" />
-                        Eliminar
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <GenericTable<Row>
+          data={formValues.animales}
+          columns={animalColumns}
+          isLoading={false}
+        />
+      )}
 
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+        <div className="bg-[#FEF6E0] border border-[#F5E6C5] rounded-md p-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="block text-sm font-semibold text-blue-900 mb-1">Total del hato</label>
-              <p className="text-xs text-blue-700">Se calcula automáticamente sumando las cantidades</p>
+              <label className="block text-sm font-semibold text-[#8B6C2E] mb-1">Total del hato</label>
+              <p className="text-xs text-[#A3853D]">Se calcula automáticamente sumando las cantidades</p>
             </div>
-            <div className="text-3xl font-bold text-blue-900">{formValues.totalGanado}</div>
+            <div className="text-3xl font-bold text-[#A3853D]">{formValues.totalGanado}</div>
           </div>
         </div>
       </div>

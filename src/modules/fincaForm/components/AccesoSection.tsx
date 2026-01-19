@@ -1,53 +1,44 @@
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface AccesoSectionProps {
-  form: FormLike;
-  showErrors?: boolean; // Para mostrar errores cuando se intenta avanzar
+  form: FormLike
+  showErrors?: boolean
 }
 
 export function AccesoSection({ form, showErrors = false }: AccesoSectionProps) {
-  const existentes = (form as any).state?.values?.viasAcceso || {};
+  const existentes = (form as any).state?.values?.viasAcceso || {}
 
-  const [accesos, setAccesos] = useState<string[]>(existentes.accesos || []);
-  const [otroAcceso, setOtroAcceso] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [accesos, setAccesos] = useState<string[]>(existentes.accesos || [])
+  const [otroAcceso, setOtroAcceso] = useState<string>("")
+  const [error, setError] = useState<string>("")
 
   useEffect(() => {
-    (form as any).setFieldValue("viasAcceso", { accesos });
-    
-    // Validar cuando cambian los accesos
-    if (showErrors && accesos.length === 0) {
-      setError("Debe seleccionar al menos una vía de acceso");
-    } else {
-      setError("");
-    }
-  }, [accesos, form, showErrors]);
+    ;(form as any).setFieldValue("viasAcceso", { accesos })
+
+    if (showErrors && accesos.length === 0) setError("Debe seleccionar al menos una vía de acceso")
+    else setError("")
+  }, [accesos, form, showErrors])
 
   const toggleAcceso = (acceso: string) => {
-    setAccesos((prev) =>
-      prev.includes(acceso) ? prev.filter((a) => a !== acceso) : [...prev, acceso]
-    );
-  };
+    setAccesos((prev) => (prev.includes(acceso) ? prev.filter((a) => a !== acceso) : [...prev, acceso]))
+  }
 
   const agregarOtroAcceso = () => {
-    const trimmed = (otroAcceso ?? "").trim();
-    if (!trimmed) return;
-    
-    if (trimmed.length > 75) {
-      alert("El texto es muy largo (máx. 75 caracteres).");
-      return;
-    }
-    
-    const exists = accesos.some((a) => a.toLowerCase() === trimmed.toLowerCase());
-    if (exists) {
-      alert("Este tipo de acceso ya fue agregado");
-      return;
-    }
-    
-    setAccesos((prev) => [...prev, trimmed]);
-    setOtroAcceso("");
-  };
+    const trimmed = (otroAcceso ?? "").trim()
+    if (!trimmed) return
+
+    if (trimmed.length > 75) return alert("El texto es muy largo (máx. 75 caracteres).")
+
+    const exists = accesos.some((a) => a.toLowerCase() === trimmed.toLowerCase())
+    if (exists) return alert("Este tipo de acceso ya fue agregado")
+
+    setAccesos((prev) => [...prev, trimmed])
+    setOtroAcceso("")
+  }
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -59,12 +50,11 @@ export function AccesoSection({ form, showErrors = false }: AccesoSectionProps) 
       </div>
 
       <div className="p-6 space-y-4">
-        <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-          Vías de acceso: *
-        </label>
-       <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
-            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E]  text-white text-xs font-bold">
-              i
+        <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Vías de acceso: *</label>
+
+        <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E]  text-white text-xs font-bold">
+            i
           </span>
           <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
             Selecciona una o varias vías. Para agregar otra, escríbela y presiona{" "}
@@ -89,50 +79,40 @@ export function AccesoSection({ form, showErrors = false }: AccesoSectionProps) 
             </div>
           ))}
 
-          {/* Campo "Otras" */}
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-3 items-start">
             <input
               type="text"
               value={otroAcceso}
               onChange={(e) => setOtroAcceso(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault();
-                  agregarOtroAcceso();
+                  e.preventDefault()
+                  agregarOtroAcceso()
                 }
               }}
               placeholder="Otras vías de acceso."
               className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               maxLength={75}
             />
-            <button
-              type="button"
-              onClick={agregarOtroAcceso}
-              className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-            >
+
+            <Button type="button" variant="outline" size="sm" onClick={agregarOtroAcceso} className={btn.outlineGreen}>
+              <Plus className="size-4" />
               Agregar
-            </button>
+            </Button>
           </div>
 
-          {/* Mensaje de error */}
-          {error && (
-            <p className="text-sm text-red-600 mt-2">
-              {error}
-            </p>
-          )}
+          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
 
           {accesos.length > 0 && (
-            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-xs text-blue-800 font-medium mb-2">
-                Vías de acceso seleccionadas:
-              </p>
+            <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+              <p className="text-xs text-[#8B6C2E] font-medium mb-2">Vías de acceso seleccionadas:</p>
               <div className="flex flex-wrap gap-2">
-                {accesos.map((acceso, idx) => (
+                {accesos.map((a, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 bg-white border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700"
+                    className="inline-flex items-center gap-1 bg-white border border-[#F5E6C5] rounded-full px-3 py-1 text-xs text-[#8B6C2E]"
                   >
-                    {acceso}
+                    {a}
                   </span>
                 ))}
               </div>
@@ -141,5 +121,5 @@ export function AccesoSection({ form, showErrors = false }: AccesoSectionProps) 
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -120,13 +120,13 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
             </div>
 
             {tiposCerca.length > 0 && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-xs text-blue-800 font-medium mb-2">Tipos de cerca seleccionados:</p>
+              <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+                <p className="text-xs text-[#8B6C2E] font-medium mb-2">Tipos de cerca seleccionados:</p>
                 <div className="flex flex-wrap gap-2">
                   {tiposCerca.map((cerca, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-blue-300 rounded-full px-3 py-1 text-xs text-blue-700"
+                      className="inline-flex items-center gap-1 bg-white border border-[#F5E6C5] rounded-lg px-3 py-1 text-xs text-[#8B6C2E]"
                     >
                       {cerca}
                     </span>
@@ -190,13 +190,13 @@ export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSe
             </div>
 
             {equipos.length > 0 && (
-              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-                <p className="text-xs text-green-800 font-medium mb-2">Equipos seleccionados:</p>
+              <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+                <p className="text-xs text-[#8B6C2E] font-medium mb-2">Equipos seleccionados:</p>
                 <div className="flex flex-wrap gap-2">
                   {equipos.map((equipo, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-green-300 rounded-full px-3 py-1 text-xs text-green-700"
+                      className="inline-flex items-center gap-1 bg-white border border-[#F5E6C5] rounded-lg px-3 py-1 text-xs text-[#8B6C2E]"
                     >
                       {equipo}
                     </span>

@@ -1,53 +1,44 @@
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface ComercializacionSectionProps {
-  form: FormLike;
-  showErrors?: boolean;
+  form: FormLike
+  showErrors?: boolean
 }
 
 export function ComercializacionSection({ form, showErrors = false }: ComercializacionSectionProps) {
-  const existentes = (form as any).state?.values?.comercializacion || {};
+  const existentes = (form as any).state?.values?.comercializacion || {}
 
-  const [canales, setCanales] = useState<string[]>(existentes.canales || []);
-  const [otroCanal, setOtroCanal] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [canales, setCanales] = useState<string[]>(existentes.canales || [])
+  const [otroCanal, setOtroCanal] = useState<string>("")
+  const [error, setError] = useState<string>("")
 
   useEffect(() => {
-    (form as any).setFieldValue("comercializacion", { canales });
-    
-    // Validar cuando cambian los canales
-    if (showErrors && canales.length === 0) {
-      setError("Debe seleccionar al menos un canal de comercialización");
-    } else {
-      setError("");
-    }
-  }, [canales, form, showErrors]);
+    ;(form as any).setFieldValue("comercializacion", { canales })
+
+    if (showErrors && canales.length === 0) setError("Debe seleccionar al menos un canal de comercialización")
+    else setError("")
+  }, [canales, form, showErrors])
 
   const toggleCanal = (canal: string) => {
-    setCanales((prev) =>
-      prev.includes(canal) ? prev.filter((c) => c !== canal) : [...prev, canal]
-    );
-  };
+    setCanales((prev) => (prev.includes(canal) ? prev.filter((c) => c !== canal) : [...prev, canal]))
+  }
 
   const agregarOtroCanal = () => {
-    const trimmed = (otroCanal ?? "").trim();
-    if (!trimmed) return;
-    
-    if (trimmed.length > 75) {
-      alert("El texto es muy largo (máx. 75 caracteres).");
-      return;
-    }
-    
-    const exists = canales.some((c) => c.toLowerCase() === trimmed.toLowerCase());
-    if (exists) {
-      alert("Este canal ya fue agregado");
-      return;
-    }
-    
-    setCanales((prev) => [...prev, trimmed]);
-    setOtroCanal("");
-  };
+    const trimmed = (otroCanal ?? "").trim()
+    if (!trimmed) return
+
+    if (trimmed.length > 75) return alert("El texto es muy largo (máx. 75 caracteres).")
+
+    const exists = canales.some((c) => c.toLowerCase() === trimmed.toLowerCase())
+    if (exists) return alert("Este canal ya fue agregado")
+
+    setCanales((prev) => [...prev, trimmed])
+    setOtroCanal("")
+  }
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -59,16 +50,15 @@ export function ComercializacionSection({ form, showErrors = false }: Comerciali
       </div>
 
       <div className="p-6 space-y-4">
-        <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-          Canales de comercialización: * 
-        </label>
+        <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Canales de comercialización: *</label>
+
         <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
-            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E]  text-white text-xs font-bold">
-              i
+          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E]  text-white text-xs font-bold">
+            i
           </span>
           <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
             Selecciona uno o varios canales. Para agregar otro, escríbelo y presiona{" "}
-            <span className="font-semibold text-[#708C3E]">Agregar</span> o la tecla <span className="font-semibold">Enter</span>.
+            <span className="font-semibold text-[#708C3E]">Agregar</span> o <span className="font-semibold">Enter</span>.
           </p>
         </div>
 
@@ -89,48 +79,40 @@ export function ComercializacionSection({ form, showErrors = false }: Comerciali
             </div>
           ))}
 
-          {/* Campo "Otras" */}
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-3 items-start">
             <input
               type="text"
               value={otroCanal}
               onChange={(e) => setOtroCanal(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  e.preventDefault();
-                  agregarOtroCanal();
+                  e.preventDefault()
+                  agregarOtroCanal()
                 }
               }}
               placeholder="Otro canal de comercialización."
               className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
               maxLength={75}
             />
-            <button
-              type="button"
-              onClick={agregarOtroCanal}
-              className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-            >
+
+            <Button type="button" variant="outline" size="sm" onClick={agregarOtroCanal} className={btn.outlineGreen}>
+              <Plus className="size-4" />
               Agregar
-            </button>
+            </Button>
           </div>
 
-          {/* Mensaje de error */}
-          {error && (
-            <p className="text-sm text-red-600 mt-2">
-              {error}
-            </p>
-          )}
+          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
 
           {canales.length > 0 && (
-            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-xs text-green-800 font-medium mb-2">Canales seleccionados:</p>
+            <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+              <p className="text-xs text-[#8B6C2E] font-medium mb-2">Canales seleccionados:</p>
               <div className="flex flex-wrap gap-2">
-                {canales.map((canal, idx) => (
+                {canales.map((c, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 bg-white border border-green-300 rounded-full px-3 py-1 text-xs text-green-700"
+                    className="inline-flex items-center gap-1 bg-white border border-[#F5E6C5] rounded-full px-3 py-1 text-xs text-[#8B6C2E]"
                   >
-                    {canal}
+                    {c}
                   </span>
                 ))}
               </div>
@@ -139,5 +121,5 @@ export function ComercializacionSection({ form, showErrors = false }: Comerciali
         </div>
       </div>
     </div>
-  );
+  )
 }
