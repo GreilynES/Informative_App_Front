@@ -5,20 +5,14 @@ import type { CreateSolicitudVoluntarioDto, SolicitudVoluntarioResponse } from "
 export async function createSolicitudVoluntario(
   payload: CreateSolicitudVoluntarioDto
 ): Promise<SolicitudVoluntarioResponse> {
-  console.log("[Service Org] Enviando payload:", JSON.stringify(payload, null, 2));
 
   try {
     const response = await apiConfig.post("/solicitudes-voluntariado", payload, {
       headers: { "Content-Type": "application/json" },
     });
-
-    console.log("[Service Org] ✅ Respuesta del backend:", response);
-    console.log("[Service Org] ✅ response.data:", response.data);
-    
     //Axios envuelve la respuesta en .data
     return response.data as SolicitudVoluntarioResponse;
   } catch (err: any) {
-    console.error("[Service Org] ❌ Error:", err?.message || err);
     console.error("[Service Org] Response data:", err?.response?.data);
     throw err;
   }
@@ -27,20 +21,15 @@ export async function createSolicitudVoluntario(
 export async function createSolicitudVoluntarioIndividual(
   payload: CreateSolicitudVoluntarioDto
 ): Promise<SolicitudVoluntarioResponse> {
-  console.log("[Service Individual] Enviando payload:", JSON.stringify(payload, null, 2));
 
   try {
     const response = await apiConfig.post("/solicitudes-voluntariado", payload, {
       headers: { "Content-Type": "application/json" },
     });
 
-    console.log("[Service Individual] ✅ Respuesta del backend:", response);
-    console.log("[Service Individual] ✅ response.data:", response.data);
-    
     // Axios envuelve la respuesta en .data
     return response.data as SolicitudVoluntarioResponse;
   } catch (err: any) {
-    console.error("[Service Individual] ❌ Error:", err?.message || err);
     console.error("[Service Individual] Response data:", err?.response?.data);
     throw err;
   }
@@ -65,22 +54,18 @@ export async function uploadVolunteerDocuments(
   const formData = new FormData();
   
   if (files.cv) {
-    console.log("[Service Volunteers] Agregando CV al FormData:", files.cv.name);
     formData.append('cv', files.cv);
   }
   
   if (files.cedula) {
-    console.log("[Service Volunteers] Agregando cédula al FormData:", files.cedula.name);
     formData.append('cedula', files.cedula);
   }
   
   if (files.carta) {
-    console.log("[Service Volunteers] Agregando carta al FormData:", files.carta.name);
     formData.append('carta', files.carta);
   }
 
   const entries = Array.from(formData.entries()).map(([k]) => k);
-  console.log("[Service Volunteers] FormData entries:", entries);
 
   if (entries.length === 0) {
     console.error("[Service Volunteers] ❌ FormData está vacío!");
@@ -104,7 +89,6 @@ export async function uploadVolunteerDocuments(
     }
 
     const data = await response.json();
-    console.log("[Service Volunteers] ✅ Documentos subidos:", data);
     return data;
   } catch (err: any) {
     console.error("[Service Volunteers] ❌ Error al subir documentos:", err?.message || err);

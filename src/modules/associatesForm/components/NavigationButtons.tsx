@@ -1,4 +1,6 @@
-// src/components/Associates/NavigationButtons.tsx
+import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface NavigationButtonsProps {
   onPrev?: () => void
@@ -6,6 +8,7 @@ interface NavigationButtonsProps {
   showPrev?: boolean
   showNext?: boolean
   disableNext?: boolean
+  hidePrev?: boolean
   className?: string
 }
 
@@ -15,35 +18,31 @@ export function NavigationButtons({
   showPrev = true,
   showNext = true,
   disableNext = false,
+  hidePrev = false,
   className = "",
 }: NavigationButtonsProps) {
   return (
     <div className={`flex justify-between items-center px-6 pb-6 ${className}`}>
-      {showPrev ? (
-        <button
-          type="button"
-          onClick={onPrev}
-          className="bg-[#708C3E] text-white px-6 py-2 rounded-md"
-        >
+      {!hidePrev && showPrev ? (
+        <Button type="button" variant="outline" size="sm" onClick={onPrev} className={btn.outlineGreen}>
+          <ChevronLeft className="size-4" />
           Anterior
-        </button>
+        </Button>
       ) : (
         <div />
       )}
 
       {showNext && (
-        <button
+        <Button
           type="button"
+          size="sm"
           onClick={onNext}
           disabled={disableNext}
-          className={`px-6 py-2 rounded-md text-white ${
-            disableNext
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-[#708C3E] hover:bg-[#5d7334]"
-          }`}
+          className={`${btn.primary} ${btn.disabledSoft}`}
         >
           Siguiente
-        </button>
+          <ChevronRight className="size-4" />
+        </Button>
       )}
     </div>
   )

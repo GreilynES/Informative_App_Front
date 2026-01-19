@@ -1,6 +1,5 @@
-// src/modules/volunteersForm/hooks/useVolunteersForm.ts
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
 
 const SKIP_VALIDATION_INDIVIDUAL = true;
@@ -8,7 +7,9 @@ const SKIP_VALIDATION_INDIVIDUAL = true;
 export function useVolunteersForm() {
   const [step, setStep] = useState(1);
   const [showForm, setShowForm] = useState(false);
-  const [tipoSolicitante, setTipoSolicitante] = useState<'INDIVIDUAL' | 'ORGANIZACION'>('INDIVIDUAL');
+  const [tipoSolicitante, setTipoSolicitante] = useState<"INDIVIDUAL" | "ORGANIZACION">(
+    "INDIVIDUAL"
+  );
 
   const [formData, setFormData] = useState<VolunteersFormData>({
     name: "",
@@ -41,18 +42,17 @@ export function useVolunteersForm() {
     carta: null,
   });
 
-  const nextStep = () => setStep((prev) => prev + 1);
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+  const nextStep = useCallback(() => setStep((prev) => prev + 1), []);
+  const prevStep = useCallback(() => setStep((prev) => Math.max(prev - 1, 1)), []);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = useCallback((field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const isStepValid = () => {
-    if (SKIP_VALIDATION_INDIVIDUAL && tipoSolicitante === 'INDIVIDUAL') return true;
+  const canProceed = useMemo(() => {
+    if (SKIP_VALIDATION_INDIVIDUAL && tipoSolicitante === "INDIVIDUAL") return true;
 
-    // ✅ Validación para INDIVIDUAL
-    if (tipoSolicitante === 'INDIVIDUAL') {
+    if (tipoSolicitante === "INDIVIDUAL") {
       switch (step) {
         case 1:
           return (
@@ -65,25 +65,24 @@ export function useVolunteersForm() {
             formData.email.trim() !== ""
           );
         case 2:
-          return true; // Disponibilidad es opcional
+          return true; // Disponibilidad opcional
         case 3:
-          return true; // Motivación es opcional
-        case 4: // ✅ Paso de documentos
-          return !!files.cv && !!files.cedula;
+          return true; // Motivación opcional
+        case 4:
+          return !!files.cv && !!files.cedula; // Documentos
         default:
           return true;
       }
     }
 
-    // ✅ Validación para ORGANIZACION
-    if (tipoSolicitante === 'ORGANIZACION') {
+    if (tipoSolicitante === "ORGANIZACION") {
       switch (step) {
         case 1:
           return true; // Se valida en el form de TanStack
         case 2:
-          return true; // Disponibilidad es opcional
-        case 3: // ✅ Paso de documentos para organización
-          return !!files.cedula; // Solo documento legal obligatorio
+          return true; // Disponibilidad opcional
+        case 3:
+          return !!files.cedula; // Documento legal obligatorio
         case 4:
           return true; // Confirmación
         default:
@@ -92,7 +91,12 @@ export function useVolunteersForm() {
     }
 
     return true;
-  };
+  }, [tipoSolicitante, step, formData, files]);
+
+ const resetToFirstStep = useCallback(() => {
+  setStep(1);
+}, []);
+  const isStepValid = useCallback(() => canProceed, [canProceed]);
 
   return {
     formData,
@@ -105,6 +109,8 @@ export function useVolunteersForm() {
     tipoSolicitante,
     setTipoSolicitante,
     handleInputChange,
+    canProceed,
+    resetToFirstStep,
     isStepValid,
     files,
     setFiles,

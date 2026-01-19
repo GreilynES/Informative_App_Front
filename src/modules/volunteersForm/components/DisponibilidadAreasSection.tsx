@@ -1,5 +1,5 @@
 import { Calendar, Target, Heart } from "lucide-react";
-import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect, useMemo, forwardRef, useImperativeHandle, useRef } from "react";
 import { z } from "zod";
 import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema";
 
@@ -147,27 +147,41 @@ export const DisponibilidadAreasSection = forwardRef<
     },
   }));
 
-  
+  const formRef = useRef(form);
+  const handleRef = useRef(handleInputChange);
+
+  useEffect(() => { formRef.current = form; }, [form]);
+  useEffect(() => { handleRef.current = handleInputChange; }, [handleInputChange]);
+
   useEffect(() => {
     const disponibilidad = buildDisponibilidadPayload();
     const areasPayload = buildAreasPayload();
 
-    if (tipoSolicitante === "ORGANIZACION" && form) {
-      form.setFieldValue("organizacion.disponibilidades", [disponibilidad]);
-      form.setFieldValue("organizacion.areasInteres", areasPayload);
+    if (tipoSolicitante === "ORGANIZACION" && formRef.current) {
+      formRef.current.setFieldValue("organizacion.disponibilidades", [disponibilidad]);
+      formRef.current.setFieldValue("organizacion.areasInteres", areasPayload);
       if (razonSocial.trim()) {
-        form.setFieldValue("organizacion.razonesSociales", [{ razonSocial }]);
+        formRef.current.setFieldValue("organizacion.razonesSociales", [{ razonSocial }]);
       }
-    } else if (tipoSolicitante === "INDIVIDUAL" && handleInputChange) {
-      handleInputChange("disponibilidades", [disponibilidad]);
-      handleInputChange("areasInteres", areasPayload);
+    } else if (tipoSolicitante === "INDIVIDUAL" && handleRef.current) {
+      handleRef.current("disponibilidades", [disponibilidad]);
+      handleRef.current("areasInteres", areasPayload);
     }
 
-  
     if (showErrors) {
       const e1 = getDisponibilidadErrors(disponibilidad);
       const e2 = getAreasErrors(areasPayload);
-      setErrors({ ...e1, ...e2 });
+      setErrors((prev) => {
+        const next = { ...e1, ...e2 };
+        // evita setErrors si no cambió nada
+        const same =
+          prev.fechaInicio === next.fechaInicio &&
+          prev.fechaFin === next.fechaFin &&
+          prev.dias === next.dias &&
+          prev.horarios === next.horarios &&
+          prev.areasInteres === next.areasInteres;
+        return same ? prev : next;
+      });
     }
   }, [
     fechaInicio,
@@ -178,10 +192,8 @@ export const DisponibilidadAreasSection = forwardRef<
     otraArea,
     razonSocial,
     tipoSolicitante,
-    form,
-    handleInputChange,
     showErrors,
-  ]);
+  ]); 
 
   // Handlers originales
   const handleDiaChange = (dia: string) => {

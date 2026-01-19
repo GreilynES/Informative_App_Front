@@ -66,7 +66,7 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
                     e.preventDefault();
                     handleFileChange(field, null);
                   }}
-                  className="mt-2 text-xs text-red-600 hover:text-red-800"
+                  className="mt-2 text-xs text-[#B85C4C] hover:text-[#8C3A33]"
                 >
                   Eliminar
                 </button>
@@ -88,13 +88,28 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex items-start gap-3 p-4 bg-[#eef7df] border border-[#efefef] rounded-xl">
+        <span className="mt-0.5 inline-flex w-6 h-6 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+          i
+        </span>
+
+        <div>
+          <p className="text-sm font-medium text-[#4A4A4A] leading-relaxed">
+            Por favor, no olvide adjuntar una copia de su cédula o 
+            pasaporte y una copia del Plano de la Finca o Contrato.
+          </p>
+          <p className="mt-2 text-xs text-[#4A4A4A]/70">
+            Formatos permitidos: PDF, JPG, PNG (máximo 5MB por archivo).
+          </p>
+        </div>
+      </div>
       {/* Grid para los documentos */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* CV */}
-        {renderFileInput('cv', 'Currículum Vitae (CV)', 'cv', true)}
+        {renderFileInput('cv', 'Currículum Vitae (CV)', 'cv', false)}
 
         {/* Cédula */}
-        {renderFileInput('cedula', 'Copia de Cédula', 'cedula', true)}
+        {renderFileInput('cedula', 'Copia de Cédula', 'cedula', false)}
       </div>
 
       {/* Carta de Motivación - Ocupa todo el ancho */}
@@ -102,13 +117,6 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
         {renderFileInput('carta', 'Carta de Motivación', 'carta', false)}
       </div>
 
-      {/* Nota informativa */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p className="text-sm text-blue-800">
-          <strong>Nota:</strong> Los archivos marcados con asterisco (*) son obligatorios. 
-          La carta de motivación es opcional pero recomendada.
-        </p>
-      </div>
     </div>
   );
 }

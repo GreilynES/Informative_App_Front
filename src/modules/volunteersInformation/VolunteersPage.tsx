@@ -12,20 +12,21 @@ import { useNavigate } from "@tanstack/react-router";
 
 export default function VolunteersPage() {
   const {
-    formData,
-    setFormData,
-    step,
-    nextStep,
-    prevStep,
-    showForm,
-    setShowForm,
-    tipoSolicitante,
-    setTipoSolicitante,
-    handleInputChange,
-    isStepValid,
-    files,
-    setFiles,
-  } = useVolunteersForm();
+  formData,
+  setFormData,
+  step,
+  nextStep,
+  prevStep,
+  resetToFirstStep,
+  showForm,
+  setShowForm,
+  tipoSolicitante,
+  setTipoSolicitante,
+  handleInputChange,
+  isStepValid,
+  files,
+  setFiles,
+} = useVolunteersForm();
 
   const { lookup } = useCedulaLookup();
   const { data, loading, error, reload } = useVolunteersPage();
@@ -113,20 +114,17 @@ export default function VolunteersPage() {
   };
 
   const handleAfterSubmit = () => {
-    resetStepsToFirst();
+  resetToFirstStep();
+  setShowForm(false);
 
-
-    setShowForm(false);
-
-  
-    setTimeout(() => {
-      document.getElementById("requisitos")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-      navigate({ to: '/' });
-    }, 300);
-  };
+  setTimeout(() => {
+    document.getElementById("requisitos")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    navigate({ to: "/" });
+  }, 300);
+};
 
   return (
     <div className="min-h-screen bg-[#FAF9F5] pt-14">

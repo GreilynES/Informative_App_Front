@@ -1,82 +1,126 @@
-import { Users } from "lucide-react"
+import { useEffect, useState } from "react"
+import Swal from "sweetalert2"
+import { Button } from "@/components/ui/button"
+import { btn } from "@/shared/ui/buttonStyles"
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType"
-
+import { submitSolicitudFlow } from "../../utils/alerts"
+import { ArrowLeft, Send } from "lucide-react"
 
 interface TermsAndSubmitProps {
+  tipoSolicitante: "INDIVIDUAL" | "ORGANIZACION"
   formData: VolunteersFormData
   handleInputChange: (field: keyof VolunteersFormData, value: boolean) => void
   prevStep: () => void
+  submitIndividual?: (data: any) => Promise<any>
+  submitOrganizacion?: () => Promise<void>
+  onAfterSubmit?: () => void
 }
 
 export function TermsAndSubmit({
+  tipoSolicitante,
   formData,
   handleInputChange,
   prevStep,
+  submitIndividual,
+  submitOrganizacion,
+  onAfterSubmit,
 }: TermsAndSubmitProps) {
+  const [uiSubmitting, setUiSubmitting] = useState(false)
+  const [showError, setShowError] = useState(false)
+
+  useEffect(() => {
+    return () => {
+      if (Swal.isVisible()) Swal.close()
+    }
+  }, [])
+
+  const err =
+    showError && !formData.acceptTerms
+      ? "Debes aceptar los términos y condiciones para continuar"
+      : ""
+
+  const canSubmit = !!formData.acceptTerms && !uiSubmitting
+
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-      <div className="p-6 space-y-4">
-        {/* Términos */}
-        <div className="flex items-start space-x-2">
+    <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
+      <h2 className="text-3xl font-bold text-[#708C3E] text-center">
+        Confirmación de Solicitud
+      </h2>
+
+      <div className="space-y-6 text-[#4A4A4A] mt-6">
+        <label className="flex items-start gap-3">
           <input
             type="checkbox"
-            id="terms"
-            checked={formData.acceptTerms}
-            onChange={(e) => handleInputChange("acceptTerms", e.target.checked)}
-            className="mt-1 h-4 w-4 text-[#708C3E] border-gray-300 rounded focus:ring-[#A3853D]"
+            checked={!!formData.acceptTerms}
+            onChange={(e) => {
+              handleInputChange("acceptTerms", e.target.checked)
+              if (e.target.checked) setShowError(false)
+            }}
+            className="mt-1"
+            style={{ accentColor: "#708C3E" }}
           />
-          <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
-            Acepto los{" "}
-            <a href="#" className="text-[#A3853D] underline">
-              términos y condiciones
-            </a>{" "}
-            y autorizo el tratamiento de mis datos.
-          </label>
-        </div>
+          <span className="text-sm">
+            Confirmo mi consentimiento para que mis datos personales sean utilizados para el registro de mi solicitud.
+          </span>
+        </label>
 
-        <div className="flex items-start space-x-2">
-          <input
-            type="checkbox"
-            id="info"
-            checked={formData.receiveInfo}
-            onChange={(e) => handleInputChange("receiveInfo", e.target.checked)}
-            className="mt-1 h-4 w-4 text-[#708C3E] border-gray-300 rounded focus:ring-[#A3853D]"
-          />
-          <label htmlFor="info" className="text-sm text-gray-700">
-            Deseo recibir información sobre eventos, capacitaciones y oportunidades.
-          </label>
-        </div>
+        {err && <p className="text-sm text-red-600">{err}</p>}
 
-        {/* Botones */}
-        <div className="flex flex-col items-center gap-4 pt-6">
-          <div className="flex flex-col md:flex-row gap-5">
-            <button
-              type="button"
-              onClick={prevStep}
-              className="bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-3 rounded-lg shadow transition-all duration-200 w-full md:w-auto"
-            >
-              ← Volver al formulario
-            </button>
+      </div>
 
-            <button
-              type="submit"
-              disabled={!formData.acceptTerms}
-              className={`w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white text-lg shadow transition-colors duration-200
-                ${
-                  formData.acceptTerms
-                    ? "bg-[#708C3E] hover:bg-[#5d7334]"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
-            >
-              <Users className="w-5 h-5" />
-              Enviar Solicitud de Voluntario
-            </button>
-          </div>
+      <div className="flex justify-between mt-6">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={prevStep}
+          disabled={uiSubmitting}
+          className={btn.outlineGray}
+        >
+          <ArrowLeft className="size-4" />
+          Volver
+        </Button>
 
-          <p className="text-sm text-gray-500 mt-2 text-center">
-            Nos pondremos en contacto contigo en un plazo de 3-5 días hábiles
-          </p>
-        </div>
+        <Button
+          type="button"
+          size="sm"
+          disabled={!canSubmit}
+          onClick={async () => {
+            if (!formData.acceptTerms) {
+              setShowError(true)
+              return
+            }
+            if (uiSubmitting) return
+
+            setUiSubmitting(true)
+            try {
+              const { ok } = await submitSolicitudFlow(
+                async () => {
+                  if (tipoSolicitante === "INDIVIDUAL") {
+                    if (!submitIndividual) throw new Error("submitIndividual no disponible")
+                    await submitIndividual(formData)
+                  } else {
+                    if (!submitOrganizacion) throw new Error("submitOrganizacion no disponible")
+                    await submitOrganizacion()
+                  }
+                },
+                {
+                  loadingText: "Enviando solicitud...",
+                  successText: "¡Solicitud enviada correctamente!",
+                  errorText: "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
+                }
+              )
+
+              if (ok) onAfterSubmit?.()
+            } finally {
+              setUiSubmitting(false)
+            }
+          }}
+          className={`${btn.primary} ${btn.disabledSoft}`}
+        >
+          <Send className="size-4" />
+          {uiSubmitting ? "Enviando..." : "Enviar solicitud"}
+        </Button>
       </div>
     </div>
   )

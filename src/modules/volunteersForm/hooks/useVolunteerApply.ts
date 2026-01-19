@@ -111,15 +111,12 @@ export function useVolunteerApply(onSuccess?: () => void) {
       const payload = mapToSolicitudPayload(values);
       const response = await createSolicitudVoluntario(payload);
       
-      console.log("[Hook Org] ✅ Solicitud creada:", response);
       
       // ✅ 2. Extraer el ID de la solicitud (ya viene directo en response)
       const solicitudId = response.idSolicitudVoluntariado;
-      console.log("[Hook Org] ✅ ID extraído:", solicitudId);
       
       // ✅ 3. Subir documentos si existen
       if (solicitudId && files && (files.cv || files.cedula || files.carta)) {
-        console.log("[Hook Org] Subiendo documentos para solicitud:", solicitudId);
         
         const uploadFiles: any = {};
         if (files.cv) uploadFiles.cv = files.cv;
@@ -139,12 +136,10 @@ export function useVolunteerApply(onSuccess?: () => void) {
       
       return response;
     },
-    onSuccess: (data) => {
-      console.log("[Hook Org] ✅ Todo completado:", data);
+    onSuccess: (_data) => {
       onSuccess?.();
     },
     onError: (error: any) => {
-      console.error("[Hook Org] ❌ Error:", error);
       console.error("[Hook Org] Detalles:", error?.response?.data);
     },
   });
@@ -187,8 +182,6 @@ export function useVolunteerApply(onSuccess?: () => void) {
       },
     },
     onSubmit: async () => {
-      // ✅ No hacer nada aquí - se maneja desde submitWithFiles
-      console.log("[Hook Org Form] Submit llamado (no debería usarse directamente)");
     },
   });
 

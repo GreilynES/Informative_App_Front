@@ -1,21 +1,20 @@
-// src/modules/volunteersForm/components/Stepper.tsx
-
 interface StepperProps {
   step: number;
-  tipoSolicitante?: 'INDIVIDUAL' | 'ORGANIZACION';
+  tipoSolicitante?: "INDIVIDUAL" | "ORGANIZACION";
 }
 
-export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) {
-  const stepLabels = tipoSolicitante === 'INDIVIDUAL' 
-    ? ["Información", "Disponibilidad", "Motivación", "Documentos", "Confirmación"] // 5 pasos
-    : ["Organización", "Disponibilidad", "Documentos", "Confirmación"]; // 4 pasos
+export function Stepper({ step, tipoSolicitante = "INDIVIDUAL" }: StepperProps) {
+  const stepLabels =
+    tipoSolicitante === "INDIVIDUAL"
+      ? ["Información", "Disponibilidad", "Motivación", "Documentos", "Confirmación", "Términos y envío"] // 6
+      : ["Organización", "Disponibilidad", "Documentos", "Confirmación", "Términos y envío"]; // 5
 
-  const totalSteps = tipoSolicitante === 'INDIVIDUAL' ? 5 : 4; //  Ajustado a 5
+  const totalSteps = tipoSolicitante === "INDIVIDUAL" ? 6 : 5;
   const stepsArray = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
   return (
     <div className="w-full mb-8 px-2 sm:px-4">
-      {/* Versión móvil: Scroll horizontal */}
+      {/* Versión móvil */}
       <div className="lg:hidden overflow-x-auto pb-4">
         <div className="flex items-center gap-2 min-w-max px-4">
           {stepsArray.map((s, index) => (
@@ -32,6 +31,7 @@ export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) 
                 >
                   {s}
                 </div>
+
                 <span
                   className={`text-[10px] mt-1 text-center leading-tight ${
                     step === s
@@ -46,9 +46,11 @@ export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) 
               </div>
 
               {index < totalSteps - 1 && (
-                <div className={`w-8 h-0.5 rounded transition-colors ${
-                  step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
-                }`}></div>
+                <div
+                  className={`w-8 h-0.5 rounded transition-colors ${
+                    step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
+                  }`}
+                ></div>
               )}
             </div>
           ))}
@@ -71,6 +73,7 @@ export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) 
               >
                 {s}
               </div>
+
               <span
                 className={`text-xs mt-1 text-center leading-tight ${
                   step === s
@@ -85,9 +88,11 @@ export function Stepper({ step, tipoSolicitante = 'INDIVIDUAL' }: StepperProps) 
             </div>
 
             {index < totalSteps - 1 && (
-              <div className={`w-12 h-1 rounded transition-colors ${
-                step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
-              }`}></div>
+              <div
+                className={`w-12 h-1 rounded transition-colors ${
+                  step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
+                }`}
+              ></div>
             )}
           </div>
         ))}

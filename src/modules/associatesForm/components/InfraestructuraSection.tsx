@@ -1,58 +1,48 @@
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface InfraestructuraSectionProps {
-  form: FormLike;
-  showErrors?: boolean;
+  form: FormLike
+  showErrors?: boolean
 }
 
 export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
-  const existentes = (form as any).state?.values?.infraestructuraDisponible || {};
+  const existentes = (form as any).state?.values?.infraestructuraDisponible || {}
 
-  const [infraestructuras, setInfraestructuras] = useState<string[]>(existentes.infraestructuras || []);
+  const [infraestructuras, setInfraestructuras] = useState<string[]>(existentes.infraestructuras || [])
   const [corrienteElectrica, setCorrienteElectrica] = useState({
     publica: existentes.corrienteElectrica?.publica || false,
     privada: existentes.corrienteElectrica?.privada || false,
-  });
-  const [otraInfraestructura, setOtraInfraestructura] = useState<string>("");
+  })
+  const [otraInfraestructura, setOtraInfraestructura] = useState<string>("")
 
   useEffect(() => {
-    (form as any).setFieldValue("infraestructuraDisponible", {
+    ;(form as any).setFieldValue("infraestructuraDisponible", {
       infraestructuras,
       corrienteElectrica,
-    });
-  }, [infraestructuras, corrienteElectrica, form]);
+    })
+  }, [infraestructuras, corrienteElectrica, form])
 
   const toggleInfraestructura = (infra: string) => {
-    setInfraestructuras((prev) =>
-      prev.includes(infra) ? prev.filter((i) => i !== infra) : [...prev, infra]
-    );
-  };
+    setInfraestructuras((prev) => (prev.includes(infra) ? prev.filter((i) => i !== infra) : [...prev, infra]))
+  }
 
   const agregarOtraInfraestructura = () => {
-    const trimmed = otraInfraestructura.trim();
-    if (!trimmed) return;
-    
-    if (trimmed.length > 75) {
-      alert("El texto es muy largo (máx. 75 caracteres).");
-      return;
-    }
+    const trimmed = otraInfraestructura.trim()
+    if (!trimmed) return
 
-    // Solo letras y espacios
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) {
-      alert("Solo se permiten letras y espacios");
-      return;
-    }
-    
-    const exists = infraestructuras.some((i) => i.toLowerCase() === trimmed.toLowerCase());
-    if (exists) {
-      alert("Esta infraestructura ya fue agregada");
-      return;
-    }
-    
-    setInfraestructuras((prev) => [...prev, trimmed]);
-    setOtraInfraestructura("");
-  };
+    if (trimmed.length > 75) return alert("El texto es muy largo (máx. 75 caracteres).")
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) return alert("Solo se permiten letras y espacios")
+
+    const exists = infraestructuras.some((i) => i.toLowerCase() === trimmed.toLowerCase())
+    if (exists) return alert("Esta infraestructura ya fue agregada")
+
+    setInfraestructuras((prev) => [...prev, trimmed])
+    setOtraInfraestructura("")
+  }
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -66,7 +56,6 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Infraestructuras */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             Infraestructura disponible en la finca:
@@ -106,29 +95,34 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
               </div>
             ))}
 
-            {/* Campo "Otra" */}
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 items-start">
               <input
                 type="text"
                 value={otraInfraestructura}
-                onChange={(e) => setOtraInfraestructura(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
+                onChange={(e) =>
+                  setOtraInfraestructura(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarOtraInfraestructura();
+                    e.preventDefault()
+                    agregarOtraInfraestructura()
                   }
                 }}
                 placeholder="Otra infraestructura"
                 className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                 maxLength={75}
               />
-              <button
+
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={agregarOtraInfraestructura}
-                className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+                className={btn.outlineGreen}
               >
+                <Plus className="size-4" />
                 Agregar
-              </button>
+              </Button>
             </div>
 
             {infraestructuras.length > 0 && (
@@ -149,11 +143,8 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
           </div>
         </div>
 
-        {/* Corriente Eléctrica */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Corriente eléctrica:
-          </label>
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Corriente eléctrica:</label>
 
           <div className="space-y-2">
             <div className="flex items-center gap-3">
@@ -161,9 +152,7 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
                 type="checkbox"
                 id="electrica-publica"
                 checked={corrienteElectrica.publica}
-                onChange={(e) =>
-                  setCorrienteElectrica({ ...corrienteElectrica, publica: e.target.checked })
-                }
+                onChange={(e) => setCorrienteElectrica({ ...corrienteElectrica, publica: e.target.checked })}
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
               />
@@ -177,9 +166,7 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
                 type="checkbox"
                 id="electrica-privada"
                 checked={corrienteElectrica.privada}
-                onChange={(e) =>
-                  setCorrienteElectrica({ ...corrienteElectrica, privada: e.target.checked })
-                }
+                onChange={(e) => setCorrienteElectrica({ ...corrienteElectrica, privada: e.target.checked })}
                 className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
                 style={{ accentColor: "#708C3E" }}
               />
@@ -191,5 +178,5 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

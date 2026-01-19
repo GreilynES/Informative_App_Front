@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react"
 import type { FieldLike, FormLike } from "../../../shared/types/form-lite"
 import Swal from "sweetalert2"
 import { showLoading, stopLoadingWithSuccess } from "../../utils/alerts"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft, Send } from "lucide-react"
 
 export function TermsAndSubmit({
   form,
@@ -17,20 +19,15 @@ export function TermsAndSubmit({
   useEffect(() => {
     if (isSubmitting && !wasSubmittingRef.current) {
       wasSubmittingRef.current = true
-
-      // ✅ Loading solo aquí (una vez)
       showLoading("Enviando solicitud...")
     }
 
     if (!isSubmitting && wasSubmittingRef.current) {
       wasSubmittingRef.current = false
-
-      // ✅ Cierra loading y muestra éxito
       stopLoadingWithSuccess("Solicitud enviada correctamente.")
     }
   }, [isSubmitting])
 
-  // ✅ si el componente se desmonta (porque navegas), cerrá cualquier modal abierto
   useEffect(() => {
     return () => {
       if (Swal.isVisible()) Swal.close()
@@ -65,32 +62,38 @@ export function TermsAndSubmit({
                 style={{ accentColor: "#708C3E" }}
               />
               <span className="text-sm">
-                Confirmo mi consentimiento para que mis datos personales sean utilizados para el registro de mi solicitud
-                de asociado.
+                Confirmo mi consentimiento para que mis datos personales sean utilizados para el
+                registro de mi solicitud de asociado.
               </span>
             </label>
           )}
         </form.Field>
+
         {err && <p className="text-sm text-red-600">{err}</p>}
       </div>
 
       <div className="flex justify-between mt-6">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={prevStep}
-          className="px-4 py-2 rounded border border-[#DCD6C9] text-[#4A4A4A]"
+          className="border-[#DCD6C9] text-[#4A4A4A] hover:bg-[#ECECEC] shadow-none"
         >
+          <ArrowLeft className="size-4" />
           Volver
-        </button>
+        </Button>
 
         {/* ✅ sin onClick; el submit lo controla el form */}
-        <button
+        <Button
           type="submit"
+          size="sm"
           disabled={isSubmitting || !form.state.values.acceptTerms}
-          className="px-6 py-2 rounded bg-[#708C3E] text-white shadow hover:opacity-95 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="bg-[#708C3E] text-white hover:bg-[#5d7334] disabled:bg-[#ECECEC] disabled:text-[#6B6B6B] shadow-sm"
         >
+          <Send className="size-4" />
           {isSubmitting ? "Enviando..." : "Enviar solicitud"}
-        </button>
+        </Button>
       </div>
     </div>
   )

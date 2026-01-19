@@ -1,88 +1,61 @@
-
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface CaracteristicasFisicasSectionProps {
-  form: FormLike;
-  showErrors?: boolean;
+  form: FormLike
+  showErrors?: boolean
 }
 
-export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSectionProps) {
-  const existentes = (form as any).state?.values?.caracteristicasFisicas || {};
+export function CaracteristicasFisicasSection({ form }: CaracteristicasFisicasSectionProps) {
+  const existentes = (form as any).state?.values?.caracteristicasFisicas || {}
 
-  const [tiposCerca, setTiposCerca] = useState<string[]>(existentes.tiposCerca || []);
-  const [equipos, setEquipos] = useState<string[]>(existentes.equipos || []);
-  const [otraCerca, setOtraCerca] = useState<string>("");
-  const [otroEquipo, setOtroEquipo] = useState<string>("");
+  const [tiposCerca, setTiposCerca] = useState<string[]>(existentes.tiposCerca || [])
+  const [equipos, setEquipos] = useState<string[]>(existentes.equipos || [])
+  const [otraCerca, setOtraCerca] = useState<string>("")
+  const [otroEquipo, setOtroEquipo] = useState<string>("")
 
   useEffect(() => {
-    (form as any).setFieldValue("caracteristicasFisicas", {
-      tiposCerca,
-      equipos,
-    });
-  }, [tiposCerca, equipos, form]);
+    ;(form as any).setFieldValue("caracteristicasFisicas", { tiposCerca, equipos })
+  }, [tiposCerca, equipos, form])
 
   const toggleCerca = (cerca: string) => {
-    setTiposCerca((prev) =>
-      prev.includes(cerca) ? prev.filter((c) => c !== cerca) : [...prev, cerca]
-    );
-  };
+    setTiposCerca((prev) => (prev.includes(cerca) ? prev.filter((c) => c !== cerca) : [...prev, cerca]))
+  }
 
   const toggleEquipo = (equipo: string) => {
-    setEquipos((prev) =>
-      prev.includes(equipo) ? prev.filter((e) => e !== equipo) : [...prev, equipo]
-    );
-  };
+    setEquipos((prev) => (prev.includes(equipo) ? prev.filter((e) => e !== equipo) : [...prev, equipo]))
+  }
 
   const agregarOtraCerca = () => {
-    const trimmed = otraCerca.trim();
-    if (!trimmed) return;
-    
-    if (trimmed.length > 75) {
-      alert("El texto es muy largo (máx. 75 caracteres).");
-      return;
-    }
+    const trimmed = otraCerca.trim()
+    if (!trimmed) return
 
-    // Solo letras y espacios
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) {
-      alert("Solo se permiten letras y espacios");
-      return;
-    }
-    
-    const exists = tiposCerca.some((c) => c.toLowerCase() === trimmed.toLowerCase());
-    if (exists) {
-      alert("Este tipo de cerca ya fue agregado");
-      return;
-    }
-    
-    setTiposCerca((prev) => [...prev, trimmed]);
-    setOtraCerca("");
-  };
+    if (trimmed.length > 75) return alert("El texto es muy largo (máx. 75 caracteres).")
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) return alert("Solo se permiten letras y espacios")
+
+    const exists = tiposCerca.some((c) => c.toLowerCase() === trimmed.toLowerCase())
+    if (exists) return alert("Este tipo de cerca ya fue agregado")
+
+    setTiposCerca((prev) => [...prev, trimmed])
+    setOtraCerca("")
+  }
 
   const agregarOtroEquipo = () => {
-    const trimmed = otroEquipo.trim();
-    if (!trimmed) return;
-    
-    if (trimmed.length > 75) {
-      alert("El texto es muy largo (máx. 75 caracteres).");
-      return;
-    }
+    const trimmed = otroEquipo.trim()
+    if (!trimmed) return
 
-    // Solo letras y espacios
-    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) {
-      alert("Solo se permiten letras y espacios");
-      return;
-    }
-    
-    const exists = equipos.some((e) => e.toLowerCase() === trimmed.toLowerCase());
-    if (exists) {
-      alert("Este equipo ya fue agregado");
-      return;
-    }
-    
-    setEquipos((prev) => [...prev, trimmed]);
-    setOtroEquipo("");
-  };
+    if (trimmed.length > 75) return alert("El texto es muy largo (máx. 75 caracteres).")
+    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(trimmed)) return alert("Solo se permiten letras y espacios")
+
+    const exists = equipos.some((e) => e.toLowerCase() === trimmed.toLowerCase())
+    if (exists) return alert("Este equipo ya fue agregado")
+
+    setEquipos((prev) => [...prev, trimmed])
+    setOtroEquipo("")
+  }
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -94,20 +67,18 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Tipos de Cerca */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Tipos de cerca:
-          </label>
-         <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
-          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
-            i
-          </span>
-          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
-            Marca los tipos de cerca que aplican. Para otro tipo, escríbelo y presiona{" "}
-            <span className="font-semibold text-[#708C3E]">Agregar</span>.
-          </p>
-        </div>
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Tipos de cerca:</label>
+
+          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
+            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+              i
+            </span>
+            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Marca los tipos de cerca que aplican. Para otro tipo, escríbelo y presiona{" "}
+              <span className="font-semibold text-[#708C3E]">Agregar</span>.
+            </p>
+          </div>
 
           <div className="space-y-2">
             {["Alambre de púas", "Eléctrica", "Viva", "Muerta"].map((cerca) => (
@@ -126,29 +97,26 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
               </div>
             ))}
 
-            {/* Campo "Otra" */}
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 items-start">
               <input
                 type="text"
                 value={otraCerca}
                 onChange={(e) => setOtraCerca(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarOtraCerca();
+                    e.preventDefault()
+                    agregarOtraCerca()
                   }
                 }}
                 placeholder="Otro tipo de cerca"
                 className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                 maxLength={75}
               />
-              <button
-                type="button"
-                onClick={agregarOtraCerca}
-                className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-              >
+
+              <Button type="button" variant="outline" size="sm" onClick={agregarOtraCerca} className={btn.outlineGreen}>
+                <Plus className="size-4" />
                 Agregar
-              </button>
+              </Button>
             </div>
 
             {tiposCerca.length > 0 && (
@@ -169,19 +137,17 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
           </div>
         </div>
 
-        {/* Equipos */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            Equipos disponibles:
-          </label>
+          <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Equipos disponibles:</label>
+
           <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
-          <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
-            i
+            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+              i
             </span>
-          <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
-            Selecciona los equipos que tiene la finca. Para otro equipo, escríbelo y presiona{" "}
-            <span className="font-semibold text-[#708C3E]">Agregar</span>.
-          </p>
+            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
+              Selecciona los equipos que tiene la finca. Para otro equipo, escríbelo y presiona{" "}
+              <span className="font-semibold text-[#708C3E]">Agregar</span>.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -201,29 +167,26 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
               </div>
             ))}
 
-            {/* Campo "Otro" */}
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-2 mt-3 items-start">
               <input
                 type="text"
                 value={otroEquipo}
                 onChange={(e) => setOtroEquipo(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarOtroEquipo();
+                    e.preventDefault()
+                    agregarOtroEquipo()
                   }
                 }}
                 placeholder="Otro equipo"
                 className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                 maxLength={75}
               />
-              <button
-                type="button"
-                onClick={agregarOtroEquipo}
-                className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
-              >
+
+              <Button type="button" variant="outline" size="sm" onClick={agregarOtroEquipo} className={btn.outlineGreen}>
+                <Plus className="size-4" />
                 Agregar
-              </button>
+              </Button>
             </div>
 
             {equipos.length > 0 && (
@@ -245,5 +208,5 @@ export function CaracteristicasFisicasSection({ form}: CaracteristicasFisicasSec
         </div>
       </div>
     </div>
-  );
+  )
 }

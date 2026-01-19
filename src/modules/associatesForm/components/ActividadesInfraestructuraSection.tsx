@@ -1,78 +1,75 @@
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
-import { actividadCultivoSchema } from "../schemas/associateApply";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { actividadCultivoSchema } from "../schemas/associateApply"
+import { Button } from "@/components/ui/button"
+import { Plus, X } from "lucide-react"
+import { btn } from "@/shared/ui/buttonStyles"
 
 interface ActividadesInfraestructuraSectionProps {
-  form: FormLike;
-  showErrors?: boolean;
+  form: FormLike
+  showErrors?: boolean
 }
 
-export function ActividadesInfraestructuraSection({
-  form,
-}: ActividadesInfraestructuraSectionProps) {
-  const existentes = (form as any).state?.values?.actividadesInfraestructura || {};
+export function ActividadesInfraestructuraSection({ form }: ActividadesInfraestructuraSectionProps) {
+  const existentes = (form as any).state?.values?.actividadesInfraestructura || {}
 
-  const [actividades, setActividades] = useState<string[]>(existentes.cultivos || []);
-  const [cultivo, setCultivo] = useState<string>("");
-  const [cultivoError, setCultivoError] = useState<string | null>(null);
+  const [actividades, setActividades] = useState<string[]>(existentes.cultivos || [])
+  const [cultivo, setCultivo] = useState<string>("")
+  const [cultivoError, setCultivoError] = useState<string | null>(null)
 
-  // ✅ NUEVO: Apartos (divisiones de la finca)
-  const [apartos, setApartos] = useState<string>(existentes.apartos?.toString() || "0");
+  const [apartos, setApartos] = useState<string>(existentes.apartos?.toString() || "0")
 
-  const [comederos, setComederos] = useState<string>(existentes.comederos?.toString() || "0");
-  const [bebederos, setBebederos] = useState<string>(existentes.bebederos?.toString() || "0");
-  const [saleros, setSaleros] = useState<string>(existentes.saleros?.toString() || "0");
+  const [comederos, setComederos] = useState<string>(existentes.comederos?.toString() || "0")
+  const [bebederos, setBebederos] = useState<string>(existentes.bebederos?.toString() || "0")
+  const [saleros, setSaleros] = useState<string>(existentes.saleros?.toString() || "0")
 
   useEffect(() => {
-    (form as any).setFieldValue("actividadesInfraestructura", {
+    ;(form as any).setFieldValue("actividadesInfraestructura", {
       cultivos: actividades,
-      apartos: parseInt(apartos, 10) || 0, // ✅ NUEVO
+      apartos: parseInt(apartos, 10) || 0,
       comederos: parseInt(comederos, 10) || 0,
       bebederos: parseInt(bebederos, 10) || 0,
       saleros: parseInt(saleros, 10) || 0,
-    });
-  }, [actividades, apartos, comederos, bebederos, saleros, form]);
+    })
+  }, [actividades, apartos, comederos, bebederos, saleros, form])
 
   const agregarActividad = () => {
-    const trimmed = cultivo.trim();
+    const trimmed = cultivo.trim()
 
     if (!trimmed) {
-      setCultivoError("La actividad es requerida");
-      return;
+      setCultivoError("La actividad es requerida")
+      return
     }
 
-    const parsed = actividadCultivoSchema.safeParse(trimmed);
+    const parsed = actividadCultivoSchema.safeParse(trimmed)
     if (!parsed.success) {
-      setCultivoError(parsed.error.issues[0]?.message ?? "Actividad inválida");
-      return;
+      setCultivoError(parsed.error.issues[0]?.message ?? "Actividad inválida")
+      return
     }
 
     if (actividades.includes(trimmed)) {
-      setCultivoError("Esta actividad ya fue agregada");
-      return;
+      setCultivoError("Esta actividad ya fue agregada")
+      return
     }
 
-    setActividades([...actividades, trimmed]);
-    setCultivo("");
-    setCultivoError(null);
-  };
+    setActividades([...actividades, trimmed])
+    setCultivo("")
+    setCultivoError(null)
+  }
 
   const eliminarActividad = (item: string) => {
-    setActividades(actividades.filter((a) => a !== item));
-  };
+    setActividades(actividades.filter((a) => a !== item))
+  }
 
-  // ✅ Función helper para manejar inputs numéricos
   const handleNumericInput = (value: string, setter: (val: string) => void) => {
-    const cleaned = value.replace(/\D/g, "");
-
+    const cleaned = value.replace(/\D/g, "")
     if (cleaned === "") {
-      setter("0");
-      return;
+      setter("0")
+      return
     }
-
-    const parsed = parseInt(cleaned, 10);
-    setter(parsed.toString());
-  };
+    const parsed = parseInt(cleaned, 10)
+    setter(parsed.toString())
+  }
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -108,13 +105,13 @@ export function ActividadesInfraestructuraSection({
                 type="text"
                 value={cultivo}
                 onChange={(e) => {
-                  setCultivo(e.target.value);
-                  if (cultivoError) setCultivoError(null);
+                  setCultivo(e.target.value)
+                  if (cultivoError) setCultivoError(null)
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    e.preventDefault();
-                    agregarActividad();
+                    e.preventDefault()
+                    agregarActividad()
                   }
                 }}
                 placeholder="Ej: Maíz, Huerta, Porcicultura..."
@@ -130,13 +127,16 @@ export function ActividadesInfraestructuraSection({
               {cultivoError && <p className="mt-1 text-sm text-red-600">{cultivoError}</p>}
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={agregarActividad}
-              className="px-4 py-2 bg-white border border-[#CFCFCF] rounded-md text-[#4A4A4A] hover:bg-gray-50 hover:border-[#708C3E] transition-colors"
+              className={btn.outlineGreen}
             >
+              <Plus className="size-4" />
               Agregar
-            </button>
+            </Button>
           </div>
 
           {actividades.length > 0 && (
@@ -144,16 +144,21 @@ export function ActividadesInfraestructuraSection({
               {actividades.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-white border border-[#CFCFCF] rounded-full px-3 py-1"
+                  className="flex items-center gap-1.5 bg-white border border-[#CFCFCF] rounded-full px-3 py-1"
                 >
                   <span className="text-sm text-[#4A4A4A]">{item}</span>
-                  <button
+
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon-sm"
                     onClick={() => eliminarActividad(item)}
-                    className="text-[#c52424] hover:text-[#8d1a1a]"
+                    className="text-[#B85C4C] hover:text-[#8C3A33] hover:bg-[#E6C3B4]/40"
+                    aria-label={`Eliminar ${item}`}
+                    title="Eliminar"
                   >
-                    ×
-                  </button>
+                    <X className="size-4" />
+                  </Button>
                 </div>
               ))}
             </div>
@@ -174,7 +179,6 @@ export function ActividadesInfraestructuraSection({
             onFocus={(e) => e.target.select()}
             className="w-full md:w-1/3 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
           />
-          
         </div>
 
         <div>
@@ -183,7 +187,6 @@ export function ActividadesInfraestructuraSection({
           </label>
 
           <div className="grid md:grid-cols-3 gap-4">
-            {/* ✅ Comederos */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Comederos</label>
               <input
@@ -197,7 +200,6 @@ export function ActividadesInfraestructuraSection({
               />
             </div>
 
-            {/* ✅ Bebederos */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Bebederos</label>
               <input
@@ -211,7 +213,6 @@ export function ActividadesInfraestructuraSection({
               />
             </div>
 
-            {/* ✅ Saleros */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Saleros</label>
               <input
@@ -228,5 +229,5 @@ export function ActividadesInfraestructuraSection({
         </div>
       </div>
     </div>
-  );
+  )
 }

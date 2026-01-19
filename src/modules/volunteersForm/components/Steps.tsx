@@ -14,9 +14,9 @@ import { DocumentUploadVoluntarios } from "../components/DocumentUploadVoluntari
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 
 import { useRef, useState } from "react";
-import { submitSolicitudFlow } from "../../utils/alerts";
-
-
+import { TermsAndSubmit } from "./TermsAndSubmit";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 
 interface StepsProps {
   step: number;
@@ -47,7 +47,6 @@ export function Steps({
   lookup,
   tipoSolicitante = "INDIVIDUAL",
   form,
-  isSubmitting,
   submitIndividual,
   submitOrganizacion,
   files,
@@ -75,25 +74,8 @@ export function Steps({
     requestAnimationFrame(scrollToFormTop);
   };
 
-  // ✅ Scroll a la sección de requisitos (botones)
-  const scrollToRequisitos = () => {
-    const el =
-      document.getElementById("requisitos") ||
-      document.getElementById("requirements") ||
-      (document.querySelector("[data-anchor='requisitos']") as HTMLElement | null);
 
-    el?.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-  };
 
-  const afterSubmit = () => {
-    if (onAfterSubmit) {
-      onAfterSubmit();
-      setTimeout(scrollToRequisitos, 250);
-    } else {
-      nextStep();
-      setTimeout(scrollToRequisitos, 250);
-    }
-  };
 
   const dispRefIndividual = useRef<DisponibilidadAreasSectionHandle>(null);
   const dispRefOrg = useRef<DisponibilidadAreasSectionHandle>(null);
@@ -326,43 +308,41 @@ export function Steps({
             </div>
 
             {/* Botones */}
-            <div className="mt-8 flex justify-between items-center">
-              <button
+            <div className="mt-8 flex justify-between items-center gap-3">
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={goPrev}
-                className="px-6 py-3 border-2 border-[#708C3E] text-[#708C3E] rounded-lg hover:bg-[#F5F7EC] transition-colors font-medium"
+                className="border-[#708C3E] text-[#708C3E] hover:bg-[#E6EDC8] shadow-none"
               >
-                ← Anterior
-              </button>
+                <ArrowLeft className="size-4" />
+                Anterior
+              </Button>
 
-              <button
+              <Button
                 type="button"
-                onClick={async () => {
-                  if (submitIndividual && formData) {
-                    const { ok } = await submitSolicitudFlow(
-                      async () => {
-                        await submitIndividual(formData);
-                      },
-                      {
-                        loadingText: "Enviando solicitud...",
-                        successText: "¡Solicitud enviada correctamente!",
-                        errorText: "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
-                      }
-                    );
-                    if (ok) afterSubmit();
-                  }
-                }}
-                disabled={isSubmitting}
-                className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                  isSubmitting
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white shadow-md"
-                }`}
+                size="sm"
+                onClick={goNext}
+                className="bg-[#708C3E] text-white hover:bg-[#5d7334] shadow-sm"
               >
-                {isSubmitting ? "Enviando..." : "Enviar Solicitud →"}
-              </button>
+                Continuar
+                <ChevronRight className="size-4" />
+              </Button>
             </div>
           </div>
+        )}
+         {/* Paso 6: Terms and Submit (aquí vive el submit) */}
+        {step === 6 && (
+          <TermsAndSubmit
+            tipoSolicitante="INDIVIDUAL"
+            formData={formData!}
+            handleInputChange={(field, value) => handleInputChange!(field, value)}
+            prevStep={goPrev}
+            submitIndividual={submitIndividual}
+            submitOrganizacion={submitOrganizacion}
+            onAfterSubmit={onAfterSubmit}
+          />
         )}
       </div>
     );
@@ -649,43 +629,42 @@ export function Steps({
               </div>
             </div>
 
-            <div className="mt-8 flex justify-between items-center">
-              <button
+            <div className="mt-8 flex justify-between items-center gap-3">
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={goPrev}
-                className="px-6 py-3 border-2 border-[#708C3E] text-[#708C3E] rounded-lg hover:bg-[#F5F7EC] transition-colors font-medium"
+                className="border-[#708C3E] text-[#708C3E] hover:bg-[#E6EDC8] shadow-none"
               >
-                ← Anterior
-              </button>
+                <ArrowLeft className="size-4" />
+                Anterior
+              </Button>
 
-              <button
+              <Button
                 type="button"
-                onClick={async () => {
-                  if (submitOrganizacion) {
-                    const { ok } = await submitSolicitudFlow(
-                      async () => {
-                        await submitOrganizacion();
-                      },
-                      {
-                        loadingText: "Enviando solicitud...",
-                        successText: "¡Solicitud enviada correctamente!",
-                        errorText: "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
-                      }
-                    );
-                    if (ok) afterSubmit();
-                  }
-                }}
-                disabled={isSubmitting}
-                className={`px-8 py-3 rounded-lg font-medium transition-colors ${
-                  isSubmitting
-                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#6F8C1F] to-[#475C1D] hover:from-[#5d741c] hover:to-[#384c17] text-white shadow-md"
-                }`}
+                size="sm"
+                onClick={goNext}
+                className="bg-[#708C3E] text-white hover:bg-[#5d7334] shadow-sm"
               >
-                {isSubmitting ? "Enviando..." : "Enviar Solicitud →"}
-              </button>
+                Continuar
+                <ChevronRight className="size-4" />
+              </Button>
             </div>
           </div>
+        )}
+
+        {/* Paso 5: Terms and Submit */}
+        {step === 5 && (
+          <TermsAndSubmit
+            tipoSolicitante="ORGANIZACION"
+            formData={formData!}
+            handleInputChange={(field, value) => handleInputChange!(field, value)}
+            prevStep={goPrev}
+            submitIndividual={submitIndividual}
+            submitOrganizacion={submitOrganizacion}
+            onAfterSubmit={onAfterSubmit}
+          />
         )}
       </div>
     );

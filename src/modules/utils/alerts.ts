@@ -28,9 +28,10 @@ export const showLoading = (
 ) => {
   const note =
     opts?.note ??
-    "Por favor, no cierres esta pestaña ni actualices la página mientras finalizamos el proceso."
+    "Por favor, no cierres esta pestaña ni actualices la página mientras finalizamos el proceso.";
 
-  const p = Swal.fire({
+  // IMPORTANTÍSIMO: NO devolver algo que luego vayas a await en el flow
+  Swal.fire({
     title: text,
     html: `<div style="margin-top:10px; font-size:12px; opacity:.9;">
             ${note}
@@ -47,26 +48,15 @@ export const showLoading = (
       timerProgressBar: "camara-progress",
     },
     didOpen: () => {
-      Swal.showLoading()
-const loader = Swal.getContainer()?.querySelector(".swal2-loader") as HTMLElement | null;
-      if (loader) loader.classList.add("camara-loader")
+      Swal.showLoading();
+      const loader = Swal.getContainer()?.querySelector(".swal2-loader") as HTMLElement | null;
+      if (loader) loader.classList.add("camara-loader");
     },
-  })
+  });
+};
 
-  // ⛑️ auto-timeout (de seguridad)
-  setTimeout(() => {
-    if (Swal.isVisible()) Swal.close()
-  }, 10000)
-
-  return p
-}
-
-
-export const stopLoadingWithSuccess = async (
-  message = "Operación realizada correctamente"
-) => {
+export const stopLoadingWithSuccess = async (message = "Operación realizada correctamente") => {
   Swal.close();
-
   return Swal.fire({
     icon: "success",
     title: "Listo",
@@ -76,7 +66,7 @@ export const stopLoadingWithSuccess = async (
     showConfirmButton: false,
     allowOutsideClick: false,
     allowEscapeKey: false,
-    background: "#FFFCE6", // crema menos amarillo que FAF9F5
+    background: "#FFFCE6",
     customClass: {
       popup: "camara-popup",
       title: "camara-title",
@@ -87,11 +77,8 @@ export const stopLoadingWithSuccess = async (
   });
 };
 
-export const stopLoadingWithError = async (
-  message = "Ocurrió un error. Intenta de nuevo."
-) => {
+export const stopLoadingWithError = async (message = "Ocurrió un error. Intenta de nuevo.") => {
   Swal.close();
-
   return Swal.fire({
     icon: "error",
     title: "No se pudo completar",
@@ -113,9 +100,10 @@ export const stopLoadingWithError = async (
       confirmButton: "camara-confirm",
       icon: "camara-icon-error",
     },
-    buttonsStyling: false, // importante para que tome tus clases
+    buttonsStyling: false,
   });
 };
+
 
 /* Específico submit */
 
@@ -131,20 +119,15 @@ export const submitSolicitudFlow = async <T>(
     errorText?: string;
   } = {}
 ) => {
-  await showLoading(loadingText);
-
-  let handled = false;
+  // ✅ NO awaits aquí
+  showLoading(loadingText);
 
   try {
-    const result = await action();
+    const result = await action();               // ✅ aquí sí corre la request
     await stopLoadingWithSuccess(successText);
-    handled = true;
     return { ok: true, result };
   } catch (err) {
     await stopLoadingWithError(errorText);
-    handled = true;
     return { ok: false, error: err };
-  } finally {
-    if (!handled && Swal.isVisible()) Swal.close();
   }
 };
