@@ -1,52 +1,53 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
-import { Lightbulb, Award, Briefcase } from "lucide-react";
-import { motivacionHabilidadesSchema } from "../schemas/volunteerSchema";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react"
+import { Lightbulb, Award, Briefcase } from "lucide-react"
+import { motivacionHabilidadesSchema } from "../schemas/volunteerSchema"
+import { Textarea } from "@/components/ui/textarea"
 
 interface MotivacionHabilidadesSectionProps {
-  formData: any;
-  handleInputChange: (field: string, value: any) => void;
+  formData: any
+  handleInputChange: (field: string, value: any) => void
 }
 
 export type MotivacionHabilidadesSectionHandle = {
-  validateAndShowErrors: () => boolean;
-  isValid: () => boolean;
-  clearErrors: () => void;
-};
+  validateAndShowErrors: () => boolean
+  isValid: () => boolean
+  clearErrors: () => void
+}
 
-const MAX = 150;
+const MAX = 150
 
 export const MotivacionHabilidadesSection = forwardRef<
   MotivacionHabilidadesSectionHandle,
   MotivacionHabilidadesSectionProps
 >(function MotivacionHabilidadesSection({ formData, handleInputChange }, ref) {
-  const [showErrors, setShowErrors] = useState(false);
-  const [errors, setErrors] = useState<{ motivation?: string; volunteeringType?: string }>({});
+  const [showErrors, setShowErrors] = useState(false)
+  const [errors, setErrors] = useState<{ motivation?: string; volunteeringType?: string }>({})
 
-  const motivationLen = (formData?.motivation || "").length;
-  const volunteeringLen = (formData?.volunteeringType || "").length;
-  const experienceLen = (formData?.previousExperience || "").length;
+  const motivationLen = (formData?.motivation || "").length
+  const volunteeringLen = (formData?.volunteeringType || "").length
+  const experienceLen = (formData?.previousExperience || "").length
 
   const getErrors = useMemo(
     () =>
       (payload: {
-        motivation: string;
-        volunteeringType: string;
-        previousExperience?: string;
+        motivation: string
+        volunteeringType: string
+        previousExperience?: string
       }) => {
-        const res = motivacionHabilidadesSchema.safeParse(payload);
-        const base = { motivation: "", volunteeringType: "" };
+        const res = motivacionHabilidadesSchema.safeParse(payload)
+        const base = { motivation: "", volunteeringType: "" }
         if (!res.success) {
           for (const issue of res.error.issues) {
-            const key = (issue.path[0] as "motivation" | "volunteeringType") ?? "motivation";
-            if (key in base) (base as any)[key] = issue.message;
+            const key = (issue.path[0] as "motivation" | "volunteeringType") ?? "motivation"
+            if (key in base) (base as any)[key] = issue.message
           }
         }
-        return base;
+        return base
       },
     []
-  );
+  )
 
-  const isEmpty = (e: typeof errors) => !e.motivation && !e.volunteeringType;
+  const isEmpty = (e: typeof errors) => !e.motivation && !e.volunteeringType
 
   useImperativeHandle(ref, () => ({
     validateAndShowErrors: () => {
@@ -54,40 +55,46 @@ export const MotivacionHabilidadesSection = forwardRef<
         motivation: formData?.motivation || "",
         volunteeringType: formData?.volunteeringType || "",
         previousExperience: formData?.previousExperience || "",
-      });
-      setErrors(merged);
-      setShowErrors(true);
-      return isEmpty(merged);
+      })
+      setErrors(merged)
+      setShowErrors(true)
+      return isEmpty(merged)
     },
     isValid: () => {
       const merged = getErrors({
         motivation: formData?.motivation || "",
         volunteeringType: formData?.volunteeringType || "",
         previousExperience: formData?.previousExperience || "",
-      });
-      return isEmpty(merged);
+      })
+      return isEmpty(merged)
     },
     clearErrors: () => {
-      setShowErrors(false);
-      setErrors({});
+      setShowErrors(false)
+      setErrors({})
     },
-  }));
+  }))
 
   useEffect(() => {
-    if (!showErrors) return;
+    if (!showErrors) return
     const merged = getErrors({
       motivation: formData?.motivation || "",
       volunteeringType: formData?.volunteeringType || "",
       previousExperience: formData?.previousExperience || "",
-    });
-    setErrors(merged);
+    })
+    setErrors(merged)
   }, [
     formData?.motivation,
     formData?.volunteeringType,
     formData?.previousExperience,
     showErrors,
     getErrors,
-  ]);
+  ])
+
+  const textareaBase =
+    "border-[#DCD6C9] bg-white shadow-sm resize-none " +
+    "focus-visible:ring-2 focus-visible:ring-[#708C3E]/30 focus-visible:ring-offset-0"
+
+  const counterClass = (len: number) => (len >= MAX ? "text-[#9c1414]" : "text-gray-400")
 
   return (
     <div className="space-y-6">
@@ -100,28 +107,32 @@ export const MotivacionHabilidadesSection = forwardRef<
           <h3 className="text-lg font-semibold text-[#708C3E]">Motivación</h3>
         </div>
 
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="p-6 space-y-1.5">
+          <label className="block text-sm font-medium text-gray-700">
             ¿Por qué te gustaría ser voluntario/a en nuestra organización?
           </label>
-          <textarea
+
+          <Textarea
             value={formData?.motivation || ""}
             onChange={(e) => handleInputChange("motivation", e.target.value)}
             rows={5}
             maxLength={MAX}
             placeholder="Comparte tus razones para querer ser parte de nuestro equipo de voluntarios..."
-            className={`w-full px-3 py-2 border rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
+            className={[
+              textareaBase,
               (showErrors && errors.motivation) || motivationLen >= MAX
-                ? "border-red-400"
-                : "border-gray-300"
-            }`}
+                ? "border-[#9c1414]"
+                : "border-[#DCD6C9]",
+            ].join(" ")}
           />
+
           {/* Mensajes */}
           {showErrors && errors.motivation && (
-            <p className="text-sm text-red-600 mt-1">{errors.motivation}</p>
+            <p className="text-sm text-[#9c1414] mt-1">{errors.motivation}</p>
           )}
+
           <div className="mt-1 flex justify-end">
-            <span className={`text-xs ${motivationLen >= MAX ? "text-red-600" : "text-gray-400"}`}>
+            <span className={`text-xs ${counterClass(motivationLen)}`}>
               {motivationLen}/{MAX}
               {motivationLen >= MAX ? " — Llegaste al máximo (150)" : ""}
             </span>
@@ -135,33 +146,34 @@ export const MotivacionHabilidadesSection = forwardRef<
           <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
             <Award className="w-5 h-5 text-white" />
           </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Habilidades</h3>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Habilidades</h3>
         </div>
 
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="p-6 space-y-1.5">
+          <label className="block text-sm font-medium text-gray-700">
             ¿Qué habilidades o conocimientos puedes aportar?
           </label>
-          <textarea
+
+          <Textarea
             value={formData?.volunteeringType || ""}
             onChange={(e) => handleInputChange("volunteeringType", e.target.value)}
             rows={5}
             maxLength={MAX}
             placeholder="Ej: Trabajo en equipo, comunicación, agricultura sostenible, manejo de redes sociales..."
-            className={`w-full px-3 py-2 border rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
+            className={[
+              textareaBase,
               (showErrors && errors.volunteeringType) || volunteeringLen >= MAX
-                ? "border-red-400"
-                : "border-gray-300"
-            }`}
+                ? "border-[#9c1414]"
+                : "border-[#DCD6C9]",
+            ].join(" ")}
           />
-          {/* Mensajes */}
+
           {showErrors && errors.volunteeringType && (
-            <p className="text-sm text-red-600 mt-1">{errors.volunteeringType}</p>
+            <p className="text-sm text-[#9c1414] mt-1">{errors.volunteeringType}</p>
           )}
+
           <div className="mt-1 flex justify-end">
-            <span
-              className={`text-xs ${volunteeringLen >= MAX ? "text-red-600" : "text-gray-400"}`}
-            >
+            <span className={`text-xs ${counterClass(volunteeringLen)}`}>
               {volunteeringLen}/{MAX}
               {volunteeringLen >= MAX ? " — Llegaste al máximo (150)" : ""}
             </span>
@@ -178,23 +190,26 @@ export const MotivacionHabilidadesSection = forwardRef<
           <h3 className="text-lg font-semibold text-[#708C3E]">Experiencia Previa</h3>
         </div>
 
-        <div className="p-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="p-6 space-y-1.5">
+          <label className="block text-sm font-medium text-gray-700">
             ¿Has participado anteriormente en actividades de voluntariado?{" "}
             <span className="text-gray-500 text-xs">(Opcional)</span>
           </label>
-          <textarea
+
+          <Textarea
             value={formData?.previousExperience || ""}
             onChange={(e) => handleInputChange("previousExperience", e.target.value)}
             rows={5}
             maxLength={MAX}
             placeholder="Si tienes experiencia previa como voluntario/a, cuéntanos sobre ella..."
-            className={`w-full px-3 py-2 border rounded-md shadow-sm resize-none focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F] ${
-              experienceLen >= MAX ? "border-red-400" : "border-gray-300"
-            }`}
+            className={[
+              textareaBase,
+              experienceLen >= MAX ? "border-[#9c1414]" : "border-[#DCD6C9]",
+            ].join(" ")}
           />
+
           <div className="mt-1 flex justify-end">
-            <span className={`text-xs ${experienceLen >= MAX ? "text-red-600" : "text-gray-400"}`}>
+            <span className={`text-xs ${counterClass(experienceLen)}`}>
               {experienceLen}/{MAX}
               {experienceLen >= MAX ? " — Llegaste al máximo (150)" : ""}
             </span>
@@ -202,5 +217,5 @@ export const MotivacionHabilidadesSection = forwardRef<
         </div>
       </div>
     </div>
-  );
-});
+  )
+})

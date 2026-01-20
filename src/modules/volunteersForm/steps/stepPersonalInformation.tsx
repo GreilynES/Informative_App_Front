@@ -3,13 +3,11 @@ import { UserRound, Mail, Calendar as CalendarIcon } from "lucide-react"
 import { NavigationButtons } from "../components/NavigationButtons"
 import { useMemo, useState } from "react"
 import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema"
-
 import { existsCedula, existsEmail } from "../services/volunteerFormService"
-
-// ✅ Shadcn calendar dropdown
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { es } from "date-fns/locale"
 
 interface StepPersonalInformationProps {
@@ -29,12 +27,10 @@ export function StepPersonalInformation({
 }: StepPersonalInformationProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [limitReached, setLimitReached] = useState<Record<string, boolean>>({})
-
   const [verificandoCedula, setVerificandoCedula] = useState(false)
   const [verificandoEmail, setVerificandoEmail] = useState(false)
 
   const personaSchema = volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona
-
 
   const updateLimitFlag = (field: keyof VolunteersFormData, value: string, maxLen?: number) => {
     if (!maxLen) return
@@ -120,48 +116,51 @@ export function StepPersonalInformation({
     onNextCombined()
   }
 
-const parseISOToDate = (iso?: string) => {
-  if (!iso) return undefined
-  const [y, m, d] = iso.split("-").map(Number)
-  if (!y || !m || !d) return undefined
-  const dt = new Date(y, m - 1, d)
-  dt.setHours(0, 0, 0, 0)
-  return dt
-}
+  const parseISOToDate = (iso?: string) => {
+    if (!iso) return undefined
+    const [y, m, d] = iso.split("-").map(Number)
+    if (!y || !m || !d) return undefined
+    const dt = new Date(y, m - 1, d)
+    dt.setHours(0, 0, 0, 0)
+    return dt
+  }
 
-const toISODate = (d: Date) => {
-  const yyyy = d.getFullYear()
-  const mm = String(d.getMonth() + 1).padStart(2, "0")
-  const dd = String(d.getDate()).padStart(2, "0")
-  return `${yyyy}-${mm}-${dd}`
-}
+  const toISODate = (d: Date) => {
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const dd = String(d.getDate()).padStart(2, "0")
+    return `${yyyy}-${mm}-${dd}`
+  }
 
-// ✅ Fecha máxima permitida (hoy - 16 años) como Date real
-const maxBirthDateObj = useMemo(() => {
-  const t = new Date()
-  t.setFullYear(t.getFullYear() - 16)
-  t.setHours(0, 0, 0, 0)
-  return t
-}, [])
+  const maxBirthDateObj = useMemo(() => {
+    const t = new Date()
+    t.setFullYear(t.getFullYear() - 16)
+    t.setHours(0, 0, 0, 0)
+    return t
+  }, [])
 
-const birthDateDate = useMemo(() => parseISOToDate(formData.birthDate), [formData.birthDate])
+  const birthDateDate = useMemo(() => parseISOToDate(formData.birthDate), [formData.birthDate])
 
-const birthDateDisplay = useMemo(() => {
-  const d = birthDateDate
-  if (!d) return ""
-  return d.toLocaleDateString("es-CR", { day: "2-digit", month: "long", year: "numeric" })
-}, [birthDateDate])
+  const birthDateDisplay = useMemo(() => {
+    const d = birthDateDate
+    if (!d) return ""
+    return d.toLocaleDateString("es-CR", { day: "2-digit", month: "long", year: "numeric" })
+  }, [birthDateDate])
 
-// ✅ Deshabilita cualquier fecha posterior a (hoy - 16)
-const disabledBirthDate = (date: Date) => {
-  const dt = new Date(date)
-  dt.setHours(0, 0, 0, 0)
-  return dt > maxBirthDateObj
-}
+  const disabledBirthDate = (date: Date) => {
+    const dt = new Date(date)
+    dt.setHours(0, 0, 0, 0)
+    return dt > maxBirthDateObj
+  }
 
-// ✅ Rango de años permitido en dropdown
-const toYear = maxBirthDateObj.getFullYear()
-const fromYear = 1950 // poné aquí el mínimo que te sirva
+  const toYear = maxBirthDateObj.getFullYear()
+  const fromYear = 1950
+
+  const inputBase =
+    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+  const inputError =
+    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+
   return (
     <div className="space-y-8">
       {/* ───────── Tarjeta 1: Información Personal ───────── */}
@@ -178,9 +177,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
             {/* Cédula */}
             <div className="relative">
               <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                Cédula o Pasaporte*
+                Cédula o Pasaporte *
               </label>
-              <input
+
+              <Input
                 id="idNumber"
                 type="text"
                 placeholder="Número de cédula"
@@ -222,14 +222,11 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 }}
                 required
                 maxLength={60}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                  errors.idNumber
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-gray-300 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                }`}
+                className={`${errors.idNumber ? inputError : inputBase} pr-10 bg-white`}
               />
+
               {verificandoCedula && (
-                <div className="absolute right-3 top-9">
+                <div className="absolute right-3 top-[34px]">
                   <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path
@@ -240,7 +237,8 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                   </svg>
                 </div>
               )}
-              {errors.idNumber && <p className="text-sm text-red-600 mt-1">{errors.idNumber}</p>}
+
+              {errors.idNumber && <p className="text-sm text-[#9c1414] mt-1">{errors.idNumber}</p>}
               {limitReached["idNumber"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
@@ -251,7 +249,8 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
               <label htmlFor="nameId" className="block text-sm font-medium text-gray-700 mb-1">
                 Nombre *
               </label>
-              <input
+
+              <Input
                 id="nameId"
                 type="text"
                 placeholder="Tu nombre"
@@ -263,9 +262,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 }}
                 required
                 maxLength={60}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                className={`${errors.name ? inputError : inputBase} bg-[#ECECEC]`}
               />
-              {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
+
+              {errors.name && <p className="text-sm text-[#9c1414] mt-1">{errors.name}</p>}
               {limitReached["name"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
@@ -276,7 +276,8 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
-              <input
+
+              <Input
                 type="text"
                 placeholder="Tu primer apellido"
                 value={formData.lastName1}
@@ -287,9 +288,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 }}
                 required
                 maxLength={60}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                className={`${errors.lastName1 ? inputError : inputBase} bg-[#ECECEC]`}
               />
-              {errors.lastName1 && <p className="text-sm text-red-600 mt-1">{errors.lastName1}</p>}
+
+              {errors.lastName1 && <p className="text-sm text-[#9c1414] mt-1">{errors.lastName1}</p>}
               {limitReached["lastName1"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
@@ -297,7 +299,8 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
-              <input
+
+              <Input
                 type="text"
                 placeholder="Tu segundo apellido"
                 value={formData.lastName2}
@@ -308,9 +311,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 }}
                 required
                 maxLength={60}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                className={`${errors.lastName2 ? inputError : inputBase} bg-[#ECECEC]`}
               />
-              {errors.lastName2 && <p className="text-sm text-red-600 mt-1">{errors.lastName2}</p>}
+
+              {errors.lastName2 && <p className="text-sm text-[#9c1414] mt-1">{errors.lastName2}</p>}
               {limitReached["lastName2"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
@@ -319,76 +323,69 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
 
           {/* ✅ Fecha de nacimiento (Calendar shadcn - dropdown) */}
           <div>
-  <label className="block text-sm font-medium text-gray-700 mb-1 ">
-    Fecha de Nacimiento *
-  </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
 
-  <Popover>
-    <PopoverTrigger asChild>
-      <Button
-        type="button"
-        variant="outline"
-        className={`w-full justify-between border shadow-sm hover:bg-[#E6EDC8]/40 ${
-          errors.birthDate ? "border-red-500" : "border-[#DCD6C9]"
-        }`}
-      >
-        <span className={formData.birthDate ? "text-[#4A4A4A]" : "text-gray-400"}>
-          {formData.birthDate ? birthDateDisplay : "Seleccione una fecha"}
-        </span>
-        <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
-      </Button>
-    </PopoverTrigger>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={`w-full justify-between shadow-sm hover:bg-[#E6EDC8]/40 ${
+                    errors.birthDate ? "border-[#9c1414]" : "border-[#DCD6C9]"
+                  }`}
+                >
+                  <span className={formData.birthDate ? "text-[#4A4A4A]" : "text-gray-400"}>
+                    {formData.birthDate ? birthDateDisplay : "Seleccione una fecha"}
+                  </span>
+                  <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
+                </Button>
+              </PopoverTrigger>
 
-    <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
-      <Calendar
-        mode="single"
-        selected={birthDateDate}
-        onSelect={(d) => {
-          if (!d) return
-          // ✅ bloquea por si acaso alguien intenta setear una fecha inválida
-          if (disabledBirthDate(d)) return
+              <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
+                <Calendar
+                  mode="single"
+                  selected={birthDateDate}
+                  onSelect={(d) => {
+                    if (!d) return
+                    if (disabledBirthDate(d)) return
+                    const iso = toISODate(d)
+                    handleInputChange("birthDate", iso)
+                    validateField("birthDate", iso)
+                  }}
+                  locale={es}
+                  captionLayout="dropdown"
+                  fromYear={fromYear}
+                  toYear={toYear}
+                  disabled={disabledBirthDate}
+                  defaultMonth={birthDateDate ?? maxBirthDateObj}
+                  className="rounded-lg"
+                  classNames={{
+                    caption: "flex justify-center pt-1 relative items-center text-[#708C3E] font-semibold",
+                    head_cell: "text-[#708C3E] w-9 font-semibold text-[0.8rem]",
+                    day_selected:
+                      "bg-[#708C3E] text-white hover:bg-[#5d7334] hover:text-white focus:bg-[#708C3E] focus:text-white",
+                    day_today: "border border-[#A3853D]",
+                    day_disabled: "text-gray-300 opacity-50",
+                  }}
+                />
 
-          const iso = toISODate(d)
-          handleInputChange("birthDate", iso)
-          validateField("birthDate", iso)
-        }}
-        // ✅ Español
-        locale={es}
-        // ✅ Dropdowns de mes y año
-        captionLayout="dropdown"
-        // ✅ limita el rango del dropdown
-        fromYear={fromYear}
-        toYear={toYear}
-        // ✅ evita seleccionar fechas inválidas
-        disabled={disabledBirthDate}
-        // ✅ hace que el calendario se abra cerca de la fecha actual seleccionada
-        defaultMonth={birthDateDate ?? maxBirthDateObj}
-        className="rounded-lg"
-        classNames={{
-          caption: "flex justify-center pt-1 relative items-center text-[#708C3E] font-semibold",
-          head_cell: "text-[#708C3E] w-9 font-semibold text-[0.8rem]",
-          day_selected:
-            "bg-[#708C3E] text-white hover:bg-[#5d7334] hover:text-white focus:bg-[#708C3E] focus:text-white",
-          day_today: "border border-[#A3853D]",
-          day_disabled: "text-gray-300 opacity-50",
-        }}
-      />
+                <p className="mt-2 text-xs text-gray-500">
+                  Debe ser mayor de <span className="font-medium text-[#6F8C1F]">16 años</span>.
+                </p>
+              </PopoverContent>
+            </Popover>
 
-      <p className="mt-2 text-xs text-gray-500">
-        Debe ser mayor de <span className="font-medium text-[#708C3E]">16 años</span>.
-      </p>
-    </PopoverContent>
-  </Popover>
-
-  {errors.birthDate && <p className="text-sm text-red-600 mt-1">{errors.birthDate}</p>}
-</div>
+            {errors.birthDate && <p className="text-sm text-[#9c1414] mt-1">{errors.birthDate}</p>}
+          </div>
 
           {/* Nacionalidad */}
           <div>
             <label htmlFor="nacionalidad" className="block text-sm font-medium text-gray-700 mb-1">
               Nacionalidad
             </label>
-            <input
+
+            <Input
+              id="nacionalidad"
               type="text"
               value={formData.nacionalidad || ""}
               onChange={(e) => {
@@ -398,9 +395,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
               }}
               placeholder="Ej: Costarricense"
               maxLength={60}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              className={`${errors.nacionalidad ? inputError : inputBase} bg-white`}
             />
-            {errors.nacionalidad && <p className="text-sm text-red-600 mt-1">{errors.nacionalidad}</p>}
+
+            {errors.nacionalidad && <p className="text-sm text-[#9c1414] mt-1">{errors.nacionalidad}</p>}
             {limitReached["nacionalidad"] && (
               <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
             )}
@@ -424,7 +422,9 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
               <label htmlFor="phone" className="block text-sm font-medium text-[#4A4A4A] mb-1">
                 Teléfono *
               </label>
-              <input
+
+              <Input
+                id="phone"
                 type="tel"
                 placeholder="Número de teléfono"
                 value={formData.phone}
@@ -436,9 +436,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 required
                 minLength={8}
                 maxLength={12}
-                className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+                className={`${errors.phone ? inputError : inputBase} bg-white`}
               />
-              {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone}</p>}
+
+              {errors.phone && <p className="text-sm text-[#9c1414] mt-1">{errors.phone}</p>}
               {limitReached["phone"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 20 caracteres.</p>
               )}
@@ -449,7 +450,9 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
               <label htmlFor="email" className="block text-sm font-medium text-[#4A4A4A] mb-1">
                 Email *
               </label>
-              <input
+
+              <Input
+                id="email"
                 type="email"
                 placeholder="correo@ejemplo.com"
                 value={formData.email}
@@ -467,14 +470,11 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 }}
                 required
                 maxLength={60}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                  errors.email
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                }`}
+                className={`${errors.email ? inputError : inputBase} pr-10 bg-white`}
               />
+
               {verificandoEmail && (
-                <div className="absolute right-3 top-9">
+                <div className="absolute right-3 top-[34px]">
                   <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path
@@ -485,7 +485,8 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                   </svg>
                 </div>
               )}
-              {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
+
+              {errors.email && <p className="text-sm text-[#9c1414] mt-1">{errors.email}</p>}
               {limitReached["email"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
@@ -497,7 +498,9 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
             <label htmlFor="address" className="block text-sm font-medium text-[#4A4A4A] mb-1">
               Dirección Completa
             </label>
-            <input
+
+            <Input
+              id="address"
               type="text"
               placeholder="Tu dirección completa"
               value={formData.address}
@@ -507,9 +510,10 @@ const fromYear = 1950 // poné aquí el mínimo que te sirva
                 updateLimitFlag("address", e.target.value, 200)
               }}
               maxLength={200}
-              className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
+              className={`${errors.address ? inputError : inputBase} bg-white`}
             />
-            {errors.address && <p className="text-sm text-red-600 mt-1">{errors.address}</p>}
+
+            {errors.address && <p className="text-sm text-[#9c1414] mt-1">{errors.address}</p>}
             {limitReached["address"] && (
               <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 200 caracteres.</p>
             )}
