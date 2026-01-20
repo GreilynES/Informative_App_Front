@@ -8,7 +8,7 @@ import {
 } from "../components/DisponibilidadAreasSection";
 import {
   MotivacionHabilidadesSection,
-  type MotivacionHabilidadesSectionHandle, 
+  type MotivacionHabilidadesSectionHandle,
 } from "../components/MotivacionHabilidadesSection";
 import { DocumentUploadVoluntarios } from "../components/DocumentUploadVoluntarios";
 import { StepPersonalInformation } from "../steps/stepPersonalInformation";
@@ -16,7 +16,7 @@ import { StepPersonalInformation } from "../steps/stepPersonalInformation";
 import { useRef, useState } from "react";
 import { TermsAndSubmit } from "./TermsAndSubmit";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface StepsProps {
   step: number;
@@ -51,7 +51,7 @@ export function Steps({
   submitOrganizacion,
   files,
   setFiles,
-  onAfterSubmit, 
+  onAfterSubmit,
 }: StepsProps) {
   // ===== Scroll helpers (como en Asociados) =====
   const formTopRef = useRef<HTMLDivElement | null>(null);
@@ -74,16 +74,13 @@ export function Steps({
     requestAnimationFrame(scrollToFormTop);
   };
 
-
-
-
   const dispRefIndividual = useRef<DisponibilidadAreasSectionHandle>(null);
   const dispRefOrg = useRef<DisponibilidadAreasSectionHandle>(null);
   const motivRef = useRef<MotivacionHabilidadesSectionHandle>(null);
 
   const [showOrgStep1Errors, setShowOrgStep1Errors] = useState(false);
 
-  // ========== FLUJO INDIVIDUAL ==========
+  // ========== FLUJO INDIVIDUAL (5 pasos) ==========
   if (tipoSolicitante === "INDIVIDUAL") {
     const goFromCombinedToVolunteering = () => {
       goNext();
@@ -91,11 +88,11 @@ export function Steps({
 
     const handleNextFromDisponibilidad = () => {
       const ok = dispRefIndividual.current?.validateAndShowErrors() ?? false;
-      if (!ok) return; 
+      if (!ok) return;
       goNext();
     };
 
-    const handleNextFromMotivacion = () => { 
+    const handleNextFromMotivacion = () => {
       const ok = motivRef.current?.validateAndShowErrors() ?? false;
       if (!ok) return;
       goNext();
@@ -138,7 +135,11 @@ export function Steps({
               handleInputChange={handleInputChange!}
             />
 
-            <NavigationButtons onPrev={goPrev} onNext={handleNextFromMotivacion} disableNext={false} />
+            <NavigationButtons
+              onPrev={goPrev}
+              onNext={handleNextFromMotivacion}
+              disableNext={false}
+            />
           </div>
         )}
 
@@ -153,11 +154,15 @@ export function Steps({
 
             <DocumentUploadVoluntarios files={files!} setFiles={setFiles!} />
 
-            <NavigationButtons onPrev={goPrev} onNext={goNext} disableNext={!isStepValid!()} />
+            <NavigationButtons
+              onPrev={goPrev}
+              onNext={goNext}
+              disableNext={!isStepValid!()}
+            />
           </div>
         )}
 
-        {/* Paso 5: Confirmación */}
+        {/* Paso 5: Confirmación + Términos + Submit (Mismo paso) */}
         {step === 5 && (
           <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
             <h2 className="text-3xl font-bold text-[#708C3E] text-center mb-6">
@@ -248,7 +253,7 @@ export function Steps({
                 </div>
               )}
 
-              {/* Motivación, Habilidades y Experiencia */}
+              {/* Motivación y Habilidades */}
               <div>
                 <h3 className="text-lg font-semibold text-[#708C3E] mb-3">
                   Motivación y Habilidades
@@ -307,8 +312,8 @@ export function Steps({
               </div>
             </div>
 
-            {/* Botones */}
-            <div className="mt-8 flex justify-between items-center gap-3">
+            {/* ✅ Botón Anterior (ya no hay Continuar) */}
+            <div className="mt-8 flex justify-start">
               <Button
                 type="button"
                 variant="outline"
@@ -319,36 +324,27 @@ export function Steps({
                 <ArrowLeft className="size-4" />
                 Anterior
               </Button>
+            </div>
 
-              <Button
-                type="button"
-                size="sm"
-                onClick={goNext}
-                className="bg-[#708C3E] text-white hover:bg-[#5d7334] shadow-sm"
-              >
-                Continuar
-                <ChevronRight className="size-4" />
-              </Button>
+            {/* ✅ Terms + Submit debajo del resumen */}
+            <div className="mt-6">
+              <TermsAndSubmit
+                tipoSolicitante="INDIVIDUAL"
+                formData={formData!}
+                handleInputChange={(field, value) => handleInputChange!(field, value)}
+                prevStep={goPrev}
+                submitIndividual={submitIndividual}
+                submitOrganizacion={submitOrganizacion}
+                onAfterSubmit={onAfterSubmit}
+              />
             </div>
           </div>
-        )}
-         {/* Paso 6: Terms and Submit (aquí vive el submit) */}
-        {step === 6 && (
-          <TermsAndSubmit
-            tipoSolicitante="INDIVIDUAL"
-            formData={formData!}
-            handleInputChange={(field, value) => handleInputChange!(field, value)}
-            prevStep={goPrev}
-            submitIndividual={submitIndividual}
-            submitOrganizacion={submitOrganizacion}
-            onAfterSubmit={onAfterSubmit}
-          />
         )}
       </div>
     );
   }
 
-  // ========== FLUJO ORGANIZACIÓN ==========
+  // ========== FLUJO ORGANIZACIÓN (4 pasos) ==========
   if (tipoSolicitante === "ORGANIZACION") {
     if (!form) {
       return (
@@ -360,7 +356,7 @@ export function Steps({
 
     const handleNextFromDisponibilidadOrg = () => {
       const ok = dispRefOrg.current?.validateAndShowErrors() ?? false;
-      if (!ok) return; 
+      if (!ok) return;
       goNext();
     };
 
@@ -414,7 +410,7 @@ export function Steps({
 
     return (
       <div ref={formTopRef} className="scroll-mt-[120px]">
-        {/* Paso 1: Información de Organización */}
+        {/* Paso 1 */}
         {step === 1 && (
           <div className="space-y-6">
             <OrganizacionSection form={form!} showErrors={showOrgStep1Errors} />
@@ -429,7 +425,7 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 2: Disponibilidad y Áreas */}
+        {/* Paso 2 */}
         {step === 2 && (
           <div className="space-y-6">
             <DisponibilidadAreasSection
@@ -440,7 +436,11 @@ export function Steps({
               form={form}
             />
 
-            <NavigationButtons onPrev={goPrev} onNext={handleNextFromDisponibilidadOrg} disableNext={false} />
+            <NavigationButtons
+              onPrev={goPrev}
+              onNext={handleNextFromDisponibilidadOrg}
+              disableNext={false}
+            />
           </div>
         )}
 
@@ -460,51 +460,28 @@ export function Steps({
           </div>
         )}
 
-        {/* Paso 4: Confirmación para Organización */}
+        {/* Paso 4: Confirmación + Términos + Submit */}
         {step === 4 && (
-          <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md">
+          <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
             <h2 className="text-3xl font-bold text-[#708C3E] text-center mb-6">
               Confirmación de Solicitud - Organización
             </h2>
 
             <div className="space-y-6 text-[#4A4A4A]">
               {/* (contenido igual a tu versión) */}
-              {/* Información de la Organización */}
               <div>
                 <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Datos de la Organización</h3>
                 <div className="bg-white p-4 rounded-lg space-y-2">
-                  <p>
-                    <span className="text-sm text-gray-500">Nombre:</span>{" "}
-                    {form.state.values.organizacion?.nombre || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-sm text-gray-500">Cédula Jurídica:</span>{" "}
-                    {form.state.values.organizacion?.cedulaJuridica || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-sm text-gray-500">Tipo:</span>{" "}
-                    {form.state.values.organizacion?.tipoOrganizacion || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-sm text-gray-500">Email:</span>{" "}
-                    {form.state.values.organizacion?.email || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-sm text-gray-500">Teléfono:</span>{" "}
-                    {form.state.values.organizacion?.telefono || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-sm text-gray-500">Dirección:</span>{" "}
-                    {form.state.values.organizacion?.direccion || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-sm text-gray-500">Número de Voluntarios:</span>{" "}
-                    {form.state.values.organizacion?.numeroVoluntarios || "N/A"}
-                  </p>
+                  <p><span className="text-sm text-gray-500">Nombre:</span> {form.state.values.organizacion?.nombre || "N/A"}</p>
+                  <p><span className="text-sm text-gray-500">Cédula Jurídica:</span> {form.state.values.organizacion?.cedulaJuridica || "N/A"}</p>
+                  <p><span className="text-sm text-gray-500">Tipo:</span> {form.state.values.organizacion?.tipoOrganizacion || "N/A"}</p>
+                  <p><span className="text-sm text-gray-500">Email:</span> {form.state.values.organizacion?.email || "N/A"}</p>
+                  <p><span className="text-sm text-gray-500">Teléfono:</span> {form.state.values.organizacion?.telefono || "N/A"}</p>
+                  <p><span className="text-sm text-gray-500">Dirección:</span> {form.state.values.organizacion?.direccion || "N/A"}</p>
+                  <p><span className="text-sm text-gray-500">Número de Voluntarios:</span> {form.state.values.organizacion?.numeroVoluntarios || "N/A"}</p>
                 </div>
               </div>
 
-              {/* Representante */}
               {form.state.values.organizacion?.representante?.persona?.nombre && (
                 <div>
                   <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Representante</h3>
@@ -515,91 +492,58 @@ export function Steps({
                       {form.state.values.organizacion.representante.persona.apellido1}{" "}
                       {form.state.values.organizacion.representante.persona.apellido2}
                     </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Cédula:</span>{" "}
-                      {form.state.values.organizacion.representante.persona.cedula || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Cargo:</span>{" "}
-                      {form.state.values.organizacion.representante.cargo || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Email:</span>{" "}
-                      {form.state.values.organizacion.representante.persona.email || "N/A"}
-                    </p>
-                    <p>
-                      <span className="text-sm text-gray-500">Teléfono:</span>{" "}
-                      {form.state.values.organizacion.representante.persona.telefono || "N/A"}
-                    </p>
+                    <p><span className="text-sm text-gray-500">Cédula:</span> {form.state.values.organizacion.representante.persona.cedula || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Cargo:</span> {form.state.values.organizacion.representante.cargo || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Email:</span> {form.state.values.organizacion.representante.persona.email || "N/A"}</p>
+                    <p><span className="text-sm text-gray-500">Teléfono:</span> {form.state.values.organizacion.representante.persona.telefono || "N/A"}</p>
                   </div>
                 </div>
               )}
 
-              {/* Disponibilidad */}
               {form.state.values.organizacion?.disponibilidades &&
                 form.state.values.organizacion.disponibilidades.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Disponibilidad</h3>
-                    {form.state.values.organizacion.disponibilidades.map(
-                      (disp: any, idx: number) => (
-                        <div key={idx} className="mb-3 bg-white p-3 rounded-lg">
-                          <p>
-                            <span className="text-sm text-gray-500">Periodo:</span>{" "}
-                            {disp.fechaInicio} - {disp.fechaFin}
-                          </p>
-                          <p>
-                            <span className="text-sm text-gray-500">Días:</span>{" "}
-                            {disp.dias?.join(", ") || "No especificado"}
-                          </p>
-                          <p>
-                            <span className="text-sm text-gray-500">Horarios:</span>{" "}
-                            {disp.horarios?.join(", ") || "No especificado"}
-                          </p>
-                        </div>
-                      )
-                    )}
+                    {form.state.values.organizacion.disponibilidades.map((disp: any, idx: number) => (
+                      <div key={idx} className="mb-3 bg-white p-3 rounded-lg">
+                        <p><span className="text-sm text-gray-500">Periodo:</span> {disp.fechaInicio} - {disp.fechaFin}</p>
+                        <p><span className="text-sm text-gray-500">Días:</span> {disp.dias?.join(", ") || "No especificado"}</p>
+                        <p><span className="text-sm text-gray-500">Horarios:</span> {disp.horarios?.join(", ") || "No especificado"}</p>
+                      </div>
+                    ))}
                   </div>
                 )}
 
-              {/* Áreas de Interés */}
               {form.state.values.organizacion?.areasInteres &&
                 form.state.values.organizacion.areasInteres.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Áreas de Interés</h3>
                     <ul className="list-disc list-inside bg-white p-3 rounded-lg">
-                      {form.state.values.organizacion.areasInteres.map(
-                        (area: any, idx: number) => (
-                          <li key={idx} className="text-sm text-gray-700">
-                            {typeof area === "string" ? area : area.nombreArea}
-                          </li>
-                        )
-                      )}
+                      {form.state.values.organizacion.areasInteres.map((area: any, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700">
+                          {typeof area === "string" ? area : area.nombreArea}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
 
-              {/* Razones Sociales */}
               {form.state.values.organizacion?.razonesSociales &&
                 form.state.values.organizacion.razonesSociales.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Razones Sociales</h3>
                     <ul className="list-disc list-inside bg-white p-3 rounded-lg">
-                      {form.state.values.organizacion.razonesSociales.map(
-                        (razon: any, idx: number) => (
-                          <li key={idx} className="text-sm text-gray-700">
-                            {typeof razon === "string" ? razon : razon.razonSocial}
-                          </li>
-                        )
-                      )}
+                      {form.state.values.organizacion.razonesSociales.map((razon: any, idx: number) => (
+                        <li key={idx} className="text-sm text-gray-700">
+                          {typeof razon === "string" ? razon : razon.razonSocial}
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )}
 
-              {/* Documentos adjuntos */}
               <div>
-                <h3 className="text-lg font-semibold text-[#708C3E] mb-3">
-                  Documentos Adjuntos
-                </h3>
+                <h3 className="text-lg font-semibold text-[#708C3E] mb-3">Documentos Adjuntos</h3>
                 <div className="space-y-2 bg-white p-3 rounded-lg">
                   <p className="text-sm">
                     <span className="text-gray-500">Documento Legal:</span>{" "}
@@ -629,7 +573,8 @@ export function Steps({
               </div>
             </div>
 
-            <div className="mt-8 flex justify-between items-center gap-3">
+            {/* ✅ Botón Anterior */}
+            <div className="mt-8 flex justify-start">
               <Button
                 type="button"
                 variant="outline"
@@ -640,31 +585,21 @@ export function Steps({
                 <ArrowLeft className="size-4" />
                 Anterior
               </Button>
+            </div>
 
-              <Button
-                type="button"
-                size="sm"
-                onClick={goNext}
-                className="bg-[#708C3E] text-white hover:bg-[#5d7334] shadow-sm"
-              >
-                Continuar
-                <ChevronRight className="size-4" />
-              </Button>
+            {/* ✅ Terms + Submit debajo */}
+            <div className="mt-6">
+              <TermsAndSubmit
+                tipoSolicitante="ORGANIZACION"
+                formData={formData!}
+                handleInputChange={(field, value) => handleInputChange!(field, value)}
+                prevStep={goPrev}
+                submitIndividual={submitIndividual}
+                submitOrganizacion={submitOrganizacion}
+                onAfterSubmit={onAfterSubmit}
+              />
             </div>
           </div>
-        )}
-
-        {/* Paso 5: Terms and Submit */}
-        {step === 5 && (
-          <TermsAndSubmit
-            tipoSolicitante="ORGANIZACION"
-            formData={formData!}
-            handleInputChange={(field, value) => handleInputChange!(field, value)}
-            prevStep={goPrev}
-            submitIndividual={submitIndividual}
-            submitOrganizacion={submitOrganizacion}
-            onAfterSubmit={onAfterSubmit}
-          />
         )}
       </div>
     );

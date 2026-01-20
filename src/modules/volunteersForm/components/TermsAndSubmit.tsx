@@ -43,9 +43,9 @@ export function TermsAndSubmit({
 
   return (
     <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
-      <h2 className="text-3xl font-bold text-[#708C3E] text-center">
-        Confirmación de Solicitud
-      </h2>
+      <h3 className="text-3xl font-bold text-[#708C3E] text-center">
+       Terminos y condiciones
+      </h3>
 
       <div className="space-y-6 text-[#4A4A4A] mt-6">
         <label className="flex items-start gap-3">

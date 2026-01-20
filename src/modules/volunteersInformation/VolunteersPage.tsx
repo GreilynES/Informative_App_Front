@@ -147,12 +147,12 @@ export default function VolunteersPage() {
       </div>
 
       {showForm && (
-        <div className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
+        <div className="py-16 px-4 bg-gradient-to-br from-[#FAF9F5] via-[#f6f9ea] to-[#ecf0d5]">
           <div className="max-w-4xl mx-auto">
-            <Stepper step={step} tipoSolicitante={tipoSolicitante} />
 
             {(tipoSolicitante === 'INDIVIDUAL' || (tipoSolicitante === 'ORGANIZACION' && formOrganizacion)) ? (
               <form onSubmit={handleSubmit} className="space-y-8">
+                <Stepper step={step} tipoSolicitante={tipoSolicitante} />
                 <Steps
                   step={step}
                   formData={formData}

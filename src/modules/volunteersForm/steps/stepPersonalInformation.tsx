@@ -1,17 +1,23 @@
-import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
-import { UserRound, Mail } from "lucide-react";
-import { NavigationButtons } from "../components/NavigationButtons";
-import { useMemo, useState } from "react";
-import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema";
+import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType"
+import { UserRound, Mail, Calendar as CalendarIcon } from "lucide-react"
+import { NavigationButtons } from "../components/NavigationButtons"
+import { useMemo, useState } from "react"
+import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema"
 
-import { existsCedula, existsEmail } from "../services/volunteerFormService";
+import { existsCedula, existsEmail } from "../services/volunteerFormService"
+
+// ✅ Shadcn calendar dropdown
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { es } from "date-fns/locale"
 
 interface StepPersonalInformationProps {
-  formData: VolunteersFormData;
-  handleInputChange: (field: keyof VolunteersFormData, value: string | boolean) => void;
-  onNextCombined: () => void;
-  isStepValid: () => boolean;
-  lookup: (id: string) => Promise<any>;
+  formData: VolunteersFormData
+  handleInputChange: (field: keyof VolunteersFormData, value: string | boolean) => void
+  onNextCombined: () => void
+  isStepValid: () => boolean
+  lookup: (id: string) => Promise<any>
 }
 
 export function StepPersonalInformation({
@@ -21,113 +27,141 @@ export function StepPersonalInformation({
   isStepValid,
   lookup,
 }: StepPersonalInformationProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [limitReached, setLimitReached] = useState<Record<string, boolean>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [limitReached, setLimitReached] = useState<Record<string, boolean>>({})
 
-  
-  const [verificandoCedula, setVerificandoCedula] = useState(false);
-  const [verificandoEmail, setVerificandoEmail] = useState(false);
+  const [verificandoCedula, setVerificandoCedula] = useState(false)
+  const [verificandoEmail, setVerificandoEmail] = useState(false)
 
-  const personaSchema =
-    volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona;
+  const personaSchema = volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona
 
-  const maxBirthDate = useMemo(() => {
-    const t = new Date();
-    t.setFullYear(t.getFullYear() - 16);
-    const mm = String(t.getMonth() + 1).padStart(2, "0");
-    const dd = String(t.getDate()).padStart(2, "0");
-    return `${t.getFullYear()}-${mm}-${dd}`;
-  }, []);
 
-  const updateLimitFlag = (
-    field: keyof VolunteersFormData,
-    value: string,
-    maxLen?: number
-  ) => {
-    if (!maxLen) return;
+  const updateLimitFlag = (field: keyof VolunteersFormData, value: string, maxLen?: number) => {
+    if (!maxLen) return
     setLimitReached((prev) => ({
       ...prev,
       [field as string]: value.length >= maxLen,
-    }));
-  };
+    }))
+  }
 
   const validateField = (field: keyof VolunteersFormData, value: any) => {
-    const mapped = mapFormToPersona({ ...formData, [field]: value });
-    const single = personaSchema.pick({ [mapField(field)]: true } as any);
-    const key = mapField(field);
-    const result = single.safeParse({ [key]: (mapped as Record<string, any>)[key] });
+    const mapped = mapFormToPersona({ ...formData, [field]: value })
+    const single = personaSchema.pick({ [mapField(field)]: true } as any)
+    const key = mapField(field)
+    const result = single.safeParse({ [key]: (mapped as Record<string, any>)[key] })
     setErrors((prev) => ({
       ...prev,
       [field]: result.success ? "" : result.error.issues[0]?.message || "",
-    }));
-  };
+    }))
+  }
 
   const validateAll = () => {
-    const persona = mapFormToPersona(formData);
-    const result = personaSchema.safeParse(persona);
+    const persona = mapFormToPersona(formData)
+    const result = personaSchema.safeParse(persona)
     if (!result.success) {
-      const newErrors: Record<string, string> = {};
+      const newErrors: Record<string, string> = {}
       result.error.issues.forEach((issue) => {
-        const field = reverseMapField(issue.path[0] as string);
-        if (field) newErrors[field] = issue.message;
-      });
-      setErrors(newErrors);
-      return false;
+        const field = reverseMapField(issue.path[0] as string)
+        if (field) newErrors[field] = issue.message
+      })
+      setErrors(newErrors)
+      return false
     }
-    setErrors({});
-    return true;
-  };
+    setErrors({})
+    return true
+  }
 
   const validarCedulaUnica = async (cedula: string): Promise<string | undefined> => {
-    const v = (cedula || "").trim();
-    if (v.length < 8) return;
+    const v = (cedula || "").trim()
+    if (v.length < 8) return
     try {
-      setVerificandoCedula(true);
-      const existe = await existsCedula(v);
-      if (existe) return "Esta cédula ya está registrada en el sistema";
+      setVerificandoCedula(true)
+      const existe = await existsCedula(v)
+      if (existe) return "Esta cédula ya está registrada en el sistema"
     } finally {
-      setVerificandoCedula(false);
+      setVerificandoCedula(false)
     }
-  };
+  }
 
   const validarEmailUnico = async (email: string): Promise<string | undefined> => {
-    const v = (email || "").trim();
-    if (!v) return;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(v)) return; // no validar duplicado si formato inválido
+    const v = (email || "").trim()
+    if (!v) return
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(v)) return
     try {
-      setVerificandoEmail(true);
-      const existe = await existsEmail(v);
-      if (existe) return "Este email ya está registrado en el sistema";
+      setVerificandoEmail(true)
+      const existe = await existsEmail(v)
+      if (existe) return "Este email ya está registrado en el sistema"
     } finally {
-      setVerificandoEmail(false);
+      setVerificandoEmail(false)
     }
-  };
+  }
 
-  // MODIFICADO: corre las verificaciones si el usuario no hizo blur
   const handleNext = async () => {
-    const ok = validateAll() && isStepValid();
-    if (!ok) return;
+    const ok = validateAll() && isStepValid()
+    if (!ok) return
 
     if (!errors.idNumber && formData.idNumber?.trim()) {
-      const m = await validarCedulaUnica(formData.idNumber.trim());
+      const m = await validarCedulaUnica(formData.idNumber.trim())
       if (m) {
-        setErrors((p) => ({ ...p, idNumber: m }));
-        return;
+        setErrors((p) => ({ ...p, idNumber: m }))
+        return
       }
     }
 
     if (!errors.email && formData.email?.trim()) {
-      const m = await validarEmailUnico(formData.email.trim());
+      const m = await validarEmailUnico(formData.email.trim())
       if (m) {
-        setErrors((p) => ({ ...p, email: m }));
-        return;
+        setErrors((p) => ({ ...p, email: m }))
+        return
       }
     }
 
-    onNextCombined();
-  };
+    onNextCombined()
+  }
 
+const parseISOToDate = (iso?: string) => {
+  if (!iso) return undefined
+  const [y, m, d] = iso.split("-").map(Number)
+  if (!y || !m || !d) return undefined
+  const dt = new Date(y, m - 1, d)
+  dt.setHours(0, 0, 0, 0)
+  return dt
+}
+
+const toISODate = (d: Date) => {
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, "0")
+  const dd = String(d.getDate()).padStart(2, "0")
+  return `${yyyy}-${mm}-${dd}`
+}
+
+// ✅ Fecha máxima permitida (hoy - 16 años) como Date real
+const maxBirthDateObj = useMemo(() => {
+  const t = new Date()
+  t.setFullYear(t.getFullYear() - 16)
+  t.setHours(0, 0, 0, 0)
+  return t
+}, [])
+
+const birthDateDate = useMemo(() => parseISOToDate(formData.birthDate), [formData.birthDate])
+
+const birthDateDisplay = useMemo(() => {
+  const d = birthDateDate
+  if (!d) return ""
+  return d.toLocaleDateString("es-CR", { day: "2-digit", month: "long", year: "numeric" })
+}, [birthDateDate])
+
+// ✅ Deshabilita cualquier fecha posterior a (hoy - 16)
+const disabledBirthDate = (date: Date) => {
+  const dt = new Date(date)
+  dt.setHours(0, 0, 0, 0)
+  return dt > maxBirthDateObj
+}
+
+// ✅ Rango de años permitido en dropdown
+const toYear = maxBirthDateObj.getFullYear()
+const fromYear = 1950 // poné aquí el mínimo que te sirva
   return (
     <div className="space-y-8">
       {/* ───────── Tarjeta 1: Información Personal ───────── */}
@@ -152,40 +186,39 @@ export function StepPersonalInformation({
                 placeholder="Número de cédula"
                 value={formData.idNumber}
                 onChange={async (e) => {
-                  const value = e.target.value;
-                  handleInputChange("idNumber", value);
-                  validateField("idNumber", value);
-                  updateLimitFlag("idNumber", value, 60);
+                  const value = e.target.value
+                  handleInputChange("idNumber", value)
+                  validateField("idNumber", value)
+                  updateLimitFlag("idNumber", value, 60)
 
                   if (value.length >= 9) {
-                    const result = await lookup(value);
+                    const result = await lookup(value)
                     if (result) {
-                      const nameVal = result.firstname || "";
-                      const last1Val = result.lastname1 || "";
-                      const last2Val = result.lastname2 || "";
+                      const nameVal = result.firstname || ""
+                      const last1Val = result.lastname1 || ""
+                      const last2Val = result.lastname2 || ""
 
-                      handleInputChange("name", nameVal);
-                      handleInputChange("lastName1", last1Val);
-                      handleInputChange("lastName2", last2Val);
+                      handleInputChange("name", nameVal)
+                      handleInputChange("lastName1", last1Val)
+                      handleInputChange("lastName2", last2Val)
 
-                      validateField("name", nameVal);
-                      validateField("lastName1", last1Val);
-                      validateField("lastName2", last2Val);
+                      validateField("name", nameVal)
+                      validateField("lastName1", last1Val)
+                      validateField("lastName2", last2Val)
 
-                      updateLimitFlag("name", nameVal, 60);
-                      updateLimitFlag("lastName1", last1Val, 60);
-                      updateLimitFlag("lastName2", last2Val, 60);
+                      updateLimitFlag("name", nameVal, 60)
+                      updateLimitFlag("lastName1", last1Val, 60)
+                      updateLimitFlag("lastName2", last2Val, 60)
                     }
                   }
 
-                  // limpiar error de cédula al escribir
-                  setErrors((prev) => ({ ...prev, idNumber: "" }));
+                  setErrors((prev) => ({ ...prev, idNumber: "" }))
                 }}
                 onBlur={async (e) => {
-                  const ced = e.target.value.trim();
-                  if (!ced) return;
-                  const msg = await validarCedulaUnica(ced);
-                  if (msg) setErrors((prev) => ({ ...prev, idNumber: msg }));
+                  const ced = e.target.value.trim()
+                  if (!ced) return
+                  const msg = await validarCedulaUnica(ced)
+                  if (msg) setErrors((prev) => ({ ...prev, idNumber: msg }))
                 }}
                 required
                 maxLength={60}
@@ -198,16 +231,18 @@ export function StepPersonalInformation({
               {verificandoCedula && (
                 <div className="absolute right-3 top-9">
                   <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/>
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
+                    />
                   </svg>
                 </div>
               )}
               {errors.idNumber && <p className="text-sm text-red-600 mt-1">{errors.idNumber}</p>}
               {limitReached["idNumber"] && (
-                <p className="text-sm text-orange-600 mt-1">
-                  Has alcanzado el límite de 60 caracteres.
-                </p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
             </div>
 
@@ -222,9 +257,9 @@ export function StepPersonalInformation({
                 placeholder="Tu nombre"
                 value={formData.name}
                 onChange={(e) => {
-                  handleInputChange("name", e.target.value);
-                  validateField("name", e.target.value);
-                  updateLimitFlag("name", e.target.value, 60);
+                  handleInputChange("name", e.target.value)
+                  validateField("name", e.target.value)
+                  updateLimitFlag("name", e.target.value, 60)
                 }}
                 required
                 maxLength={60}
@@ -232,9 +267,7 @@ export function StepPersonalInformation({
               />
               {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name}</p>}
               {limitReached["name"] && (
-                <p className="text-sm text-orange-600 mt-1">
-                  Has alcanzado el límite de 60 caracteres.
-                </p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
             </div>
           </div>
@@ -242,17 +275,15 @@ export function StepPersonalInformation({
           {/* Apellidos */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Primer Apellido *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
               <input
                 type="text"
                 placeholder="Tu primer apellido"
                 value={formData.lastName1}
                 onChange={(e) => {
-                  handleInputChange("lastName1", e.target.value);
-                  validateField("lastName1", e.target.value);
-                  updateLimitFlag("lastName1", e.target.value, 60);
+                  handleInputChange("lastName1", e.target.value)
+                  validateField("lastName1", e.target.value)
+                  updateLimitFlag("lastName1", e.target.value, 60)
                 }}
                 required
                 maxLength={60}
@@ -260,24 +291,20 @@ export function StepPersonalInformation({
               />
               {errors.lastName1 && <p className="text-sm text-red-600 mt-1">{errors.lastName1}</p>}
               {limitReached["lastName1"] && (
-                <p className="text-sm text-orange-600 mt-1">
-                  Has alcanzado el límite de 60 caracteres.
-                </p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Segundo Apellido *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
               <input
                 type="text"
                 placeholder="Tu segundo apellido"
                 value={formData.lastName2}
                 onChange={(e) => {
-                  handleInputChange("lastName2", e.target.value);
-                  validateField("lastName2", e.target.value);
-                  updateLimitFlag("lastName2", e.target.value, 60);
+                  handleInputChange("lastName2", e.target.value)
+                  validateField("lastName2", e.target.value)
+                  updateLimitFlag("lastName2", e.target.value, 60)
                 }}
                 required
                 maxLength={60}
@@ -285,31 +312,76 @@ export function StepPersonalInformation({
               />
               {errors.lastName2 && <p className="text-sm text-red-600 mt-1">{errors.lastName2}</p>}
               {limitReached["lastName2"] && (
-                <p className="text-sm text-orange-600 mt-1">
-                  Has alcanzado el límite de 60 caracteres.
-                </p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
             </div>
           </div>
 
-          {/* Fecha de nacimiento */}
+          {/* ✅ Fecha de nacimiento (Calendar shadcn - dropdown) */}
           <div>
-            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha de Nacimiento *
-            </label>
-            <input
-              type="date"
-              value={formData.birthDate}
-              max={maxBirthDate}
-              onChange={(e) => {
-                handleInputChange("birthDate", e.target.value);
-                validateField("birthDate", e.target.value);
-              }}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-            />
-            {errors.birthDate && <p className="text-sm text-red-600 mt-1">{errors.birthDate}</p>}
-          </div>
+  <label className="block text-sm font-medium text-gray-700 mb-1 ">
+    Fecha de Nacimiento *
+  </label>
+
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        type="button"
+        variant="outline"
+        className={`w-full justify-between border shadow-sm hover:bg-[#E6EDC8]/40 ${
+          errors.birthDate ? "border-red-500" : "border-[#DCD6C9]"
+        }`}
+      >
+        <span className={formData.birthDate ? "text-[#4A4A4A]" : "text-gray-400"}>
+          {formData.birthDate ? birthDateDisplay : "Seleccione una fecha"}
+        </span>
+        <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
+      </Button>
+    </PopoverTrigger>
+
+    <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
+      <Calendar
+        mode="single"
+        selected={birthDateDate}
+        onSelect={(d) => {
+          if (!d) return
+          // ✅ bloquea por si acaso alguien intenta setear una fecha inválida
+          if (disabledBirthDate(d)) return
+
+          const iso = toISODate(d)
+          handleInputChange("birthDate", iso)
+          validateField("birthDate", iso)
+        }}
+        // ✅ Español
+        locale={es}
+        // ✅ Dropdowns de mes y año
+        captionLayout="dropdown"
+        // ✅ limita el rango del dropdown
+        fromYear={fromYear}
+        toYear={toYear}
+        // ✅ evita seleccionar fechas inválidas
+        disabled={disabledBirthDate}
+        // ✅ hace que el calendario se abra cerca de la fecha actual seleccionada
+        defaultMonth={birthDateDate ?? maxBirthDateObj}
+        className="rounded-lg"
+        classNames={{
+          caption: "flex justify-center pt-1 relative items-center text-[#708C3E] font-semibold",
+          head_cell: "text-[#708C3E] w-9 font-semibold text-[0.8rem]",
+          day_selected:
+            "bg-[#708C3E] text-white hover:bg-[#5d7334] hover:text-white focus:bg-[#708C3E] focus:text-white",
+          day_today: "border border-[#A3853D]",
+          day_disabled: "text-gray-300 opacity-50",
+        }}
+      />
+
+      <p className="mt-2 text-xs text-gray-500">
+        Debe ser mayor de <span className="font-medium text-[#708C3E]">16 años</span>.
+      </p>
+    </PopoverContent>
+  </Popover>
+
+  {errors.birthDate && <p className="text-sm text-red-600 mt-1">{errors.birthDate}</p>}
+</div>
 
           {/* Nacionalidad */}
           <div>
@@ -320,21 +392,17 @@ export function StepPersonalInformation({
               type="text"
               value={formData.nacionalidad || ""}
               onChange={(e) => {
-                handleInputChange("nacionalidad" as any, e.target.value);
-                validateField("nacionalidad" as any, e.target.value);
-                updateLimitFlag("nacionalidad" as any, e.target.value, 60);
+                handleInputChange("nacionalidad" as any, e.target.value)
+                validateField("nacionalidad" as any, e.target.value)
+                updateLimitFlag("nacionalidad" as any, e.target.value, 60)
               }}
               placeholder="Ej: Costarricense"
               maxLength={60}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
             />
-            {errors.nacionalidad && (
-              <p className="text-sm text-red-600 mt-1">{errors.nacionalidad}</p>
-            )}
+            {errors.nacionalidad && <p className="text-sm text-red-600 mt-1">{errors.nacionalidad}</p>}
             {limitReached["nacionalidad"] && (
-              <p className="text-sm text-orange-600 mt-1">
-                Has alcanzado el límite de 60 caracteres.
-              </p>
+              <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
             )}
           </div>
         </div>
@@ -357,13 +425,13 @@ export function StepPersonalInformation({
                 Teléfono *
               </label>
               <input
-                type={verificandoCedula ? "tel" : "tel"}
+                type="tel"
                 placeholder="Número de teléfono"
                 value={formData.phone}
                 onChange={(e) => {
-                  handleInputChange("phone", e.target.value);
-                  validateField("phone", e.target.value);
-                  updateLimitFlag("phone", e.target.value, 20);
+                  handleInputChange("phone", e.target.value)
+                  validateField("phone", e.target.value)
+                  updateLimitFlag("phone", e.target.value, 20)
                 }}
                 required
                 minLength={8}
@@ -372,9 +440,7 @@ export function StepPersonalInformation({
               />
               {errors.phone && <p className="text-sm text-red-600 mt-1">{errors.phone}</p>}
               {limitReached["phone"] && (
-                <p className="text-sm text-orange-600 mt-1">
-                  Has alcanzado el límite de 20 caracteres.
-                </p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 20 caracteres.</p>
               )}
             </div>
 
@@ -388,17 +454,16 @@ export function StepPersonalInformation({
                 placeholder="correo@ejemplo.com"
                 value={formData.email}
                 onChange={(e) => {
-                  handleInputChange("email", e.target.value);
-                  validateField("email", e.target.value);
-                  updateLimitFlag("email", e.target.value, 60);
-                  // limpiar error al escribir
-                  setErrors((prev) => ({ ...prev, email: "" }));
+                  handleInputChange("email", e.target.value)
+                  validateField("email", e.target.value)
+                  updateLimitFlag("email", e.target.value, 60)
+                  setErrors((prev) => ({ ...prev, email: "" }))
                 }}
                 onBlur={async (e) => {
-                  const em = e.target.value.trim();
-                  if (!em) return;
-                  const msg = await validarEmailUnico(em);
-                  if (msg) setErrors((prev) => ({ ...prev, email: msg }));
+                  const em = e.target.value.trim()
+                  if (!em) return
+                  const msg = await validarEmailUnico(em)
+                  if (msg) setErrors((prev) => ({ ...prev, email: msg }))
                 }}
                 required
                 maxLength={60}
@@ -411,16 +476,18 @@ export function StepPersonalInformation({
               {verificandoEmail && (
                 <div className="absolute right-3 top-9">
                   <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"/>
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
+                    />
                   </svg>
                 </div>
               )}
               {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
               {limitReached["email"] && (
-                <p className="text-sm text-orange-600 mt-1">
-                  Has alcanzado el límite de 60 caracteres.
-                </p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
             </div>
           </div>
@@ -435,18 +502,16 @@ export function StepPersonalInformation({
               placeholder="Tu dirección completa"
               value={formData.address}
               onChange={(e) => {
-                handleInputChange("address", e.target.value);
-                validateField("address", e.target.value);
-                updateLimitFlag("address", e.target.value, 200);
+                handleInputChange("address", e.target.value)
+                validateField("address", e.target.value)
+                updateLimitFlag("address", e.target.value, 200)
               }}
               maxLength={200}
               className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
             />
             {errors.address && <p className="text-sm text-red-600 mt-1">{errors.address}</p>}
             {limitReached["address"] && (
-              <p className="text-sm text-orange-600 mt-1">
-                Has alcanzado el límite de 200 caracteres.
-              </p>
+              <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 200 caracteres.</p>
             )}
           </div>
         </div>
@@ -454,14 +519,10 @@ export function StepPersonalInformation({
 
       {/* ───────── Botón siguiente ───────── */}
       <div className="text-right">
-        <NavigationButtons
-          showPrev={false}
-          onNext={handleNext}
-          disableNext={!isStepValid()}
-        />
+        <NavigationButtons showPrev={false} onNext={handleNext} disableNext={!isStepValid()} />
       </div>
     </div>
-  );
+  )
 }
 
 function mapFormToPersona(data: VolunteersFormData) {
@@ -475,7 +536,7 @@ function mapFormToPersona(data: VolunteersFormData) {
     fechaNacimiento: data.birthDate,
     direccion: data.address || "",
     nacionalidad: data.nacionalidad || "",
-  };
+  }
 }
 
 function mapField(field: keyof VolunteersFormData): string {
@@ -489,8 +550,8 @@ function mapField(field: keyof VolunteersFormData): string {
     birthDate: "fechaNacimiento",
     address: "direccion",
     nacionalidad: "nacionalidad",
-  };
-  return map[field] || field;
+  }
+  return map[field] || (field as string)
 }
 
 function reverseMapField(field: string): keyof VolunteersFormData | null {
@@ -504,6 +565,6 @@ function reverseMapField(field: string): keyof VolunteersFormData | null {
     fechaNacimiento: "birthDate",
     direccion: "address",
     nacionalidad: "nacionalidad" as any,
-  };
-  return reverse[field] || null;
+  }
+  return reverse[field] || null
 }
