@@ -34,7 +34,6 @@ export default function VolunteersPage() {
 
   const { 
     form: formOrganizacion, 
-    isLoading: isSubmittingOrg,
     submitWithFiles: submitOrganizacion,
   } = useVolunteerApply(() => {
     console.log(" Solicitud de organización enviada con éxito");
@@ -164,7 +163,7 @@ export default function VolunteersPage() {
                   lookup={lookup}
                   tipoSolicitante={tipoSolicitante}
                   form={formToUse}
-                  isSubmitting={tipoSolicitante === 'ORGANIZACION' ? isSubmittingOrg : isSubmittingInd}
+                  isSubmitting={tipoSolicitante === 'ORGANIZACION' ? false : isSubmittingInd}
                   submitIndividual={handleSubmitIndividual}
                   submitOrganizacion={handleSubmitOrganizacion} 
                   files={files}

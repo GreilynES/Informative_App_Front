@@ -56,7 +56,7 @@ export function RepresentanteSection({
   };
 
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+    <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
           2
@@ -388,7 +388,7 @@ export function RepresentanteSection({
           </form.Field>
         </div>
 
-        <div className="bg-[#F5F7EC] border border-[#DCD6C9] rounded-lg p-4">
+        <div className="bg-[#f7faf2] border border-[#DCD6C9] rounded-lg p-4">
           <h4 className="text-sm font-semibold text-[#708C3E] mb-3">
             Información adicional *
           </h4>

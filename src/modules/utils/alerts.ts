@@ -106,7 +106,6 @@ export const stopLoadingWithError = async (message = "Ocurrió un error. Intenta
 
 
 /* Específico submit */
-
 export const submitSolicitudFlow = async <T>(
   action: () => Promise<T>,
   {
@@ -119,15 +118,19 @@ export const submitSolicitudFlow = async <T>(
     errorText?: string;
   } = {}
 ) => {
-  // ✅ NO awaits aquí
   showLoading(loadingText);
 
   try {
-    const result = await action();               // ✅ aquí sí corre la request
+    const result = await action();
     await stopLoadingWithSuccess(successText);
     return { ok: true, result };
-  } catch (err) {
-    await stopLoadingWithError(errorText);
+  } catch (err: any) {
+    const backendMsg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err?.response?.data?.mensaje;
+
+    await stopLoadingWithError(backendMsg ? String(backendMsg) : errorText);
     return { ok: false, error: err };
   }
 };

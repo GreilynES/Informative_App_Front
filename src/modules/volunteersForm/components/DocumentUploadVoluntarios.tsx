@@ -112,9 +112,9 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
         {renderFileInput('cedula', 'Copia de Cédula', 'cedula', false)}
       </div>
 
-      {/* Carta de Motivación - Ocupa todo el ancho */}
+      {/* Documento Adicional - Ocupa todo el ancho */}
       <div className="grid grid-cols-1">
-        {renderFileInput('carta', 'Carta de Motivación', 'carta', false)}
+        {renderFileInput('documento', 'Documento Adicional', 'carta', false)}
       </div>
 
     </div>

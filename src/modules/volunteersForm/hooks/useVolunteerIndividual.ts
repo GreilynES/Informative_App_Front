@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 import type { VolunteersFormData } from "../../volunteersInformation/models/VolunteersType";
-import { createSolicitudVoluntarioIndividual, uploadVolunteerDocuments } from "../services/volunteerFormService";
+import { createSolicitudVoluntario, uploadVolunteerDocuments } from "../services/volunteerFormService";
 import type { CreateSolicitudVoluntarioDto } from "../models/createVolunteer";
 
 function mapToIndividualPayload(formData: VolunteersFormData): CreateSolicitudVoluntarioDto {
@@ -51,7 +51,7 @@ export function useVolunteerIndividual(onSuccess?: () => void) {
       // 1) Crear la solicitud (medir SOLO create)
       const payload = mapToIndividualPayload(formData);
 
-      const response = await createSolicitudVoluntarioIndividual(payload);
+      const response = await createSolicitudVoluntario(payload);
 
       // 2) Extraer ID
       let solicitudId: number | undefined;

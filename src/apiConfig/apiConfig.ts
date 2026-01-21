@@ -1,87 +1,75 @@
-// Simple API configuration using fetch
-const BASE_URL = import.meta.env.VITE_API_URL;
+import axios from "axios";
 
-// Helper to create headers with auth token
-function getHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+const apiUrl = import.meta.env.VITE_API_URL;
+
+const apiConfig = axios.create({
+  baseURL: apiUrl,
+  timeout: 15000,
+});
+
+// Helper token (si ya tenés getToken, usalo)
+function getToken() {
+  return localStorage.getItem("authToken");
+}
+
+// Utilidad simple para rate limit headers
+function parseRateLimitFromHeaders(h: any) {
+  const remaining = Number(h?.["x-ratelimit-remaining"]);
+  const retryAfter = Number(h?.["retry-after"]); // segundos
+  const reset = Number(h?.["x-ratelimit-reset"]);
+  const now = Date.now();
+
+  const msFromRetryAfter = Number.isFinite(retryAfter) ? retryAfter * 1000 : undefined;
+  const msFromReset = Number.isFinite(reset)
+    ? reset > 10_000_000
+      ? reset * 1000 - now
+      : reset * 1000
+    : undefined;
+
+  const msUntilReset = msFromRetryAfter ?? msFromReset ?? undefined;
+
+  return {
+    remaining: Number.isFinite(remaining) ? remaining : undefined,
+    msUntilReset,
   };
-  
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-  
-  return headers;
 }
 
-// Helper to handle responses
-async function handleResponse(response: Response) {
-  if (!response.ok) {
-    if (response.status === 401) {
-      localStorage.removeItem('authToken');
+apiConfig.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+
+    config.headers = config.headers ?? {};
+
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+
+    // OJO: axios setea multipart solo si NO forzás Content-Type.
+    // Entonces solo seteamos JSON si no viene seteado.
+    if (!config.headers["Content-Type"]) {
+      config.headers["Content-Type"] = "application/json";
     }
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+    config.headers["Cache-Control"] = "no-cache";
+    return config;
+  },
+  (err) => Promise.reject(err)
+);
+
+apiConfig.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error?.response?.status === 429) {
+      const rl = parseRateLimitFromHeaders(error.response.headers || {});
+      return Promise.reject({
+        isRateLimited: true,
+        status: 429,
+        message: "Demasiados intentos. Intenta nuevamente más tarde.",
+        ...rl,
+        original: error,
+      });
+    }
+    return Promise.reject(error);
   }
-  return response.json();
-}
-
-// API configuration object that mimics axios interface
-const apiConfig = {
-  async get<T>(url: string): Promise<{ data: T }> {
-    const response = await fetch(`${BASE_URL}${url}`, {
-      method: 'GET',
-      headers: getHeaders(),
-    });
-    const data = await handleResponse(response);
-    return { data };
-  },
-
-  async post<T>(url: string, body: any, _p0: { headers: { "Content-Type": string; }; }): Promise<{ data: T } > {
-    const response = await fetch(`${BASE_URL}${url}`, {
-      method: 'POST',
-      headers: getHeaders(),
-      body: JSON.stringify(body),
-    });
-    const data = await handleResponse(response);
-    return { data };
-  },
-
-  async put<T>(url: string, body?: any): Promise<{ data: T }> {
-    const response = await fetch(`${BASE_URL}${url}`, {
-      method: 'PUT',
-      headers: getHeaders(),
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    const data = await handleResponse(response);
-    return { data };
-  },
-
-  async delete<T>(url: string): Promise<{ data: T }> {
-    const response = await fetch(`${BASE_URL}${url}`, {
-      method: 'DELETE',
-      headers: getHeaders(),
-    });
-    const data = await handleResponse(response);
-    return { data };
-  },
-};
-
-export async function apiFormData<T>(
-  endpoint: string,
-  formData: FormData
-): Promise<T> {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || `Error: ${response.status}`);
-  }
-
-  return response.json();
-}
+);
 
 export default apiConfig;
+export { apiUrl };
