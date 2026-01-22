@@ -42,7 +42,7 @@ export function TermsAndSubmit({
   const canSubmit = !!formData.acceptTerms && !uiSubmitting
 
   return (
-    <div className="bg-[#FAF9F5] border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
+    <div className="bg-white border border-[#DCD6C9] rounded-xl p-6 shadow-md mb-8">
       <h3 className="text-3xl font-bold text-[#708C3E] text-center">
        Terminos y condiciones
       </h3>

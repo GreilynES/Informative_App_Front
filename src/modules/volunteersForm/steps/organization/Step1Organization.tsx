@@ -1,16 +1,68 @@
+// Step1Organization.tsx
+import { useMemo } from "react"
 import { NavigationButtons } from "../../components/NavigationButtons"
 import { OrganizacionSection } from "../../components/OrganizacionSection"
 import { RepresentanteSection } from "../../components/RepresentanteSection"
 import { validateOrgStep1Required } from "../../services/volunteerOrgStep1Validation"
+import { lookupPersonaByCedula } from "../../services/volunteerFormService"
 
 export function Step1Organization(props: {
   form: any
-  lookup?: (id: string) => Promise<any>
+  lookup?: (id: string) => Promise<any> // TSE (lo que ya tenías)
   showErrors: boolean
   setShowErrors: (v: boolean) => void
   onNext: () => void
 }) {
   const { form, lookup, showErrors, setShowErrors, onNext } = props
+
+  // ✅ MISMA IDEA QUE INDIVIDUAL: DB (DTO o ENTITY) -> si no, TSE
+  const lookupCombined = useMemo(() => {
+    return async (id: string) => {
+      const ced = (id ?? "").trim()
+      if (!ced) return null
+
+      const db = await lookupPersonaByCedula(ced)
+
+      // Caso 1: PersonaFormLookupDto
+      if (db?.found) {
+        console.log("[lookupCombinedRepresentante] usando DB (DTO)")
+        return {
+          source: "DB",
+          ...(db.legacy ?? {}),
+          persona: db.persona,
+          representanteOrganizacion: db.representanteOrganizacion,
+          // si existiera también, no estorba:
+          volunteerIndividual: db.volunteerIndividual,
+        }
+      }
+
+      // Caso 2: entity vieja
+      if (db?.cedula && db?.nombre && db?.apellido1) {
+        console.log("[lookupCombinedRepresentante] usando DB (ENTITY)")
+        return {
+          source: "DB",
+          firstname: db.nombre ?? "",
+          lastname1: db.apellido1 ?? "",
+          lastname2: db.apellido2 ?? "",
+          persona: {
+            cedula: db.cedula ?? "",
+            nombre: db.nombre ?? "",
+            apellido1: db.apellido1 ?? "",
+            apellido2: db.apellido2 ?? "",
+            telefono: db.telefono ?? "",
+            email: db.email ?? "",
+            fechaNacimiento: db.fechaNacimiento ?? "",
+            direccion: db.direccion ?? "",
+          },
+        }
+      }
+
+      // Caso 3: TSE
+      if (!lookup) return null
+      const tse = await lookup(ced)
+      return tse ? { source: "TSE", ...tse } : null
+    }
+  }, [lookup])
 
   const handleNext = () => {
     const { anyEmpty } = validateOrgStep1Required(form)
@@ -24,7 +76,9 @@ export function Step1Organization(props: {
   return (
     <div className="space-y-6">
       <OrganizacionSection form={form} showErrors={showErrors} />
-      <RepresentanteSection form={form} lookup={lookup} showErrors={showErrors} />
+
+      {/* ✅ ahora se pasa el lookupCombined (DB->TSE) */}
+      <RepresentanteSection form={form} lookup={lookupCombined} showErrors={showErrors} />
 
       <NavigationButtons onPrev={() => {}} onNext={handleNext} disableNext={false} hidePrev />
     </div>

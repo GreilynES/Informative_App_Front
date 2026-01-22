@@ -8,7 +8,7 @@ export function Step3Organization(props: {
   goNext: () => void
   isStepValid: () => boolean
 }) {
-  const { files, setFiles, goPrev, goNext, isStepValid } = props
+  const { files, setFiles, goPrev, goNext } = props
 
   return (
     <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
@@ -21,7 +21,7 @@ export function Step3Organization(props: {
 
       <DocumentUploadVoluntarios files={files} setFiles={setFiles} />
 
-      <NavigationButtons onPrev={goPrev} onNext={goNext} disableNext={!isStepValid()} />
+      <NavigationButtons onPrev={goPrev} onNext={goNext} disableNext={false} />
     </div>
   )
 }

@@ -1,14 +1,15 @@
 import type { VolunteersFormData } from "../../../volunteersInformation/models/VolunteersType"
 import { UserRound, Mail, Calendar as CalendarIcon } from "lucide-react"
 import { NavigationButtons } from "../../components/NavigationButtons"
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { volunteerOrganizacionSchema } from "../../schemas/volunteerSchema"
-import { existsCedula, existsEmail } from "../../services/volunteerFormService"
+import { existsEmail, validateSolicitudVoluntariado } from "../../services/volunteerFormService"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { es } from "date-fns/locale"
+import {  stopLoadingWithError } from "@/modules/utils/alerts"
 
 interface StepPersonalInformationProps {
   formData: VolunteersFormData
@@ -31,6 +32,11 @@ export function StepPersonalInformation({
   const [verificandoEmail, setVerificandoEmail] = useState(false)
 
   const personaSchema = volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona
+  const [personaFromDB, setPersonaFromDB] = useState(false)
+
+  // ✅ para no spamear validación/lookup por cada tecla
+  const debounceRef = useRef<number | null>(null)
+  const lastCheckedCedulaRef = useRef<string>("")
 
   const updateLimitFlag = (field: keyof VolunteersFormData, value: string, maxLen?: number) => {
     if (!maxLen) return
@@ -67,18 +73,6 @@ export function StepPersonalInformation({
     return true
   }
 
-  const validarCedulaUnica = async (cedula: string): Promise<string | undefined> => {
-    const v = (cedula || "").trim()
-    if (v.length < 8) return
-    try {
-      setVerificandoCedula(true)
-      const existe = await existsCedula(v)
-      if (existe) return "Esta cédula ya está registrada en el sistema"
-    } finally {
-      setVerificandoCedula(false)
-    }
-  }
-
   const validarEmailUnico = async (email: string): Promise<string | undefined> => {
     const v = (email || "").trim()
     if (!v) return
@@ -93,23 +87,110 @@ export function StepPersonalInformation({
     }
   }
 
+  // ✅ PRECHECK + LOOKUP (DB/TSE)
+  const precheckAndLookup = async (cedulaRaw: string) => {
+    const cedula = (cedulaRaw ?? "").trim()
+    if (!cedula || cedula.length < 9) return
+
+    // si ya validamos esta misma cédula, no repetimos
+    if (lastCheckedCedulaRef.current === cedula) return
+
+    setVerificandoCedula(true)
+    try {
+      // 1) PRECHECK (pendiente / ya activo)
+      await validateSolicitudVoluntariado({
+        tipoSolicitante: "INDIVIDUAL",
+        cedula,
+      })
+
+      lastCheckedCedulaRef.current = cedula
+
+      // 2) LOOKUP (DB primero, si no → TSE)
+      const result = await lookup(cedula)
+      console.log("[lookup result]", result)
+
+      if (result) {
+        const nameVal = result.firstname || ""
+        const last1Val = result.lastname1 || ""
+        const last2Val = result.lastname2 || ""
+
+        handleInputChange("name", nameVal)
+        handleInputChange("lastName1", last1Val)
+        handleInputChange("lastName2", last2Val)
+
+        validateField("name", nameVal)
+        validateField("lastName1", last1Val)
+        validateField("lastName2", last2Val)
+
+        updateLimitFlag("name", nameVal, 60)
+        updateLimitFlag("lastName1", last1Val, 60)
+        updateLimitFlag("lastName2", last2Val, 60)
+
+        const fromDB = result.source === "DB"
+        setPersonaFromDB(fromDB)
+
+        // ✅ si viene de DB, autollenamos el resto también
+        if (fromDB) {
+          const vi = result.volunteerIndividual ?? {}
+
+          const setIfDefined = (field: keyof VolunteersFormData, val: any, max?: number) => {
+            if (val === undefined || val === null) return
+            const v = String(val)
+            handleInputChange(field, v)
+            validateField(field, v)
+            if (max) updateLimitFlag(field, v, max)
+          }
+
+          setIfDefined("phone", vi.phone, 20)
+          setIfDefined("email", vi.email, 60)
+          setIfDefined("birthDate", vi.birthDate)
+          setIfDefined("address", vi.address, 200)
+        }
+      } else {
+        setPersonaFromDB(false)
+      }
+
+      setErrors((prev) => ({ ...prev, idNumber: "" }))
+    } catch (err: any) {
+      // Si el backend dice 409, mostramos mensaje YA y no hacemos lookup
+      const status = err?.response?.status
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "No se pudo validar la cédula."
+
+      if (status === 409) {
+        setErrors((prev) => ({ ...prev, idNumber: msg }))
+        return
+      }
+
+      // otros errores (500, red, etc.)
+      setErrors((prev) => ({ ...prev, idNumber: "No se pudo validar la cédula. Intenta de nuevo." }))
+      await stopLoadingWithError("No se pudo validar la cédula. Intenta de nuevo.")
+    } finally {
+      setVerificandoCedula(false)
+    }
+  }
+
   const handleNext = async () => {
     const ok = validateAll() && isStepValid()
     if (!ok) return
 
-    if (!errors.idNumber && formData.idNumber?.trim()) {
-      const m = await validarCedulaUnica(formData.idNumber.trim())
-      if (m) {
-        setErrors((p) => ({ ...p, idNumber: m }))
-        return
-      }
+    // Si aún no se hizo precheck para la cédula actual, lo hacemos aquí también
+    if (formData.idNumber?.trim() && formData.idNumber.trim().length >= 9) {
+      await precheckAndLookup(formData.idNumber.trim())
+      if (errors.idNumber) return
     }
 
-    if (!errors.email && formData.email?.trim()) {
-      const m = await validarEmailUnico(formData.email.trim())
-      if (m) {
-        setErrors((p) => ({ ...p, email: m }))
-        return
+    // email único: si querés dejarlo, ok (pero ojo: si DB ya trae email, esto podría bloquear)
+    // vos antes estabas saltándote validaciones si viene de DB; lo mantenemos igual:
+    if (!personaFromDB) {
+      if (!errors.email && formData.email?.trim()) {
+        const m = await validarEmailUnico(formData.email.trim())
+        if (m) {
+          setErrors((p) => ({ ...p, email: m }))
+          return
+        }
       }
     }
 
@@ -185,40 +266,27 @@ export function StepPersonalInformation({
                 type="text"
                 placeholder="Número de cédula"
                 value={formData.idNumber}
-                onChange={async (e) => {
+                onChange={(e) => {
                   const value = e.target.value
                   handleInputChange("idNumber", value)
                   validateField("idNumber", value)
                   updateLimitFlag("idNumber", value, 60)
-
-                  if (value.length >= 9) {
-                    const result = await lookup(value)
-                    if (result) {
-                      const nameVal = result.firstname || ""
-                      const last1Val = result.lastname1 || ""
-                      const last2Val = result.lastname2 || ""
-
-                      handleInputChange("name", nameVal)
-                      handleInputChange("lastName1", last1Val)
-                      handleInputChange("lastName2", last2Val)
-
-                      validateField("name", nameVal)
-                      validateField("lastName1", last1Val)
-                      validateField("lastName2", last2Val)
-
-                      updateLimitFlag("name", nameVal, 60)
-                      updateLimitFlag("lastName1", last1Val, 60)
-                      updateLimitFlag("lastName2", last2Val, 60)
-                    }
-                  }
-
                   setErrors((prev) => ({ ...prev, idNumber: "" }))
+
+                  // ✅ debounce: cuando tenga 9+, validamos y luego lookup
+                  if (value.trim().length >= 9) {
+                    if (debounceRef.current) window.clearTimeout(debounceRef.current)
+                    debounceRef.current = window.setTimeout(() => {
+                      precheckAndLookup(value)
+                    }, 350)
+                  } else {
+                    setPersonaFromDB(false)
+                    lastCheckedCedulaRef.current = ""
+                  }
                 }}
                 onBlur={async (e) => {
                   const ced = e.target.value.trim()
-                  if (!ced) return
-                  const msg = await validarCedulaUnica(ced)
-                  if (msg) setErrors((prev) => ({ ...prev, idNumber: msg }))
+                  if (ced.length >= 9) await precheckAndLookup(ced)
                 }}
                 required
                 maxLength={60}
@@ -321,7 +389,7 @@ export function StepPersonalInformation({
             </div>
           </div>
 
-          {/* ✅ Fecha de nacimiento (Calendar shadcn - dropdown) */}
+          {/* Fecha de nacimiento */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
 
@@ -463,6 +531,9 @@ export function StepPersonalInformation({
                   setErrors((prev) => ({ ...prev, email: "" }))
                 }}
                 onBlur={async (e) => {
+                  // ✅ si vino de DB, NO bloqueamos por existsEmail (para no chocar con el email ya registrado)
+                  if (personaFromDB) return
+
                   const em = e.target.value.trim()
                   if (!em) return
                   const msg = await validarEmailUnico(em)
