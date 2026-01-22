@@ -23,9 +23,8 @@ export default function AssociatesPage() {
     navigate({ to: "/" })
   })
 
-  if (loading) return <div className="p-8 text-center">Cargando contenido…</div>
-
-  if (error || !data)
+  // ✅ mantenemos error, pero ya NO hacemos return por loading
+  if (error)
     return (
       <div className="p-8 text-center text-red-600">
         Error: {error ?? "Sin datos"}
@@ -40,15 +39,26 @@ export default function AssociatesPage() {
   const nextStep = () => setStep((s) => Math.min(7, s + 1))
   const prevStep = () => setStep((s) => Math.max(1, s - 1))
 
+  const benefits =
+    data?.benefits ? [...data.benefits].sort((a, b) => a.order - b.order) : []
+
+  const requirements =
+    data?.requirements
+      ? [...data.requirements].sort((a, b) => a.order - b.order).map((r) => r.text)
+      : []
+
   return (
-    <div className="min-h-screen bg-[#FAF9F5] pt-14">
-      <HeaderSection title={data.headerTitle} description={data.headerDescription} />
+    <div className="min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
+      <HeaderSection
+        title={data?.headerTitle ?? ""}
+        description={data?.headerDescription ?? ""}
+      />
 
       <div className="max-w-6xl mx-auto">
-        <BenefitsSection items={[...data.benefits].sort((a, b) => a.order - b.order)} />
+        <BenefitsSection items={benefits} />
 
         <RequirementsSection
-          requirements={[...data.requirements].sort((a, b) => a.order - b.order).map((r) => r.text)}
+          requirements={requirements}
           showForm={showForm}
           setShowForm={setShowForm}
         />
@@ -57,7 +67,7 @@ export default function AssociatesPage() {
       {showForm && (
         <div
           id="associate-form"
-          className="py-16 px-4 bg-gradient-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8] scroll-mt-20"
+          className="py-16 px-4 bg-gradient-to-br from-[#FAF9F5] via-[#f6f9ea] to-[#ecf0d5]"
         >
           <div className="max-w-4xl mx-auto">
             <Stepper step={step} />
@@ -80,6 +90,10 @@ export default function AssociatesPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {loading && (
+        <div className="pointer-events-none absolute inset-0 bg-[#FAF9F5]/90" />
       )}
     </div>
   )

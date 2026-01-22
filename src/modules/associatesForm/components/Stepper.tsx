@@ -1,113 +1,177 @@
+interface StepperProps {
+  step: number
+  onStepClick?: (step: number) => void
+}
+
 const stepLabels = [
-  "Información                   ",
-  "Finca                         ",
-  "Forraje y\nRegistro           ",
+  "Información",
+  "Finca",
+  "Forraje y\nRegistro",
   "Actividades e\nInfraestructura",
-  "Acceso y\nComercialización    ",
-  "Documentos                    ",
-  "Confirmación                  "
-];
+  "Acceso y\nComercialización",
+  "Documentos",
+  "Confirmación",
+]
 
-export function Stepper({ step }: any) {
+export function Stepper({ step, onStepClick }: StepperProps) {
+  const totalSteps = stepLabels.length
+  const clampedStep = Math.min(Math.max(step, 1), totalSteps)
+
+  const progressPct =
+    totalSteps <= 1 ? 0 : ((clampedStep - 1) / (totalSteps - 1)) * 100
+
+  const pctText = Math.round((clampedStep / totalSteps) * 100)
+
+  const canClick = (s: number) => !!onStepClick && s <= clampedStep
+
   return (
-    <div className="w-full mb-8 px-2 sm:px-4">
-      {/* Versión móvil: Scroll horizontal */}
-      <div className="lg:hidden overflow-x-auto pb-4">
-        <div className="flex items-center gap-2 min-w-max px-4">
-          {[1, 2, 3, 4, 5, 6, 7].map((s, index) => (
-            <div key={s} className="flex items-center gap-2">
-              <div className="flex flex-col items-center min-w-[70px]">
-                <div
-                  className={`w-8 h-8 rounded-full border-2 text-xs font-bold flex items-center justify-center transition duration-200 ${
-                    step === s
-                      ? "bg-[#708C3E] text-white border-[#708C3E]"
-                      : step > s
-                      ? "bg-[#A3853D] text-white border-[#A3853D]"
-                      : "bg-white text-[#708C3E] border-[#DCD6C9]"
-                  }`}
-                >
-                  {s}
-                </div>
-                <span
-                  className={`text-[10px] mt-1 text-center whitespace-pre-line leading-tight ${
-                    step === s
-                      ? "text-[#708C3E] font-medium"
-                      : step > s
-                      ? "text-[#A3853D]"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {stepLabels[index]}
-                </span>
-              </div>
+    <div className="w-full mb-8">
+      {/* ===== Mobile ===== */}
+      <div className="lg:hidden px-2 sm:px-4">
+        <div className="rounded-2xl border border-[#DCD6C9] bg-white shadow-sm p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-[#708C3E]">
+              Paso {clampedStep}{" "}
+              <span className="text-gray-400 font-medium">de</span> {totalSteps}
+            </p>
+            <span className="text-xs font-semibold text-[#A3853D]">
+              {pctText}%
+            </span>
+          </div>
 
-              {/* Línea entre pasos - móvil */}
-              {index < 6 && (
-                <div className={`w-8 h-0.5 rounded transition-colors ${
-                  step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
-                }`}></div>
-              )}
-            </div>
-          ))}
+          {/* barra progreso */}
+          <div className="mt-3 h-2.5 w-full rounded-full bg-[#F3F1EA] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-[#708C3E] transition-all duration-500 ease-out"
+              style={{ width: `${(clampedStep / totalSteps) * 100}%` }}
+            />
+          </div>
+
+          {/* nodos compactos */}
+          <div className="mt-4 flex items-center justify-between">
+            {stepLabels.map((_, i) => {
+              const s = i + 1
+              const isActive = s === clampedStep
+              const isDone = s < clampedStep
+
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  disabled={!canClick(s)}
+                  onClick={() => onStepClick?.(s)}
+                  className={[
+                    "relative grid place-items-center",
+                    "h-9 w-9 rounded-full border text-xs font-bold",
+                    "transition-all duration-200",
+                    isActive
+                      ? "bg-[#708C3E] text-white border-[#708C3E] shadow-sm scale-[1.06]"
+                      : isDone
+                      ? "bg-[#E6EDC8] text-[#4A4A4A] border-[#DCD6C9]"
+                      : "bg-white text-gray-400 border-[#DCD6C9]",
+                    canClick(s) ? "cursor-pointer" : "cursor-default",
+                    "focus:outline-none focus:ring-2 focus:ring-[#708C3E]/30",
+                  ].join(" ")}
+                  aria-current={isActive ? "step" : undefined}
+                  title={stepLabels[i].replace("\n", " ")}
+                >
+                  {isDone ? "✓" : s}
+                </button>
+              )
+            })}
+          </div>
+
+          <p className="mt-3 text-sm text-[#4A4A4A]">
+            <span className="text-gray-500">Actual:</span>{" "}
+            <span className="font-semibold text-[#708C3E] whitespace-pre-line">
+              {stepLabels[clampedStep - 1]}
+            </span>
+          </p>
         </div>
       </div>
 
-      {/* Versión desktop: Centrado y compacto */}
-      <div className="hidden lg:flex justify-center items-center gap-3 px-4">
-        {[1, 2, 3, 4, 5, 6, 7].map((s, index) => (
-          <div key={s} className="flex items-center gap-3">
-            <div className="flex flex-col items-center min-w-[90px]">
-              <div
-                className={`w-10 h-10 rounded-full border-2 text-sm font-bold flex items-center justify-center transition duration-200 ${
-                  step === s
-                    ? "bg-[#708C3E] text-white border-[#708C3E]"
-                    : step > s
-                    ? "bg-[#A3853D] text-white border-[#A3853D]"
-                    : "bg-white text-[#708C3E] border-[#DCD6C9]"
-                }`}
-              >
-                {s}
-              </div>
-              <span
-                className={`text-xs mt-1 text-center whitespace-pre-line leading-tight ${
-                  step === s
-                    ? "text-[#708C3E] font-medium"
-                    : step > s
-                    ? "text-[#A3853D]"
-                    : "text-gray-400"
-                }`}
-              >
-                {stepLabels[index]}
-              </span>
-            </div>
+      {/* ===== Desktop / Tablet ===== */}
+      <div className="hidden lg:block">
+        <div className="rounded-xl px-6">
+          <div className="relative">
+            {/* Línea base */}
+            <div className="absolute left-0 right-0 top-[22px] h-1 rounded-full bg-[#F3F1EA]" />
 
-            {/* Línea entre pasos - desktop */}
-            {index < 6 && (
-              <div className={`w-10 h-1 rounded transition-colors ${
-                step > s ? "bg-[#A3853D]" : "bg-[#DCD6C9]"
-              }`}></div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Indicador de scroll en móvil */}
-      <div className="lg:hidden flex justify-center mt-2">
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5, 6, 7].map((s) => (
+            {/* Progreso */}
             <div
-              key={s}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                step === s
-                  ? "bg-[#708C3E] w-4"
-                  : step > s
-                  ? "bg-[#A3853D]"
-                  : "bg-[#DCD6C9]"
-              }`}
+              className="absolute left-0 top-[22px] h-1 rounded-full bg-[#708C3E] transition-all duration-500 ease-out"
+              style={{ width: `${progressPct}%` }}
             />
-          ))}
+
+            <div
+              className="relative grid gap-0"
+              style={{
+                gridTemplateColumns: `repeat(${totalSteps}, minmax(0, 1fr))`,
+              }}
+            >
+              {stepLabels.map((label, i) => {
+                const s = i + 1
+                const isActive = s === clampedStep
+                const isDone = s < clampedStep
+
+                return (
+                  <div key={i} className="flex flex-col items-center">
+                    {/* Nodo */}
+                    <div className="relative">
+                      {/* halo */}
+                      <div
+                        className={[
+                          "absolute -inset-2 rounded-full transition-opacity duration-300",
+                          isActive ? "bg-[#708C3E]/15 opacity-100" : "opacity-0",
+                        ].join(" ")}
+                      />
+
+                      <button
+                        type="button"
+                        disabled={!canClick(s)}
+                        onClick={() => onStepClick?.(s)}
+                        className={[
+                          "relative grid place-items-center",
+                          "h-11 w-11 rounded-full border-2 text-sm font-bold",
+                          "transition-all duration-200",
+                          isActive
+                            ? "bg-[#708C3E] text-white border-[#708C3E] shadow-sm scale-[1.06]"
+                            : isDone
+                            ? "bg-[#A3853D] text-white border-[#A3853D] shadow-sm"
+                            : "bg-white text-[#708C3E] border-[#DCD6C9]",
+                          canClick(s)
+                            ? "cursor-pointer hover:scale-[1.03]"
+                            : "cursor-default",
+                          "focus:outline-none focus:ring-2 focus:ring-[#708C3E]/30",
+                        ].join(" ")}
+                        aria-current={isActive ? "step" : undefined}
+                        title={label.replace("\n", " ")}
+                      >
+                        {isDone ? "✓" : s}
+                      </button>
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={[
+                        "mt-3 text-sm text-center leading-tight px-2 whitespace-pre-line",
+                        "transition-colors duration-200",
+                        isActive
+                          ? "text-[#708C3E] font-semibold"
+                          : isDone
+                          ? "text-[#4A4A4A] font-medium"
+                          : "text-gray-400",
+                      ].join(" ")}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

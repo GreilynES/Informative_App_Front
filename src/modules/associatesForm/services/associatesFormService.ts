@@ -132,28 +132,24 @@ export async function uploadDocuments(
 export async function existsCedula(cedula: string): Promise<boolean> {
   const v = (cedula ?? "").trim();
   if (!v) return false;
-  
-  console.log("[existsCedula] Verificando cédula:", v);
-  
+
+  console.log("[existsCedula][ASSOC] Verificando cédula en asociados:", v);
+
   try {
-    const response = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
-    console.log("[existsCedula] ✅ Cédula encontrada (existe):", response.data);
-    return true; // 200 => existe
+    // hora pegamos a /associates/cedula/:cedula
+    const response = await apiConfig.get(`/associates/cedula/${encodeURIComponent(v)}`);
+    console.log("[existsCedula][ASSOC] Asociado encontrado (existe):", response.data);
+    return true;
   } catch (err: any) {
     const status = err?.response?.status;
-    console.log("[existsCedula] Status recibido:", status);
-    
-    if (status === 404) {
-      console.log("[existsCedula] ✅ Cédula NO existe (disponible)");
-      return false; // 404 => no existe, disponible para registro
-    }
-    
-    // Para cualquier otro error, registrar y permitir continuar
-    console.warn("[existsCedula] ⚠️ Error al verificar cédula:", status, err?.message);
-    console.warn("[existsCedula] Permitiendo continuar por error de verificación");
-    return false; // En caso de error, no bloquear al usuario
+    console.log("[existsCedula][ASSOC] Status recibido:", status);
+
+    if (status === 404) return false; // disponible
+    console.warn("[existsCedula][ASSOC] ⚠️ Error verificación:", status, err?.message);
+    return false; // no bloquear por error de red
   }
 }
+
 
 export async function existsEmail(email: string): Promise<boolean> {
   const v = (email ?? "").trim();
@@ -179,4 +175,28 @@ export async function existsEmail(email: string): Promise<boolean> {
     console.warn("[existsEmail] Permitiendo continuar por error de verificación");
     return false; // En caso de error, no bloquear al usuario
   }
+}
+
+export async function lookupPersonaByCedulaForForms(cedula: string) {
+  const v = (cedula ?? "").trim();
+  if (!v) return null;
+
+  try {
+    const { data } = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
+    console.log("[lookupPersonaByCedulaForForms] ✅ 200", data);
+    return data; // PersonaFormLookupDto
+  } catch (err: any) {
+    const status = err?.response?.status;
+    console.log("[lookupPersonaByCedulaForForms] ❌", status, err?.response?.data);
+    if (status === 404) return null;
+    throw err;
+  }
+}
+
+export async function validateSolicitudAsociado(cedula: string) {
+  const v = (cedula ?? "").trim();
+  if (!v) return { ok: true };
+
+  const { data } = await apiConfig.post("/solicitudes/validate", { cedula: v });
+  return data; // { ok: true }
 }

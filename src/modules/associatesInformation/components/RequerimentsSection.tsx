@@ -157,6 +157,13 @@ export function RequirementsSection({ requirements, showForm, setShowForm }: Req
             <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
               <Button
                 type="button"
+                onClick={continueToForm}
+                className={`${btn.primary} ${btn.disabledSoft} w-full sm:w-auto`}
+              >
+                Entendido, continuar con el formulario
+              </Button>
+                            <Button
+                type="button"
                 variant="outline"
                 onClick={() => setShowModal(false)}
                 className={`${btn.outlineGray} ${btn.disabledSoft} w-full sm:w-auto`}
@@ -164,13 +171,6 @@ export function RequirementsSection({ requirements, showForm, setShowForm }: Req
                 Volver
               </Button>
 
-              <Button
-                type="button"
-                onClick={continueToForm}
-                className={`${btn.primary} ${btn.disabledSoft} w-full sm:w-auto`}
-              >
-                Entendido, continuar con el formulario
-              </Button>
             </div>
           </div>
         </DialogContent>
