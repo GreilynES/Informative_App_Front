@@ -1,28 +1,49 @@
-import { useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
+import { useMemo } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { Input } from "@/components/ui/input"
+import { Users } from "lucide-react"
 
 interface NucleoFamiliarSectionProps {
-  form: FormLike;
+  form: FormLike
 }
 
 export function NucleoFamiliarSection({ form }: NucleoFamiliarSectionProps) {
-  const [hombres, setHombres] = useState(0);
-  const [mujeres, setMujeres] = useState(0);
-  const total = hombres + mujeres;
+  const values = (form as any).state?.values || {}
+
+  const hombres = Number(values.nucleoHombres ?? 0) || 0
+  const mujeres = Number(values.nucleoMujeres ?? 0) || 0
+  const total = hombres + mujeres
+
+  const inputBase =
+    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+  const inputError =
+    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+
+  // si querés validar después, por ahora no hay errores:
+  const errorHombres = ""
+  const errorMujeres = ""
+
+  const resumen = useMemo(() => {
+    if (total <= 0) return ""
+    const parts: string[] = []
+    if (hombres > 0) parts.push(`${hombres} ${hombres === 1 ? "hombre" : "hombres"}`)
+    if (mujeres > 0) parts.push(`${mujeres} ${mujeres === 1 ? "mujer" : "mujeres"}`)
+    return parts.join(", ")
+  }, [hombres, mujeres, total])
 
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-      <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-          </svg>
+    <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
+      <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center gap-3">
+        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
+          <Users className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Núcleo Familiar (Opcional)</h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">
+          Núcleo Familiar <span className="text-sm font-medium text-gray-400">(Opcional)</span>
+        </h3>
       </div>
 
-      <div className="p-6">
-        <p className="text-sm text-gray-600 mb-4">
+      <div className="p-6 space-y-4">
+        <p className="text-sm text-gray-600">
           Si desea registrar información sobre su núcleo familiar, indique el número de personas.
         </p>
 
@@ -33,25 +54,27 @@ export function NucleoFamiliarSection({ form }: NucleoFamiliarSectionProps) {
                 <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
                   Número de Hombres
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={field.state.value || ""}
+
+                <Input
+                  name="nucleoHombres"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={field.state.value ?? ""}
                   onChange={(e) => {
-                    let value = parseInt(e.target.value, 10);
-                    if (isNaN(value) || value < 0) value = 0;
-                    field.handleChange(value);
-                    setHombres(value);
+                    const raw = e.target.value
+                    const clean = raw.replace(/\D/g, "")
+                    const num = clean === "" ? "" : String(Math.max(0, Number(clean)))
+                    field.handleChange(num === "" ? "" : Number(num))
                   }}
                   onBlur={field.handleBlur}
                   onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e") {
-                      e.preventDefault();
-                    }
+                    if (e.key === "-" || e.key === "e" || e.key === "." || e.key === ",") e.preventDefault()
                   }}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="0"
+                  className={`${errorHombres ? inputError : inputBase} bg-white`}
                 />
+
+                {errorHombres && <p className="text-sm text-[#9c1414] mt-1">{errorHombres}</p>}
               </div>
             )}
           </form.Field>
@@ -62,43 +85,43 @@ export function NucleoFamiliarSection({ form }: NucleoFamiliarSectionProps) {
                 <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
                   Número de Mujeres
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={field.state.value || ""}
+
+                <Input
+                  name="nucleoMujeres"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={field.state.value ?? ""}
                   onChange={(e) => {
-                    let value = parseInt(e.target.value, 10);
-                    if (isNaN(value) || value < 0) value = 0;
-                    field.handleChange(value);
-                    setMujeres(value);
+                    const raw = e.target.value
+                    const clean = raw.replace(/\D/g, "")
+                    const num = clean === "" ? "" : String(Math.max(0, Number(clean)))
+                    field.handleChange(num === "" ? "" : Number(num))
                   }}
                   onBlur={field.handleBlur}
                   onKeyDown={(e) => {
-                    if (e.key === "-" || e.key === "e") {
-                      e.preventDefault();
-                    }
+                    if (e.key === "-" || e.key === "e" || e.key === "." || e.key === ",") e.preventDefault()
                   }}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="0"
+                  className={`${errorMujeres ? inputError : inputBase} bg-white`}
                 />
 
+                {errorMujeres && <p className="text-sm text-[#9c1414] mt-1">{errorMujeres}</p>}
               </div>
             )}
           </form.Field>
         </div>
 
         {total > 0 && (
-          <div className="mt-4 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+          <div className="mt-2 rounded-xl border border-[#F5E6C5] bg-[#FEF6E0] px-4 py-3">
             <p className="text-sm text-[#8B6C2E]">
-              <span className="font-semibold">Total personas en el núcleo familiar: {total}</span>
-              {hombres > 0 && ` (${hombres} ${hombres === 1 ? 'hombre' : 'hombres'}`}
-              {hombres > 0 && mujeres > 0 && ', '}
-              {mujeres > 0 && `${mujeres} ${mujeres === 1 ? 'mujer' : 'mujeres'}`}
-              {(hombres > 0 || mujeres > 0) && ')'}
+              <span className="font-semibold">
+                Total personas en el núcleo familiar: {total}
+              </span>
+              {resumen ? ` (${resumen})` : ""}
             </p>
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }

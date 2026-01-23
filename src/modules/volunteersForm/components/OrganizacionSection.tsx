@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { organizacionSchema } from "../schemas/volunteerSchema";
-import { existsEmail } from "../services/volunteerFormService";
+import { useRef, useState } from "react"
+import { organizacionSchema } from "../schemas/volunteerSchema"
+import { existsEmail, validateSolicitudVoluntariado } from "../services/volunteerFormService"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { CustomSelect } from "@/shared/ui/CustomSelect"
 
 interface OrganizacionSectionProps {
-  form: any;
-  showErrors?: boolean;
+  form: any
+  showErrors?: boolean
 }
 
 const TIPOS_ORGANIZACION = [
@@ -13,28 +16,40 @@ const TIPOS_ORGANIZACION = [
   "Empresa privada",
   "Grupo comunitario",
   "Otro",
-];
+]
 
 function validateOrgField(key: keyof typeof organizacionSchema.shape) {
-  const shape = (organizacionSchema.shape as any)[key];
-  if (!shape) return () => undefined;
+  const shape = (organizacionSchema.shape as any)[key]
+  if (!shape) return () => undefined
 
   return (arg: any) => {
-    const value = arg && typeof arg === "object" && "value" in arg ? arg.value : arg;
-    const single = shape.safeParse(value);
-    return single.success ? undefined : single.error.issues?.[0]?.message || "Campo inválido";
-  };
+    const value = arg && typeof arg === "object" && "value" in arg ? arg.value : arg
+    const single = shape.safeParse(value)
+    return single.success ? undefined : single.error.issues?.[0]?.message || "Campo inválido"
+  }
 }
 
 export function OrganizacionSection({ form, showErrors }: OrganizacionSectionProps) {
   const [tipoOrg, setTipoOrg] = useState(
     (form.getFieldValue?.("organizacion.tipoOrganizacion") as string) || ""
-  );
-  const [otroTipo, setOtroTipo] = useState("");
+  )
+  const [otroTipo, setOtroTipo] = useState("")
 
-  //estado para verificación de email institucional
-  const [verificandoEmail, setVerificandoEmail] = useState(false);
-  const [emailDupError, setEmailDupError] = useState<string>("");
+  const [verificandoEmail, setVerificandoEmail] = useState(false)
+  const [emailDupError, setEmailDupError] = useState<string>("")
+
+  // ✅ nuevo: validar cédula jurídica contra /validate
+  const [verificandoCJ, setVerificandoCJ] = useState(false)
+  const [cjError, setCjError] = useState<string>("")
+
+  // ✅ mismos tokens de estilo que StepPersonalInformation
+  const inputBase =
+    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+  const inputError =
+    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+
+const cjDebounceRef = useRef<number | null>(null)
+const lastCheckedCjRef = useRef<string>("")
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
@@ -42,17 +57,137 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
           1
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">
-          Información de la Organización
-        </h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Organización</h3>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-4">
+        {/* Cédula jurídica */}
+        <div className="relative">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Cédula jurídica *</label>
+
+          <form.Field
+            name="organizacion.cedulaJuridica"
+            validators={{
+              onBlur: validateOrgField("cedulaJuridica"),
+              onChange: validateOrgField("cedulaJuridica"),
+              onSubmit: validateOrgField("cedulaJuridica"),
+            }}
+          >
+            {(field: any) => {
+              const zodErr = showErrors && field.state.meta.errors?.length > 0
+              const hasErr = !!cjError || !!zodErr
+
+              const precheckCJ = async (cjRaw: string) => {
+                const cj = (cjRaw ?? "").trim()
+
+                // tu schema manda: si está malo, no llamamos backend
+                const localMsg = validateOrgField("cedulaJuridica")(cj)
+                if (localMsg) return
+
+                // si ya validamos exactamente ese cj, no repetimos
+                if (lastCheckedCjRef.current === cj) return
+
+                setVerificandoCJ(true)
+                try {
+                  await validateSolicitudVoluntariado({
+                    tipoSolicitante: "ORGANIZACION",
+                    cedulaJuridica: cj,
+                  })
+
+                  lastCheckedCjRef.current = cj
+                  setCjError("")
+                } catch (err: any) {
+                  const status = err?.response?.status
+                  const msg =
+                    err?.response?.data?.message ||
+                    err?.response?.data?.error ||
+                    "No se pudo validar la cédula jurídica. Intenta de nuevo."
+
+                  lastCheckedCjRef.current = cj
+
+                  // ✅ 409: mensaje claro (pendiente / ya activa)
+                  if (status === 409) {
+                    setCjError(msg)
+                    return
+                  }
+
+                  // otros errores
+                  setCjError("No se pudo validar la cédula jurídica. Intenta de nuevo.")
+                } finally {
+                  setVerificandoCJ(false)
+                }
+              }
+
+              return (
+                <>
+                  <Input
+                    type="text"
+                    value={field.state.value ?? ""}
+                    onChange={(e) => {
+                      const value = e.target.value
+
+                      field.handleChange(value)
+                      if (cjError) setCjError("") // limpia error al escribir
+
+                      // ✅ debounce igual al individual
+                      const trimmed = value.trim()
+
+                      // ajustá este mínimo según tu CJ real
+                      // si tu schema ya valida largo, esto es solo para no llamar antes
+                      if (trimmed.length >= 3) {
+                        if (cjDebounceRef.current) window.clearTimeout(cjDebounceRef.current)
+                        cjDebounceRef.current = window.setTimeout(() => {
+                          precheckCJ(trimmed)
+                        }, 350)
+                      } else {
+                        lastCheckedCjRef.current = ""
+                      }
+                    }}
+                    onBlur={async (e) => {
+                      field.handleBlur()
+
+                      // en blur valida inmediato (sin esperar debounce)
+                      const v = e.target.value.trim()
+                      if (v.length >= 9) {
+                        if (cjDebounceRef.current) window.clearTimeout(cjDebounceRef.current)
+                        await precheckCJ(v)
+                      }
+                    }}
+                    placeholder="Ej: 312369"
+                    aria-invalid={hasErr}
+                    className={`${hasErr ? inputError : inputBase} pr-10 bg-white`}
+                  />
+
+                  {verificandoCJ && (
+                    <div className="absolute right-3 top-[34px]">
+                      <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+
+                  {/* primero error de zod */}
+                  {zodErr && <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>}
+
+                  {/* luego error del backend */}
+                  {cjError && <p className="text-sm text-[#9c1414] mt-1">{cjError}</p>}
+                </>
+              )
+            }}
+          </form.Field>
+        </div>
+
         {/* Nombre */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Nombre de la organización *
           </label>
+
           <form.Field
             name="organizacion.nombre"
             validators={{
@@ -63,19 +198,18 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           >
             {(field: any) => (
               <>
-                <input
+                <Input
                   type="text"
                   value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: Fundación Amigos del Ambiente"
-                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
+                  aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
+                  className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white`}
                 />
+
                 {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
+                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
               </>
             )}
@@ -84,9 +218,10 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
 
         {/* Número de voluntarios */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Número estimado de voluntarios *
           </label>
+
           <form.Field
             name="organizacion.numeroVoluntarios"
             validators={{
@@ -97,7 +232,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           >
             {(field: any) => (
               <>
-                <input
+                <Input
                   type="number"
                   min={1}
                   value={field.state.value ?? ""}
@@ -109,48 +244,13 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
                     )
                   }
                   onBlur={field.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Mínimo 1"
-                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
+                  aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
+                  className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white`}
                 />
-                {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </>
-            )}
-          </form.Field>
-        </div>
 
-        {/* Cédula jurídica */}
-        <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Cédula jurídica *
-          </label>
-          <form.Field
-            name="organizacion.cedulaJuridica"
-            validators={{
-              onBlur: validateOrgField("cedulaJuridica"),
-              onChange: validateOrgField("cedulaJuridica"),
-              onSubmit: validateOrgField("cedulaJuridica"),
-            }}
-          >
-            {(field: any) => (
-              <>
-                <input
-                  type="text"
-                  value={field.state.value ?? ""}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  placeholder="Ej: 312369"
-                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
-                />
                 {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
+                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
               </>
             )}
@@ -159,9 +259,7 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
 
         {/* Tipo de organización */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-            Tipo de organización *
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de organización *</label>
 
           <form.Field
             name="organizacion.tipoOrganizacion"
@@ -171,64 +269,73 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
               onSubmit: validateOrgField("tipoOrganizacion"),
             }}
           >
-            {(field: any) => (
-              <>
-                <select
-                  value={field.state.value ?? ""}
-                  onChange={(e) => {
-                    const valor = e.target.value;
-                    setTipoOrg(valor);
-                    if (valor !== "Otro") {
-                      setOtroTipo("");
-                      field.handleChange(valor);
-                    } else {
-                      field.handleChange("");
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                >
-                  <option value="">Seleccione...</option>
-                  {TIPOS_ORGANIZACION.map((tipo) => (
-                    <option key={tipo} value={tipo}>
-                      {tipo}
-                    </option>
-                  ))}
-                </select>
+            {(field: any) => {
+              const hasError = !!(showErrors && field.state.meta.errors?.length > 0)
 
-                {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
+              const options = [
+                { value: "", label: "Seleccione..." },
+                ...TIPOS_ORGANIZACION.map((t) => ({ value: t, label: t })),
+              ]
 
-                {tipoOrg === "Otro" && (
-                  <div className="mt-3">
-                    <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
-                      Especifique el tipo de organización <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={otroTipo}
-                      onChange={(e) => {
-                        setOtroTipo(e.target.value);
-                        field.handleChange(e.target.value);
-                      }}
-                      className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                      placeholder="Ej: Cooperativa agrícola"
-                      maxLength={100}
-                    />
-                  </div>
-                )}
-              </>
-            )}
+              return (
+                <>
+                  <CustomSelect
+                    value={(field.state.value ?? "") as string}
+                    options={options}
+                    placeholder="Seleccione..."
+                    zIndex={50}
+                    onChange={(val) => {
+                      const valor = String(val || "")
+                      setTipoOrg(valor)
+
+                      if (valor !== "Otro") {
+                        setOtroTipo("")
+                        field.handleChange(valor)
+                      } else {
+                        field.handleChange("")
+                      }
+                    }}
+                  />
+
+                  {/* truco para blur */}
+                  <div tabIndex={0} onFocus={() => field.handleBlur()} className="sr-only" />
+
+                  {hasError && (
+                    <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
+                  )}
+
+                  {tipoOrg === "Otro" && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Especifique el tipo de organización <span className="text-red-500">*</span>
+                      </label>
+
+                      <Input
+                        type="text"
+                        value={otroTipo}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          setOtroTipo(v)
+                          field.handleChange(v)
+                        }}
+                        placeholder="Ej: Cooperativa agrícola"
+                        maxLength={100}
+                        className={`${inputBase} bg-white`}
+                      />
+                    </div>
+                  )}
+                </>
+              )
+            }}
           </form.Field>
         </div>
 
         {/* Dirección */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Dirección de la organización *
           </label>
+
           <form.Field
             name="organizacion.direccion"
             validators={{
@@ -239,19 +346,18 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           >
             {(field: any) => (
               <>
-                <textarea
+                <Textarea
                   value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   rows={3}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Dirección completa de la sede principal"
-                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
+                  aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
+                  className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white resize-none`}
                 />
+
                 {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
+                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
               </>
             )}
@@ -260,9 +366,10 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
 
         {/* Teléfono */}
         <div>
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Teléfono de la organización *
           </label>
+
           <form.Field
             name="organizacion.telefono"
             validators={{
@@ -273,31 +380,31 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
           >
             {(field: any) => (
               <>
-                <input
+                <Input
                   type="tel"
                   value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   maxLength={12}
-                  className="w-full px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
                   placeholder="Ej: 2222 3333"
-                  aria-invalid={showErrors && field.state.meta.errors?.length > 0}
+                  aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
+                  className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white`}
                 />
+
                 {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
+                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
               </>
             )}
           </form.Field>
         </div>
 
-        {/* Email institucional con verificación de duplicado */}
+        {/* Email institucional */}
         <div className="relative">
-          <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Correo electrónico institucional *
           </label>
+
           <form.Field
             name="organizacion.email"
             validators={{
@@ -306,75 +413,61 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
               onSubmit: validateOrgField("email"),
             }}
           >
-            {(field: any) => (
-              <>
-                <input
-                  type="email"
-                  value={field.state.value ?? ""}
-                  onChange={(e) => {
-                    field.handleChange(e.target.value);
-                    // limpiar error de duplicado al escribir
-                    if (emailDupError) setEmailDupError("");
-                  }}
-                  onBlur={async (e) => {
-                    field.handleBlur();
-                    const email = e.target.value.trim();
-                    if (!email) return;
+            {(field: any) => {
+              const zodErr = showErrors && field.state.meta.errors?.length > 0
+              const hasErr = !!emailDupError || !!zodErr
 
-                    // validar formato antes de consultar duplicado
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(email)) return;
+              return (
+                <>
+                  <Input
+                    type="email"
+                    value={field.state.value ?? ""}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value)
+                      if (emailDupError) setEmailDupError("")
+                    }}
+                    onBlur={async (e) => {
+                      field.handleBlur()
+                      const email = e.target.value.trim()
+                      if (!email) return
 
-                    // consulta al backend
-                    setVerificandoEmail(true);
-                    try {
-                      const existe = await existsEmail(email);
-                      if (existe) {
-                        setEmailDupError("Este email ya está registrado en el sistema");
-                      } else {
-                        setEmailDupError("");
+                      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                      if (!emailRegex.test(email)) return
+
+                      setVerificandoEmail(true)
+                      try {
+                        const existe = await existsEmail(email)
+                        setEmailDupError(existe ? "Este email ya está registrado en el sistema" : "")
+                      } finally {
+                        setVerificandoEmail(false)
                       }
-                    } finally {
-                      setVerificandoEmail(false);
-                    }
-                  }}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 ${
-                    emailDupError
-                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                      : "border-[#CFCFCF] focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                  }`}
-                  placeholder="Ej: contacto@organizacion.org"
-                  aria-invalid={
-                    (showErrors && field.state.meta.errors?.length > 0) || !!emailDupError
-                  }
-                />
+                    }}
+                    placeholder="Ej: contacto@organizacion.org"
+                    aria-invalid={hasErr}
+                    className={`${hasErr ? inputError : inputBase} pr-10 bg-white`}
+                  />
 
-                {/* spinner opcional */}
-                {verificandoEmail && (
-                  <div className="absolute right-3 top-11">
-                    <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z" />
-                    </svg>
-                  </div>
-                )}
+                  {verificandoEmail && (
+                    <div className="absolute right-3 top-[34px]">
+                      <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
+                        />
+                      </svg>
+                    </div>
+                  )}
 
-                {/* error por zod */}
-                {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-
-                {/*  error por duplicado en backend */}
-                {emailDupError && (
-                  <p className="mt-1 text-sm text-red-600">{emailDupError}</p>
-                )}
-              </>
-            )}
+                  {zodErr && <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>}
+                  {emailDupError && <p className="text-sm text-[#9c1414] mt-1">{emailDupError}</p>}
+                </>
+              )
+            }}
           </form.Field>
         </div>
       </div>
     </div>
-  );
-}
+  )
+}  

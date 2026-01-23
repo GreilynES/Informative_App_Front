@@ -171,19 +171,18 @@ export function RequirementsSection({
             <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
               <Button
                 type="button"
+                onClick={handleContinue}
+                className={`${btn.primary} ${btn.disabledSoft} w-full sm:w-auto`}
+              >
+                Entendido, continuar
+              </Button>
+                            <Button
+                type="button"
                 variant="outline"
                 onClick={() => setShowModal(false)}
                 className={`${btn.outlineGray} ${btn.disabledSoft} w-full sm:w-auto`}
               >
                 Volver
-              </Button>
-
-              <Button
-                type="button"
-                onClick={handleContinue}
-                className={`${btn.primary} ${btn.disabledSoft} w-full sm:w-auto`}
-              >
-                Entendido, continuar
               </Button>
             </div>
           </div>

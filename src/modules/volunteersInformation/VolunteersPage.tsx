@@ -29,7 +29,7 @@ export default function VolunteersPage() {
 } = useVolunteersForm();
 
   const { lookup } = useCedulaLookup();
-  const { data, loading, error, reload } = useVolunteersPage();
+  const { data, loading } = useVolunteersPage();
   const navigate = useNavigate();
 
   const { 
@@ -46,15 +46,6 @@ export default function VolunteersPage() {
     nextStep();
   });
 
-  if (loading) return <div className="p-8 text-center">Cargando contenido…</div>;
-  if (error || !data) return (
-    <div className="p-8 text-center text-red-600">
-      Error: {error ?? "Sin datos"}
-      <div className="mt-4">
-        <button onClick={reload} className="px-4 py-2 rounded border">Reintentar</button>
-      </div>
-    </div>
-  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,15 +117,22 @@ export default function VolunteersPage() {
 };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] pt-14">
-      <HeaderSection title={data.headerTitle} description={data.headerDescription} />
-
+     <div className="min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
+      <HeaderSection
+        title={data?.headerTitle ?? ""}
+        description={data?.headerDescription ?? ""}
+      />
       <div className="max-w-6xl mx-auto">
-        <BenefitsSection items={[...data.benefits].sort((a, b) => a.order - b.order)} />
-
+      <BenefitsSection
+        items={
+          data?.benefits
+            ? [...data.benefits].sort((a, b) => a.order - b.order)
+            : []
+        }
+      />
         <section id="requisitos">
           <RequirementsSection
-            requirements={[...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text)}
+            requirements={data?.requirements ? [...data.requirements].sort((a, b) => a.order - b.order).map(r => r.text) : []}
             showForm={showForm}
             setShowForm={(v: boolean) => {
               if (v) resetStepsToFirst();
@@ -172,12 +170,13 @@ export default function VolunteersPage() {
                 />
               </form>
             ) : (
-              <div className="bg-white rounded-xl p-6 text-center">
-                <p className="text-gray-600">Cargando formulario...</p>
-              </div>
+              null
             )}
           </div>
         </div>
+      )}
+      {loading && (
+        <div className="pointer-events-none absolute inset-0 bg-[#FAF9F5]/90" />
       )}
     </div>
   );

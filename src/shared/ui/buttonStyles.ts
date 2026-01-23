@@ -29,8 +29,9 @@ export const btn = {
     "border-[#708C3E] text-[#708C3E] hover:bg-[#E6EDC8] hover:text-[#708C3E] shadow-none",
 
   // Outline rojo suave (cancelar / volver crítico)
-  outlineRed:
-    "border-[#E6C3B4] text-[#8C3A33] hover:bg-[#E6C3B4]/40 hover:text-[#8C3A33] shadow-none",
+   outlineRed:
+    "border border-[#E6C3B4] text-[#8C3A33] hover:bg-[#E6C3B4]/40 hover:text-[#8C3A33] shadow-none " +
+    "transition-colors focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
 
   // Botón “neutral” gris (secundario)
   outlineGray:
@@ -40,3 +41,4 @@ export const btn = {
   disabledSoft:
     "disabled:bg-[#ECECEC] disabled:text-[#6B6B6B] disabled:hover:bg-[#ECECEC]",
 }
+

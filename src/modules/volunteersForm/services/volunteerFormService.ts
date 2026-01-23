@@ -88,3 +88,38 @@ export async function existsEmail(email: string): Promise<boolean> {
     return false;
   }
 }
+
+export async function lookupPersonaByCedula(cedula: string) {
+  const v = (cedula ?? "").trim();
+  if (!v) return null;
+
+  try {
+    const { data } = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
+    console.log("[lookupPersonaByCedula] ✅ 200", data);
+    return data;
+  } catch (err: any) {
+    const status = err?.response?.status;
+    console.log("[lookupPersonaByCedula] ❌", status, err?.response?.data);
+    if (status === 404) return null;
+    throw err;
+  }
+}
+
+export async function validateSolicitudVoluntariado(params: {
+  tipoSolicitante: "INDIVIDUAL" | "ORGANIZACION";
+  cedula?: string;
+  cedulaJuridica?: string;
+}) {
+  const res = await apiConfig.post("/solicitudes-voluntariado/validate", params, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return res.data; // { ok: true }
+}
+
+export async function validateRepresentanteCedula(cedula: string) {
+  const digits = String(cedula ?? "").replace(/\D/g, "").trim()
+  if (!digits) return { ok: true }
+
+  const { data } = await apiConfig.get(`/representantes/validate-cedula/${encodeURIComponent(digits)}`)
+  return data as { ok: boolean; code?: string; message?: string; meta?: any }
+}
