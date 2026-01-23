@@ -115,3 +115,11 @@ export async function validateSolicitudVoluntariado(params: {
   });
   return res.data; // { ok: true }
 }
+
+export async function validateRepresentanteCedula(cedula: string) {
+  const digits = String(cedula ?? "").replace(/\D/g, "").trim()
+  if (!digits) return { ok: true }
+
+  const { data } = await apiConfig.get(`/representantes/validate-cedula/${encodeURIComponent(digits)}`)
+  return data as { ok: boolean; code?: string; message?: string; meta?: any }
+}

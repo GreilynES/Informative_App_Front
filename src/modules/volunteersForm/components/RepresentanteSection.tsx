@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { es } from "date-fns/locale"
 import { normalizeLookupToPersona } from "@/shared/utils/helpersForms"
+import { validateRepresentanteCedula } from "../services/volunteerFormService"
 
 export function RepresentanteSection({
   form,
@@ -82,6 +83,11 @@ export function RepresentanteSection({
     "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
 
   const [buscandoCedula, setBuscandoCedula] = useState(false)
+
+  // ✅ NUEVO: estado de validación representante
+  const [repValidation, setRepValidation] = useState<{ ok: boolean; message?: string } | null>(null)
+  const repErrorMsg = repValidation && repValidation.ok === false ? repValidation.message : ""
+
   const debounceRef = useRef<number | null>(null)
   const lastLookupRef = useRef<string>("")
 
@@ -92,22 +98,41 @@ export function RepresentanteSection({
     form?.setFieldValue?.(path, v)
   }
 
-  // ✅ igual que Individual: lookup (DB->TSE), normaliza, y rellena
+  // ✅ NUEVO: valida contra /representantes/validate-cedula antes de hacer lookup/llenar
+  const validateRepFirst = async (digits: string) => {
+    try {
+      const r = await validateRepresentanteCedula(digits)
+      if (r?.ok === false) {
+        setRepValidation({ ok: false, message: r.message || "Esta cédula ya está registrada como representante." })
+        return false
+      }
+      setRepValidation({ ok: true })
+      return true
+    } catch {
+      // Si falla la validación por red, no bloqueamos pero limpiamos mensaje
+      setRepValidation(null)
+      return true
+    }
+  }
+
+  // ✅ lookup (DB->TSE), normaliza, y rellena (pero SOLO si pasa la validación)
   const lookupAndFill = async (cedulaRaw: string) => {
     const digits = String(cedulaRaw ?? "").replace(/\D/g, "")
     if (!digits || digits.length < 9) return
     if (!lookup) return
 
+    // ✅ 1) validar
+    const allowed = await validateRepFirst(digits)
+    if (!allowed) return
+
+    // ✅ 2) evitar duplicados
     if (lastLookupRef.current === digits) return
     lastLookupRef.current = digits
 
     setBuscandoCedula(true)
     try {
       const res = await lookup(digits)
-      console.log("[Representante lookup]", res)
 
-      // normalizeLookupToPersona debe sacar:
-      // { source:"DB"|"TSE", nombre, apellido1, apellido2, telefono?, email?, fechaNacimiento?, direccion? }
       const p = normalizeLookupToPersona(res)
       if (!p) return
 
@@ -116,7 +141,7 @@ export function RepresentanteSection({
       setIfDefined("organizacion.representante.persona.apellido1", p.apellido1)
       setIfDefined("organizacion.representante.persona.apellido2", p.apellido2)
 
-      // ✅ si viene de DB: completa todo lo demás
+      // si viene de DB: completa todo lo demás
       if (p.source === "DB") {
         setIfDefined("organizacion.representante.persona.telefono", p.telefono)
         setIfDefined("organizacion.representante.persona.email", p.email)
@@ -157,14 +182,20 @@ export function RepresentanteSection({
                     field.handleChange(raw)
 
                     const digits = raw.replace(/\D/g, "")
-                    if (digits.length >= 9) {
-                      if (debounceRef.current) window.clearTimeout(debounceRef.current)
-                      debounceRef.current = window.setTimeout(() => {
-                        lookupAndFill(digits)
-                      }, 350)
-                    } else {
+
+                    // reset visual si aún no llega a 9
+                    if (digits.length < 9) {
+                      setRepValidation(null)
                       lastLookupRef.current = ""
+                      if (debounceRef.current) window.clearTimeout(debounceRef.current)
+                      return
                     }
+
+                    // debounce: valida + lookup
+                    if (debounceRef.current) window.clearTimeout(debounceRef.current)
+                    debounceRef.current = window.setTimeout(() => {
+                      lookupAndFill(digits)
+                    }, 350)
                   }}
                   onBlur={async (e) => {
                     const digits = e.target.value.trim().replace(/\D/g, "")
@@ -175,7 +206,7 @@ export function RepresentanteSection({
                   }}
                   placeholder="Número de cédula"
                   className={`${
-                    showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
+                    repErrorMsg || (showErrors && field.state.meta.errors?.length > 0) ? inputError : inputBase
                   } pr-10 bg-white`}
                 />
 
@@ -183,16 +214,25 @@ export function RepresentanteSection({
                   <div className="absolute right-3 top-[34px]">
                     <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
-                      />
+                      <path className="opacity-75" fill="currentColor" d="M4 12h4a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z" />
                     </svg>
                   </div>
                 )}
 
-                {showErrors && field.state.meta.errors?.length > 0 && (
+                {/* ✅ Mensaje backend representante */}
+                {!!repErrorMsg && (
+                  <>
+                    <p className="text-sm text-[#9c1414] mt-1">{repErrorMsg}</p>
+                    <div className="mt-2 rounded-md border border-[#e6c3b4] bg-[#fff1f1] p-3">
+                      <p className="text-sm text-[#8C3A33]">
+                        No puedes continuar con esta cédula porque ya está asignada como representante.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Errores del schema (si aplica) */}
+                {!repErrorMsg && showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
               </>
@@ -209,21 +249,14 @@ export function RepresentanteSection({
               validators={{ onSubmit: validatePersonaField("nombre") }}
             >
               {(field: any) => (
-                <>
-                  <Input
-                    type="text"
-                    value={field.state.value || ""}
-                    maxLength={60}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Tu nombre"
-                    className={`${
-                      showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
-                    } bg-[#ECECEC]`}
-                  />
-                  {showErrors && field.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                  )}
-                </>
+                <Input
+                  type="text"
+                  value={field.state.value || ""}
+                  maxLength={60}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Tu nombre"
+                  className={`${inputBase} bg-[#ECECEC]`}
+                />
               )}
             </form.Field>
           </div>
@@ -235,21 +268,14 @@ export function RepresentanteSection({
               validators={{ onSubmit: validatePersonaField("apellido1") }}
             >
               {(field: any) => (
-                <>
-                  <Input
-                    type="text"
-                    value={field.state.value || ""}
-                    maxLength={60}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Tu primer apellido"
-                    className={`${
-                      showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
-                    } bg-[#ECECEC]`}
-                  />
-                  {showErrors && field.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                  )}
-                </>
+                <Input
+                  type="text"
+                  value={field.state.value || ""}
+                  maxLength={60}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Tu primer apellido"
+                  className={`${inputBase} bg-[#ECECEC]`}
+                />
               )}
             </form.Field>
           </div>
@@ -261,21 +287,14 @@ export function RepresentanteSection({
               validators={{ onSubmit: validatePersonaField("apellido2") }}
             >
               {(field: any) => (
-                <>
-                  <Input
-                    type="text"
-                    value={field.state.value || ""}
-                    maxLength={60}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Tu segundo apellido"
-                    className={`${
-                      showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
-                    } bg-[#ECECEC]`}
-                  />
-                  {showErrors && field.state.meta.errors?.length > 0 && (
-                    <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                  )}
-                </>
+                <Input
+                  type="text"
+                  value={field.state.value || ""}
+                  maxLength={60}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Tu segundo apellido"
+                  className={`${inputBase} bg-[#ECECEC]`}
+                />
               )}
             </form.Field>
           </div>
@@ -286,21 +305,14 @@ export function RepresentanteSection({
           <label className="block text-sm font-medium text-gray-700 mb-1">Cargo/Posición *</label>
           <form.Field name="organizacion.representante.cargo" validators={{ onSubmit: validateCargo }}>
             {(field: any) => (
-              <>
-                <Input
-                  type="text"
-                  value={field.state.value || ""}
-                  maxLength={100}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Ej: Director, Coordinador, Presidente, etc."
-                  className={`${
-                    showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
-                  } bg-white`}
-                />
-                {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                )}
-              </>
+              <Input
+                type="text"
+                value={field.state.value || ""}
+                maxLength={100}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder="Ej: Director, Coordinador, Presidente, etc."
+                className={`${inputBase} bg-white`}
+              />
             )}
           </form.Field>
         </div>
@@ -313,50 +325,34 @@ export function RepresentanteSection({
             validators={{ onSubmit: validatePersonaField("telefono") }}
           >
             {(field: any) => (
-              <>
-                <Input
-                  type="tel"
-                  value={field.state.value || ""}
-                  maxLength={12}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Número de teléfono"
-                  className={`${
-                    showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
-                  } bg-white`}
-                />
-                {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                )}
-              </>
+              <Input
+                type="tel"
+                value={field.state.value || ""}
+                maxLength={12}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder="Número de teléfono"
+                className={`${inputBase} bg-white`}
+              />
             )}
           </form.Field>
         </div>
 
-        {/* Email (sin existsEmail) */}
+        {/* Email */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">Correo del representante *</label>
-
           <form.Field
             name="organizacion.representante.persona.email"
             validators={{ onSubmit: validatePersonaField("email") }}
           >
             {(field: any) => (
-              <>
-                <Input
-                  type="email"
-                  value={field.state.value || ""}
-                  maxLength={60}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="correo@ejemplo.com"
-                  className={`${
-                    showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase
-                  } bg-white`}
-                />
-
-                {showErrors && field.state.meta.errors?.length > 0 && (
-                  <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                )}
-              </>
+              <Input
+                type="email"
+                value={field.state.value || ""}
+                maxLength={60}
+                onChange={(e) => field.handleChange(e.target.value)}
+                placeholder="correo@ejemplo.com"
+                className={`${inputBase} bg-white`}
+              />
             )}
           </form.Field>
         </div>
@@ -385,71 +381,50 @@ export function RepresentanteSection({
                     : ""
 
                   return (
-                    <>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className={`w-full justify-between shadow-sm hover:bg-[#E6EDC8]/40 ${
-                              showErrors && field.state.meta.errors?.length > 0
-                                ? "border-[#9c1414]"
-                                : "border-[#DCD6C9]"
-                            }`}
-                          >
-                            <span className={field.state.value ? "text-[#4A4A4A]" : "text-gray-400"}>
-                              {field.state.value ? display : "Seleccione una fecha"}
-                            </span>
-                            <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
-                          </Button>
-                        </PopoverTrigger>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={`w-full justify-between shadow-sm hover:bg-[#E6EDC8]/40 border-[#DCD6C9]`}
+                        >
+                          <span className={field.state.value ? "text-[#4A4A4A]" : "text-gray-400"}>
+                            {field.state.value ? display : "Seleccione una fecha"}
+                          </span>
+                          <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
+                        </Button>
+                      </PopoverTrigger>
 
-                        <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
-                          <Calendar
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={(d) => {
-                              if (!d) return
-                              if (disabledBirthDate(d)) return
-                              field.handleChange(toISODate(d))
-                            }}
-                            locale={es}
-                            captionLayout="dropdown"
-                            fromYear={fromYear}
-                            toYear={toYear}
-                            disabled={disabledBirthDate}
-                            defaultMonth={selectedDate ?? maxBirthDateObj}
-                            className="rounded-lg"
-                            classNames={{
-                              caption:
-                                "flex justify-center pt-1 relative items-center text-[#708C3E] font-semibold",
-                              head_cell: "text-[#708C3E] w-9 font-semibold text-[0.8rem]",
-                              day_selected:
-                                "bg-[#708C3E] text-white hover:bg-[#5d7334] hover:text-white focus:bg-[#708C3E] focus:text-white",
-                              day_today: "border border-[#A3853D]",
-                              day_disabled: "text-gray-300 opacity-50",
-                            }}
-                          />
-
-                          <p className="mt-2 text-xs text-gray-500">
-                            Debe ser mayor de <span className="font-medium text-[#6F8C1F]">18 años</span>.
-                          </p>
-                        </PopoverContent>
-                      </Popover>
-
-                      {showErrors && field.state.meta.errors?.length > 0 && (
-                        <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
-                      )}
-                    </>
+                      <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(d) => {
+                            if (!d) return
+                            if (disabledBirthDate(d)) return
+                            field.handleChange(toISODate(d))
+                          }}
+                          locale={es}
+                          captionLayout="dropdown"
+                          fromYear={fromYear}
+                          toYear={toYear}
+                          disabled={disabledBirthDate}
+                          defaultMonth={selectedDate ?? maxBirthDateObj}
+                          className="rounded-lg"
+                        />
+                        <p className="mt-2 text-xs text-gray-500">
+                          Debe ser mayor de <span className="font-medium text-[#6F8C1F]">18 años</span>.
+                        </p>
+                      </PopoverContent>
+                    </Popover>
                   )
                 }}
               </form.Field>
             </div>
 
-            {/* Dirección del representante */}
+            {/* Dirección */}
             <div>
               <label className="block text-xs font-medium text-[#4A4A4A] mb-1">Dirección del representante</label>
-
               <form.Field name="organizacion.representante.persona.direccion">
                 {(field: any) => (
                   <Textarea

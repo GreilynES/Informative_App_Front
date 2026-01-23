@@ -77,7 +77,6 @@ export function Step1Organization(props: {
     <div className="space-y-6">
       <OrganizacionSection form={form} showErrors={showErrors} />
 
-      {/* ✅ ahora se pasa el lookupCombined (DB->TSE) */}
       <RepresentanteSection form={form} lookup={lookupCombined} showErrors={showErrors} />
 
       <NavigationButtons onPrev={() => {}} onNext={handleNext} disableNext={false} hidePrev />

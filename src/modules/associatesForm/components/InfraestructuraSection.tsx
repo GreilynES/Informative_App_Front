@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react"
 import type { FormLike } from "../../../shared/types/form-lite"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Plus } from "lucide-react"
 import { btn } from "@/shared/ui/buttonStyles"
+import { Input } from "@/components/ui/input"
 
 interface InfraestructuraSectionProps {
   form: FormLike
   showErrors?: boolean
 }
+
+const checkboxBase =
+  "border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E]"
+const checkRow =
+  "flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#E6EDC8]/30"
 
 export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
   const existentes = (form as any).state?.values?.infraestructuraDisponible || {}
@@ -45,7 +52,7 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
   }
 
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
+    <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
       <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
           <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -56,22 +63,25 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Infraestructura */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">
             Infraestructura disponible en la finca:
           </label>
 
-          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
-            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
-              i
-            </span>
-            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Marca todas las infraestructuras que aplica. Para otra, escríbela y presiona{" "}
-              <span className="font-semibold text-[#708C3E]">Agregar</span>.
-            </p>
+          <div className="rounded-xl border border-[#DCD6C9] bg-[#F3F1EA] px-4 py-3 mb-3">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex w-6 h-6 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+                i
+              </span>
+              <p className="text-sm text-[#4A4A4A]">
+                Marca todas las infraestructuras que aplican. Para otra, escríbela y presiona{" "}
+                <span className="font-semibold text-[#708C3E]">Agregar</span>.
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1">
             {[
               "Corral de manejo",
               "Bodega",
@@ -79,108 +89,95 @@ export function InfraestructuraSection({ form }: InfraestructuraSectionProps) {
               "Reservorio de agua",
               "Biodigestor",
               "Sistema de tratamiento de aguas",
-            ].map((infra) => (
-              <div key={infra} className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id={`infra-${infra}`}
-                  checked={infraestructuras.includes(infra)}
-                  onChange={() => toggleInfraestructura(infra)}
-                  className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                  style={{ accentColor: "#708C3E" }}
-                />
-                <label htmlFor={`infra-${infra}`} className="text-sm text-[#4A4A4A]">
-                  {infra}
+            ].map((infra) => {
+              const checked = infraestructuras.includes(infra)
+              return (
+                <label key={infra} className={checkRow}>
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={() => toggleInfraestructura(infra)}
+                    className={checkboxBase}
+                  />
+                  <span className="text-sm text-gray-700">{infra}</span>
                 </label>
-              </div>
-            ))}
-
-            <div className="flex gap-2 mt-3 items-start">
-              <input
-                type="text"
-                value={otraInfraestructura}
-                onChange={(e) =>
-                  setOtraInfraestructura(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    agregarOtraInfraestructura()
-                  }
-                }}
-                placeholder="Otra infraestructura"
-                className="flex-1 px-3 py-2 border border-[#CFCFCF] rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-[#6F8C1F] focus:border-[#6F8C1F]"
-                maxLength={75}
-              />
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={agregarOtraInfraestructura}
-                className={btn.outlineGreen}
-              >
-                <Plus className="size-4" />
-                Agregar
-              </Button>
-            </div>
-
-            {infraestructuras.length > 0 && (
-              <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
-                <p className="text-xs text-[#8B6C2E] font-medium mb-2">Infraestructura seleccionada:</p>
-                <div className="flex flex-wrap gap-2">
-                  {infraestructuras.map((infra, idx) => (
-                    <span
-                      key={idx}
-                      className="inline-flex items-center gap-1 bg-white border border-[#F5E6C5] rounded-lg px-3 py-1 text-xs text-[#8B6C2E]"
-                    >
-                      {infra}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+              )
+            })}
           </div>
+
+          <div className="flex gap-2 mt-3 items-start">
+            <Input
+              value={otraInfraestructura}
+              onChange={(e) => setOtraInfraestructura(e.target.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, ""))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  agregarOtraInfraestructura()
+                }
+              }}
+              placeholder="Otra infraestructura"
+              className="bg-white border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+              maxLength={75}
+            />
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={agregarOtraInfraestructura}
+              className={`${btn.outlineGreen} h-9 px-4 text-sm`}
+            >
+              <Plus className="size-4" />
+              Agregar
+            </Button>
+          </div>
+
+          {infraestructuras.length > 0 && (
+            <div className="mt-3 p-3 bg-[#FEF6E0] border border-[#F5E6C5] rounded-md">
+              <p className="text-xs text-[#8B6C2E] font-medium mb-2">Infraestructura seleccionada:</p>
+              <div className="flex flex-wrap gap-2">
+                {infraestructuras.map((infra) => (
+                  <span
+                    key={infra}
+                    className="inline-flex items-center bg-white border border-[#F5E6C5] rounded-lg px-3 py-1 text-xs text-[#8B6C2E]"
+                  >
+                    {infra}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Corriente eléctrica */}
         <div>
           <label className="block text-sm font-medium text-[#4A4A4A] mb-3">Corriente eléctrica:</label>
-          <div className="mb-2 flex items-center gap-2 p-2 text-semibold bg-[#eef7df] border border-[#efefef] rounded-md">
-            <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
-              i
-            </span>
-            <p className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Marca una o más opciones si aplican.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="electrica-publica"
-                checked={corrienteElectrica.publica}
-                onChange={(e) => setCorrienteElectrica({ ...corrienteElectrica, publica: e.target.checked })}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="electrica-publica" className="text-sm text-[#4A4A4A]">
-                Pública
-              </label>
-            </div>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="electrica-privada"
-                checked={corrienteElectrica.privada}
-                onChange={(e) => setCorrienteElectrica({ ...corrienteElectrica, privada: e.target.checked })}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="electrica-privada" className="text-sm text-[#4A4A4A]">
-                Privada
-              </label>
+          <div className="rounded-xl border border-[#DCD6C9] bg-[#F3F1EA] px-4 py-3 mb-3">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex w-6 h-6 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
+                i
+              </span>
+              <p className="text-sm text-[#4A4A4A]">Marca una o más opciones si aplican.</p>
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className={checkRow}>
+              <Checkbox
+                checked={corrienteElectrica.publica}
+                onCheckedChange={(v) => setCorrienteElectrica((p) => ({ ...p, publica: !!v }))}
+                className={checkboxBase}
+              />
+              <span className="text-sm text-gray-700">Pública</span>
+            </label>
+
+            <label className={checkRow}>
+              <Checkbox
+                checked={corrienteElectrica.privada}
+                onCheckedChange={(v) => setCorrienteElectrica((p) => ({ ...p, privada: !!v }))}
+                className={checkboxBase}
+              />
+              <span className="text-sm text-gray-700">Privada</span>
+            </label>
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import  { useEffect, useState } from "react";
 import type { FormLike } from "../../../shared/types/form-lite";
+import { ClipboardList } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface RegistroSectionProps {
   form: FormLike;
@@ -69,80 +71,63 @@ export function RegistroSection({ form, onChange, showErrors = false }: Registro
   };
 
   return (
-    <div className="bg-[#FAF9F5] rounded-xl shadow-md border border-[#DCD6C9]">
-      <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center space-x-2">
-        <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
-          <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M4 3a1 1 0 00-1 1v12a1 1 0 001.447.894L10 14.118l5.553 2.776A1 1 0 0017 16V4a1 1 0 00-1.553-.894L10 5.882 4.447 3.106A1 1 0 004 3z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">
-          Registro y gestión de recursos en la finca
-        </h3>
+  <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
+    <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center gap-3">
+      <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
+        <ClipboardList className="w-5 h-5 text-white" />
       </div>
-
-      <div className="p-6 space-y-6">
-        <div>
-          <p className="block text-sm font-medium text-[#4A4A4A] mb-3">
-            ¿Lleva registros en su finca? Marque todas las que posee. *
-          </p>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <input
-                id="registrosReproductivos"
-                type="checkbox"
-                checked={formValues.reproductivos}
-                onChange={() => toggleRegistro("reproductivos")}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="registrosReproductivos" className="text-sm text-[#4A4A4A]">
-                Sí, de reproductivos en bovinos.
-              </label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                id="registrosCostos"
-                type="checkbox"
-                checked={formValues.costosProductivos}
-                onChange={() => toggleRegistro("costosProductivos")}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="registrosCostos" className="text-sm text-[#4A4A4A]">
-                Sí, de costos de producción.
-              </label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                id="noTieneRegistros"
-                type="checkbox"
-                checked={formValues.noTiene}
-                onChange={handleNoTiene}
-                className="w-4 h-4 rounded focus:ring-2 focus:ring-[#708C3E]"
-                style={{ accentColor: "#708C3E" }}
-              />
-              <label htmlFor="noTieneRegistros" className="text-sm text-[#4A4A4A]">
-                No, no hay.
-              </label>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-2">
-              No puede seleccionar "No hay" junto con otros registros.
-            </p>
-
-            {/* Mensaje de error */}
-            {error && (
-              <p className="text-sm text-red-600 mt-2">
-                {error}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      <h3 className="text-lg font-semibold text-[#708C3E]">Registro y gestión de recursos en la finca</h3>
     </div>
-  );
+
+    <div className="p-6 space-y-4">
+      <p className="text-sm font-medium text-[#4A4A4A]">
+        ¿Lleva registros en su finca? Marque todas las que posee. *
+      </p>
+
+      {/* checkbox base como el tuyo */}
+      {(() => {
+        const checkboxBase =
+          "border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E] " +
+          "focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+        return (
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#E6EDC8]/30">
+              <Checkbox
+                checked={formValues.reproductivos}
+                onCheckedChange={() => toggleRegistro("reproductivos")}
+                className={checkboxBase}
+              />
+              <span className="text-sm text-gray-700">Sí, de reproductivos en bovinos.</span>
+            </label>
+
+            <label className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#E6EDC8]/30">
+              <Checkbox
+                checked={formValues.costosProductivos}
+                onCheckedChange={() => toggleRegistro("costosProductivos")}
+                className={checkboxBase}
+              />
+              <span className="text-sm text-gray-700">Sí, de costos de producción.</span>
+            </label>
+
+            <label className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-[#E6EDC8]/30">
+              <Checkbox
+                checked={formValues.noTiene}
+                onCheckedChange={handleNoTiene}
+                className={checkboxBase}
+              />
+              <span className="text-sm text-gray-700">No, no hay.</span>
+            </label>
+          </div>
+        )
+      })()}
+
+      <p className="text-xs text-gray-500">
+        No puede seleccionar &quot;No hay&quot; junto con otros registros.
+      </p>
+
+      {error && <p className="text-sm text-[#9c1414]">{error}</p>}
+    </div>
+  </div>
+)
+
 }
