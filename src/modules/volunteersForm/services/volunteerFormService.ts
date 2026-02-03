@@ -6,7 +6,7 @@ export async function createSolicitudVoluntario(
 ): Promise<SolicitudVoluntarioResponse> {
   try {
     const response = await apiConfig.post<SolicitudVoluntarioResponse>(
-      "/solicitudes-voluntariado",
+      "/solicitud-voluntariado",
       payload,
       { headers: { "Content-Type": "application/json" } }
     );
@@ -42,7 +42,7 @@ export async function uploadVolunteerDocuments(
 
   try {
     const response = await apiConfig.post(
-      `/solicitudes-voluntariado/${solicitudId}/upload-documents`,
+      `/solicitud-voluntariado/${solicitudId}/upload-documents`,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
@@ -110,7 +110,7 @@ export async function validateSolicitudVoluntariado(params: {
   cedula?: string;
   cedulaJuridica?: string;
 }) {
-  const res = await apiConfig.post("/solicitudes-voluntariado/validate", params, {
+  const res = await apiConfig.post("/solicitud-voluntariado/validate", params, {
     headers: { "Content-Type": "application/json" },
   });
   return res.data; // { ok: true }
