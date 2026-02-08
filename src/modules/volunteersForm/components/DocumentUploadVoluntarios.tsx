@@ -1,53 +1,49 @@
 // src/modules/volunteersForm/components/DocumentUploadVoluntarios.tsx
 
+type TipoSolicitante = "INDIVIDUAL" | "ORGANIZACION"
+type Field = "cedula" | "cv" | "carta"
+
 interface DocumentUploadVoluntariosProps {
+  tipo: TipoSolicitante
   files: {
-    cv?: File | null;
-    cedula?: File | null;
-    carta?: File | null;
-  };
-  setFiles: (files: any) => void;
+    cedula?: File | null
+    cv?: File | null
+    carta?: File | null
+  }
+  setFiles: (updater: any) => void
 }
 
-export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVoluntariosProps) {
-  const handleFileChange = (field: 'cv' | 'cedula' | 'carta', file: File | null) => {
+export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUploadVoluntariosProps) {
+  const handleFileChange = (field: Field, file: File | null) => {
     if (file && file.size > 5 * 1024 * 1024) {
-      alert("El archivo debe ser menor a 5MB");
-      return;
+      alert("El archivo debe ser menor a 5MB")
+      return
     }
-    setFiles((prev: any) => ({ ...prev, [field]: file }));
-  };
+    setFiles((prev: any) => ({ ...prev, [field]: file }))
+  }
 
-  const renderFileInput = (
-    id: string,
-    label: string,
-    field: 'cv' | 'cedula' | 'carta',
-    required: boolean = false
-  ) => {
-    const file = files[field];
+  const renderFileInput = (id: string, label: string, field: Field, required = false) => {
+    const file = files[field]
 
     return (
       <div>
         <label className="block text-sm font-medium text-[#4A4A4A] mb-2">
           {label} {required && <span className="text-black-500">*</span>}
         </label>
+
         <div className="relative">
           <input
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => {
-              const selectedFile = e.target.files?.[0] || null;
-              handleFileChange(field, selectedFile);
-            }}
+            onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
             className="hidden"
             id={id}
           />
+
           <label
             htmlFor={id}
             className={`flex flex-col items-center justify-center h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
-              file
-                ? 'border-[#708C3E] bg-[#f0f4e8]'
-                : 'border-[#CFCFCF] bg-white hover:bg-gray-50'
+              file ? "border-[#708C3E] bg-[#f0f4e8]" : "border-[#CFCFCF] bg-white hover:bg-gray-50"
             }`}
           >
             {file ? (
@@ -55,16 +51,16 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
                 <svg className="w-12 h-12 mx-auto text-[#708C3E] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
+
                 <p className="text-sm font-medium text-[#708C3E] mb-1">Archivo cargado</p>
                 <p className="text-xs text-gray-600 break-all px-2">{file.name}</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {(file.size / 1024).toFixed(0)} KB
-                </p>
+                <p className="text-xs text-gray-500 mt-1">{(file.size / 1024).toFixed(0)} KB</p>
+
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.preventDefault();
-                    handleFileChange(field, null);
+                    e.preventDefault()
+                    handleFileChange(field, null)
                   }}
                   className="mt-2 text-xs text-[#B85C4C] hover:text-[#8C3A33]"
                 >
@@ -83,8 +79,26 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
           </label>
         </div>
       </div>
-    );
-  };
+    )
+  }
+
+  const infoText =
+    tipo === "INDIVIDUAL"
+      ? "Por favor recuerda adjuntar tu Cédula, Currículum Vitae y carta de recomendación."
+      : "Por favor recuerda adjuntar el documento legal, la carta de motivación y un documento adicional."
+
+  const labels =
+    tipo === "INDIVIDUAL"
+      ? {
+          cedula: "Cédula (archivo)",
+          cv: "Currículum Vitae (CV)",
+          carta: "Carta de recomendación",
+        }
+      : {
+          cedula: "Documento legal de la organización",
+          carta: "Carta de motivación",
+          cv: "Documento adicional",
+        }
 
   return (
     <div className="p-6 space-y-6">
@@ -92,31 +106,32 @@ export function DocumentUploadVoluntarios({ files, setFiles }: DocumentUploadVol
         <span className="mt-0.5 inline-flex w-6 h-6 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
           i
         </span>
-
         <div>
-          <p className="text-sm font-medium text-[#4A4A4A] leading-relaxed">
-            Por favor, no olvide adjuntar una copia de su cédula o 
-            pasaporte y una copia del Plano de la Finca o Contrato.
-          </p>
+          <p className="text-sm font-medium text-[#4A4A4A] leading-relaxed">{infoText}</p>
           <p className="mt-2 text-xs text-[#4A4A4A]/70">
             Formatos permitidos: PDF, JPG, PNG (máximo 5MB por archivo).
           </p>
         </div>
       </div>
-      {/* Grid para los documentos */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* CV */}
-        {renderFileInput('cv', 'Currículum Vitae (CV)', 'cv', false)}
 
-        {/* Cédula */}
-        {renderFileInput('cedula', 'Copia de Cédula', 'cedula', false)}
-      </div>
+      {tipo === "INDIVIDUAL" ? (
+        <div className="grid md:grid-cols-2 gap-6">
+          {renderFileInput("ind-cedula", labels.cedula, "cedula", true)}
+          {renderFileInput("ind-cv", labels.cv, "cv", true)}
+          {renderFileInput("ind-carta", labels.carta, "carta", true)}
+        </div>
+      ) : (
+        <>
+          <div className="grid md:grid-cols-2 gap-6">
+            {renderFileInput("org-doc-legal", labels.cedula, "cedula", true)}
+            {renderFileInput("org-carta", labels.carta, "carta", true)}
+          </div>
 
-      {/* Documento Adicional - Ocupa todo el ancho */}
-      <div className="grid grid-cols-1">
-        {renderFileInput('documento', 'Documento Adicional', 'carta', false)}
-      </div>
-
+          <div className="grid grid-cols-1">
+            {renderFileInput("org-adicional", labels.cv, "cv", true)}
+          </div>
+        </>
+      )}
     </div>
-  );
+  )
 }

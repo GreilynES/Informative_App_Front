@@ -21,7 +21,6 @@ export default function Navbar({ thresholdPx = 12, heroOffsetPx = 80 }: NavbarPr
   const tone = isHeroTheme ? "light" : "dark"
   const toggleMenu = () => setIsMenuOpen((v) => !v)
 
-  // 1) Tema según sección (solo en "/")
   useEffect(() => {
     if (pathname !== "/") {
       setIsHeroTheme(false)
@@ -52,7 +51,6 @@ export default function Navbar({ thresholdPx = 12, heroOffsetPx = 80 }: NavbarPr
     }
   }, [pathname, heroOffsetPx])
 
-  // 2) Auto-hide SIEMPRE
   useEffect(() => {
     lastYRef.current = window.scrollY
     setVisible(true)
@@ -81,38 +79,31 @@ export default function Navbar({ thresholdPx = 12, heroOffsetPx = 80 }: NavbarPr
   return (
     <nav
       className={[
-        "fixed top-0 w-full z-50 transition-all duration-300 px-4 md:px-36",
+        "fixed inset-x-0 top-0 z-50 overflow-x-hidden transition-all duration-300 px-4 md:px-36",
         visible
           ? "translate-y-0 opacity-100 pointer-events-auto"
           : "-translate-y-14 opacity-0 pointer-events-none",
-
-        // ✅ SOLO PALETA
         isHeroTheme
           ? "bg-transparent text-[#FAFDF4] shadow-none"
           : "bg-[#FAFDF4]/90 backdrop-blur-md text-[#1F3D2B] shadow-md shadow-[#0B0B0B]/10",
       ].join(" ")}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between relative py-4">
-        {/* Logo */}
+      <div className="max-w-7xl mx-auto flex items-center justify-between relative py-4 min-w-0">
         <a href="/" className="flex items-center gap-3">
           <img src="/logo-camara.png" alt="Logo" className="h-11 md:h-12 w-auto" />
         </a>
 
-        {/* Desktop */}
         <div className="hidden md:flex items-center gap-6 ml-auto">
           <NavbarMenuShadcn tone={tone} />
           <NavbarLoginIcon tone={tone} />
         </div>
 
-        {/* Mobile btn */}
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
             className={[
               "p-2 rounded-lg transition focus:outline-none",
               "focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-
-              // ✅ SOLO PALETA
               isHeroTheme
                 ? "text-[#FAFDF4] hover:bg-[#A7C4A0]/10"
                 : "text-[#1F3D2B] hover:bg-[#D6E5C8]/55",
@@ -123,13 +114,10 @@ export default function Navbar({ thresholdPx = 12, heroOffsetPx = 80 }: NavbarPr
           </button>
         </div>
 
-        {/* Mobile dropdown panel */}
         {isMenuOpen && (
           <div
             className={[
-              "md:hidden absolute top-full right-0 mt-2 w-80 rounded-xl p-4 z-40 border shadow-lg",
-
-              // ✅ SOLO PALETA
+              "md:hidden absolute top-full left-0 right-0 mt-2 mx-auto w-[calc(100%-1rem)] max-w-[20rem] rounded-xl p-4 z-40 border shadow-lg",
               isHeroTheme
                 ? "bg-[#2C3F18]/55 backdrop-blur-md border-[#A7C4A0]/20 text-[#FAFDF4] shadow-[#0B0B0B]/35"
                 : "bg-[#FFFCE6] border-[#A7C4A0]/35 text-[#1F3D2B] shadow-[#0B0B0B]/10",

@@ -102,7 +102,7 @@ export function RequirementsSection({
       )}
 
       {/* ✅ Modal Shadcn: Dialog */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
+      <Dialog open={showModal} onOpenChange={setShowModal} modal={true}>
         <DialogContent
           className="
             w-[calc(100%-24px)] sm:max-w-xl

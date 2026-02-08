@@ -19,7 +19,11 @@ export function Step4Individual(props: {
         <h3 className="text-lg font-semibold text-[#708C3E]">Documentos</h3>
       </div>
 
-      <DocumentUploadVoluntarios files={files} setFiles={setFiles} />
+      <DocumentUploadVoluntarios
+        tipo="INDIVIDUAL"
+        files={files}
+        setFiles={setFiles}
+      />
 
       <NavigationButtons onPrev={goPrev} onNext={goNext} disableNext={false} />
     </div>

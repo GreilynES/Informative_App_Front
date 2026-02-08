@@ -116,31 +116,35 @@ export function Step4Organization(props: {
         )}
 
         {/* Documentos */}
+        {/* Documentos */}
         <section className="rounded-xl border border-[#DCD6C9] bg-white p-4">
           <h3 className="text-base font-semibold text-[#708C3E] mb-3">Documentos Adjuntos</h3>
+
           <div className="space-y-2 text-sm">
             <p>
-              <span className="text-gray-500">Documento Legal:</span>{" "}
+              <span className="text-gray-500">Documento legal:</span>{" "}
               {files?.cedula ? (
                 <span className="text-green-700">✓ {files.cedula.name}</span>
               ) : (
                 <span className="text-red-600">✗ No adjuntado</span>
               )}
             </p>
+
             <p>
-              <span className="text-gray-500">Carta de Presentación:</span>{" "}
+              <span className="text-gray-500">Carta de motivación:</span>{" "}
               {files?.carta ? (
                 <span className="text-green-700">✓ {files.carta.name}</span>
               ) : (
-                <span className="text-gray-500">Opcional - No adjuntado</span>
+                <span className="text-red-600">✗ No adjuntado</span>
               )}
             </p>
+
             <p>
-              <span className="text-gray-500">Documento Adicional:</span>{" "}
-              {files?.otro ? (
-                <span className="text-green-700">✓ {files.otro.name}</span>
+              <span className="text-gray-500">Documento adicional:</span>{" "}
+              {files?.cv ? (
+                <span className="text-green-700">✓ {files.cv.name}</span>
               ) : (
-                <span className="text-gray-500">Opcional - No adjuntado</span>
+                <span className="text-gray-500">✗ No adjuntado</span>
               )}
             </p>
           </div>

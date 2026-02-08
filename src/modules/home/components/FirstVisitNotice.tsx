@@ -102,18 +102,9 @@ export function FirstVisitNotice({
   })
 
   return (
-    <div className="fixed right-4 top-20 md:top-24 z-40 w-[min(560px,calc(100vw-2rem))]">
-      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-        <Item
-          className="
-            rounded-2xl
-            border border-[#A7C4A0]/35
-            bg-[#2C3F18]/55
-            backdrop-blur-md
-            text-[#FAFDF4]
-            shadow-xl shadow-[#0B0B0B]/45
-          "
-        >
+     <div className="fixed top-20 md:top-24 z-40 left-4 right-4 md:left-auto md:right-4 md:w-[560px]">
+    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+      <Item className="rounded-2xl border border-[#A7C4A0]/35 bg-[#2C3F18]/55 backdrop-blur-md text-[#FAFDF4] shadow-xl shadow-[#0B0B0B]/45">
           {/* Icono con “chip” claro para que siempre se vea */}
           <ItemMedia
             variant="icon"
@@ -129,21 +120,24 @@ export function FirstVisitNotice({
             <CalendarDays className="h-5 w-5" />
           </ItemMedia>
 
-          <ItemContent>
-            <ItemTitle className="text-[#FAFDF4] text-lg">{label}</ItemTitle>
+          <ItemContent className="min-w-0">
+          <ItemTitle className="text-[#FAFDF4] text-lg">{label}</ItemTitle>
 
-            {/* ItemDescription es un <p>, entonces solo spans (no divs) */}
-            <ItemDescription className="text-[#FAFDF4]/90">
-              <span className="inline-flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-[#D6E5C8]" />
-                <span className="font-semibold text-lg text-[#FFFCE6]">{dateText}</span>
+          <ItemDescription className="text-[#FAFDF4]/90 min-w-0">
+            <span className="inline-flex items-center gap-2 max-w-full min-w-0">
+              <CalendarDays className="h-4 w-4 text-[#D6E5C8] shrink-0" />
+              <span className="font-semibold text-lg text-[#FFFCE6] truncate">
+                {dateText}
               </span>
+            </span>
 
-              <span className="mx-2 text-[#A7C4A0]">•</span>
+            <span className="mx-2 text-[#A7C4A0]">•</span>
 
-              <span className="text-[#FAFDF4]/85 break-words">{event.title}</span>
-            </ItemDescription>
-          </ItemContent>
+            <span className="text-[#FAFDF4]/85 break-words">
+              {event.title}
+            </span>
+          </ItemDescription>
+        </ItemContent>
 
           <ItemActions className="flex items-center gap-2">
             <Button
