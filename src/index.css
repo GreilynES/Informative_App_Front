@@ -235,3 +235,39 @@ body[data-scroll-locked] {
   padding-right: 0 !important;
   margin-right: 0 !important;
 }
+
+/* === Scrollbar totalmente oculto para paneles de opciones === */
+.select-panel {
+  max-height: 240px;             /* ajusta si quieres */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  /* Ocultar en Firefox y IE/Edge legacy */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge legacy */
+}
+
+/* Ocultar en WebKit (Chrome, Edge Chromium, Safari) */
+.select-panel::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+.select-panel::-webkit-scrollbar-thumb,
+.select-panel::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+
+.select-panel.hide-scrollbar-force {
+  /* Empuja el contenido 12px y “saca” esos 12px del cuadro visible,
+     así la barra queda renderizada fuera del borde derecho. */
+  padding-right: 12px;
+  margin-right: -12px;
+}
+
+/* Opcional: bordes de desvanecido arriba/abajo si te gusta el efecto */
+.select-panel.fade-edges {
+  /* Necesita background opaco o el contenedor debajo */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 10px, black calc(100% - 10px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, black 10px, black calc(100% - 10px), transparent 100%);
+}

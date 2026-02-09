@@ -21,7 +21,6 @@ interface StepsProps {
 
 export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: StepsProps) {
   const [, bump] = useState(0);
-  
   const formTopRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -30,13 +29,6 @@ export function Steps({ step, form, lookup, nextStep, prevStep, isSubmitting }: 
       const unsub = anyForm.subscribe(() => bump((x) => x + 1));
       return () => { try { unsub && unsub(); } catch {} };
     }
-  }, [form]);
-
-  useEffect(() => {
-    const anyForm = form as any;
-    if (typeof anyForm?.subscribe === "function") return;
-    const id = setInterval(() => bump((x) => x + 1), 250);
-    return () => clearInterval(id);
   }, [form]);
 
   const getValues = () => {

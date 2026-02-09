@@ -50,7 +50,7 @@ export default function FAQPage() {
   }, [])
 
   return (
-    <div className="min-h-screen white-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
+    <div className="min-h-full white-to-br from-[#F5F7EC] via-[#EEF4D8] to-[#E7EDC8]">
       <div className="mx-auto max-w-5xl px-4 py-30">
         <header className="mb-20 text-center">
           <div className="text-center space-y-3">

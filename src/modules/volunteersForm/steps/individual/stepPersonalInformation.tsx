@@ -1,15 +1,12 @@
 import type { VolunteersFormData } from "../../../volunteersInformation/models/VolunteersType"
-import { UserRound, Mail, Calendar as CalendarIcon } from "lucide-react"
+import { UserRound, Mail } from "lucide-react"
 import { NavigationButtons } from "../../components/NavigationButtons"
-import { useMemo, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { volunteerOrganizacionSchema } from "../../schemas/volunteerSchema"
 import { existsEmail, validateSolicitudVoluntariado } from "../../services/volunteerFormService"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { es } from "date-fns/locale"
 import {  stopLoadingWithError } from "@/modules/utils/alerts"
+import { BirthDatePicker } from "@/components/ui/birthDatePicker"
 
 interface StepPersonalInformationProps {
   formData: VolunteersFormData
@@ -33,8 +30,6 @@ export function StepPersonalInformation({
 
   const personaSchema = volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona
   const [personaFromDB, setPersonaFromDB] = useState(false)
-
-  // ✅ para no spamear validación/lookup por cada tecla
   const debounceRef = useRef<number | null>(null)
   const lastCheckedCedulaRef = useRef<string>("")
 
@@ -197,46 +192,6 @@ export function StepPersonalInformation({
     onNextCombined()
   }
 
-  const parseISOToDate = (iso?: string) => {
-    if (!iso) return undefined
-    const [y, m, d] = iso.split("-").map(Number)
-    if (!y || !m || !d) return undefined
-    const dt = new Date(y, m - 1, d)
-    dt.setHours(0, 0, 0, 0)
-    return dt
-  }
-
-  const toISODate = (d: Date) => {
-    const yyyy = d.getFullYear()
-    const mm = String(d.getMonth() + 1).padStart(2, "0")
-    const dd = String(d.getDate()).padStart(2, "0")
-    return `${yyyy}-${mm}-${dd}`
-  }
-
-  const maxBirthDateObj = useMemo(() => {
-    const t = new Date()
-    t.setFullYear(t.getFullYear() - 16)
-    t.setHours(0, 0, 0, 0)
-    return t
-  }, [])
-
-  const birthDateDate = useMemo(() => parseISOToDate(formData.birthDate), [formData.birthDate])
-
-  const birthDateDisplay = useMemo(() => {
-    const d = birthDateDate
-    if (!d) return ""
-    return d.toLocaleDateString("es-CR", { day: "2-digit", month: "long", year: "numeric" })
-  }, [birthDateDate])
-
-  const disabledBirthDate = (date: Date) => {
-    const dt = new Date(date)
-    dt.setHours(0, 0, 0, 0)
-    return dt > maxBirthDateObj
-  }
-
-  const toYear = maxBirthDateObj.getFullYear()
-  const fromYear = 1950
-
   const inputBase =
     "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
   const inputError =
@@ -391,60 +346,21 @@ export function StepPersonalInformation({
 
           {/* Fecha de nacimiento */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Fecha de Nacimiento *
+          </label>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={`w-full justify-between shadow-sm hover:bg-[#E6EDC8]/40 ${
-                    errors.birthDate ? "border-[#9c1414]" : "border-[#DCD6C9]"
-                  }`}
-                >
-                  <span className={formData.birthDate ? "text-[#4A4A4A]" : "text-gray-400"}>
-                    {formData.birthDate ? birthDateDisplay : "Seleccione una fecha"}
-                  </span>
-                  <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
-                </Button>
-              </PopoverTrigger>
-
-              <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
-                <Calendar
-                  mode="single"
-                  selected={birthDateDate}
-                  onSelect={(d) => {
-                    if (!d) return
-                    if (disabledBirthDate(d)) return
-                    const iso = toISODate(d)
-                    handleInputChange("birthDate", iso)
-                    validateField("birthDate", iso)
-                  }}
-                  locale={es}
-                  captionLayout="dropdown"
-                  fromYear={fromYear}
-                  toYear={toYear}
-                  disabled={disabledBirthDate}
-                  defaultMonth={birthDateDate ?? maxBirthDateObj}
-                  className="rounded-lg"
-                  classNames={{
-                    caption: "flex justify-center pt-1 relative items-center text-[#708C3E] font-semibold",
-                    head_cell: "text-[#708C3E] w-9 font-semibold text-[0.8rem]",
-                    day_selected:
-                      "bg-[#708C3E] text-white hover:bg-[#5d7334] hover:text-white focus:bg-[#708C3E] focus:text-white",
-                    day_today: "border border-[#A3853D]",
-                    day_disabled: "text-gray-300 opacity-50",
-                  }}
-                />
-
-                <p className="mt-2 text-xs text-gray-500">
-                  Debe ser mayor de <span className="font-medium text-[#6F8C1F]">16 años</span>.
-                </p>
-              </PopoverContent>
-            </Popover>
-
-            {errors.birthDate && <p className="text-sm text-[#9c1414] mt-1">{errors.birthDate}</p>}
-          </div>
+          <BirthDatePicker
+            value={formData.birthDate}
+            onChange={(iso) => {
+              handleInputChange("birthDate", iso)
+              validateField("birthDate", iso)
+            }}
+            minAge={16}
+            placeholder="Seleccione una fecha"
+            error={errors.birthDate}
+          />
+        </div>
 
           {/* Nacionalidad */}
           <div>

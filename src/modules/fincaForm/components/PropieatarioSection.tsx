@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Search, User } from "lucide-react";
 import { btn } from "@/shared/ui/buttonStyles";
+import { BirthDatePicker } from "@/components/ui/birthDatePicker";
 
 interface PropietarioSectionProps {
   form: FormLike;
@@ -244,29 +245,45 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
 
               <form.Field name="propietarioFechaNacimiento">
                 {(fprop: any) => {
-                  const today = new Date();
-                  const yyyy = today.getFullYear();
-                  const mm = String(today.getMonth() + 1).padStart(2, "0");
-                  const dd = String(today.getDate()).padStart(2, "0");
-                  const maxDate = `${yyyy - 18}-${mm}-${dd}`;
-
-                  const esMenor = !!fprop.state.value && new Date(fprop.state.value) > new Date(maxDate);
+                  // Si deseas mantener un mensaje de error textual adicional cuando alguien intenta forzar una fecha inválida
+                  // (aunque BirthDatePicker ya la bloquea), puedes calcularlo así:
+                  let menorDeEdadMsg: string | undefined;
+                  if (fprop.state.value) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const minDate = new Date(
+                      today.getFullYear() - 18,
+                      today.getMonth(),
+                      today.getDate()
+                    );
+                    const picked = new Date(fprop.state.value);
+                    picked.setHours(0, 0, 0, 0);
+                    if (picked > minDate) {
+                      menorDeEdadMsg = "El propietario debe ser mayor de 18 años";
+                    }
+                  }
 
                   return (
                     <div>
                       <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
                         Fecha de Nacimiento *
                       </label>
-                      <Input
-                        type="date"
+
+                      <BirthDatePicker
                         value={fprop.state.value ?? ""}
-                        onChange={(e) => fprop.handleChange(e.target.value)}
-                        onBlur={fprop.handleBlur}
-                        max={maxDate}
-                        className={`${esMenor ? inputError : inputBase} bg-white`}
+                        onChange={(iso) => {
+                          fprop.handleChange(iso);
+                        }}
+                        minAge={18}
+                        placeholder="Seleccione una fecha"
+                        // Muestra error si calculaste el mensaje; si no, podrías pasar
+                        // validaciones del schema si las tienes:
+                        error={menorDeEdadMsg}
+                        className=""
                       />
-                      {esMenor && (
-                        <p className="text-sm text-[#9c1414] mt-1">El propietario debe ser mayor de 18 años</p>
+
+                      {menorDeEdadMsg && (
+                        <p className="text-sm text-[#9c1414] mt-1">{menorDeEdadMsg}</p>
                       )}
                     </div>
                   );

@@ -189,7 +189,7 @@ export default function EventsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0B1208] text-white flex items-center justify-center">
+      <div className="min-h-full bg-[#0B1208] text-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 rounded-full border-4 border-[#BFD76F] border-t-transparent animate-spin" />
           <p className="text-lg font-medium text-white/80">Cargando eventos...</p>
@@ -200,7 +200,7 @@ export default function EventsPage() {
 
   if (!hasEvents) {
     return (
-      <div className="min-h-screen bg-[#0B1208] text-white flex items-center justify-center px-4">
+      <div className="min-h-full bg-[#0B1208] text-white flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-xl font-medium text-white/80">No hay eventos disponibles.</p>
         </div>
@@ -213,8 +213,8 @@ export default function EventsPage() {
   const right = rtEvents[nextIndex]
 
   return (
-    <div className="min-h-screen justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
-      <div className="relative min-h-screen overflow-hidden">
+    <div className="min-h-full justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
+      <div className="relative min-h-full overflow-hidden">
         <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-24 py-8 sm:py-10 md:py-12 lg:py-16">
           <div className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-12 lg:mb-0">
             {/* CHIP */}

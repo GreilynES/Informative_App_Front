@@ -2,13 +2,9 @@ import { useMemo, useRef, useState } from "react"
 import { volunteerOrganizacionSchema } from "../schemas/volunteerSchema"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
-import { Calendar as CalendarIcon } from "lucide-react"
-import { es } from "date-fns/locale"
 import { normalizeLookupToPersona } from "@/shared/utils/helpersForms"
 import { validateRepresentanteCedula } from "../services/volunteerFormService"
+import { BirthDatePicker } from "@/components/ui/birthDatePicker"
 
 export function RepresentanteSection({
   form,
@@ -44,39 +40,6 @@ export function RepresentanteSection({
     return r.success ? undefined : r.error.issues?.[0]?.message || "Campo inválido"
   }
 
-  // ✅ helpers calendario
-  const parseISOToDate = (iso?: string) => {
-    if (!iso) return undefined
-    const [y, m, d] = iso.split("-").map(Number)
-    if (!y || !m || !d) return undefined
-    const dt = new Date(y, m - 1, d)
-    dt.setHours(0, 0, 0, 0)
-    return dt
-  }
-
-  const toISODate = (d: Date) => {
-    const yyyy = d.getFullYear()
-    const mm = String(d.getMonth() + 1).padStart(2, "0")
-    const dd = String(d.getDate()).padStart(2, "0")
-    return `${yyyy}-${mm}-${dd}`
-  }
-
-  const maxBirthDateObj = useMemo(() => {
-    const t = new Date()
-    t.setFullYear(t.getFullYear() - 18)
-    t.setHours(0, 0, 0, 0)
-    return t
-  }, [])
-
-  const disabledBirthDate = (date: Date) => {
-    const dt = new Date(date)
-    dt.setHours(0, 0, 0, 0)
-    return dt > maxBirthDateObj
-  }
-
-  const toYear = maxBirthDateObj.getFullYear()
-  const fromYear = 1950
-
   const inputBase =
     "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
   const inputError =
@@ -84,7 +47,6 @@ export function RepresentanteSection({
 
   const [buscandoCedula, setBuscandoCedula] = useState(false)
 
-  // ✅ NUEVO: estado de validación representante
   const [repValidation, setRepValidation] = useState<{ ok: boolean; message?: string } | null>(null)
   const repErrorMsg = repValidation && repValidation.ok === false ? repValidation.message : ""
 
@@ -370,55 +332,17 @@ export function RepresentanteSection({
                 name="organizacion.representante.persona.fechaNacimiento"
                 validators={{ onSubmit: validatePersonaField("fechaNacimiento") }}
               >
-                {(field: any) => {
-                  const selectedDate = parseISOToDate(field.state.value || "")
-                  const display = selectedDate
-                    ? selectedDate.toLocaleDateString("es-CR", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : ""
-
-                  return (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={`w-full justify-between shadow-sm hover:bg-[#E6EDC8]/40 border-[#DCD6C9]`}
-                        >
-                          <span className={field.state.value ? "text-[#4A4A4A]" : "text-gray-400"}>
-                            {field.state.value ? display : "Seleccione una fecha"}
-                          </span>
-                          <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
-                        </Button>
-                      </PopoverTrigger>
-
-                      <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
-                        <Calendar
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={(d) => {
-                            if (!d) return
-                            if (disabledBirthDate(d)) return
-                            field.handleChange(toISODate(d))
-                          }}
-                          locale={es}
-                          captionLayout="dropdown"
-                          fromYear={fromYear}
-                          toYear={toYear}
-                          disabled={disabledBirthDate}
-                          defaultMonth={selectedDate ?? maxBirthDateObj}
-                          className="rounded-lg"
-                        />
-                        <p className="mt-2 text-xs text-gray-500">
-                          Debe ser mayor de <span className="font-medium text-[#6F8C1F]">18 años</span>.
-                        </p>
-                      </PopoverContent>
-                    </Popover>
-                  )
-                }}
+                {(field: any) => (
+                  <BirthDatePicker
+                    value={field.state.value || ""}
+                    onChange={(iso) => field.handleChange(iso)}
+                    minAge={18}
+                    placeholder="Seleccione una fecha"
+                    error={showErrors ? field.state.meta.errors?.[0] : undefined}
+                    // Opcional: pasar className si quieres margen extra
+                    className=""
+                  />
+                )}
               </form.Field>
             </div>
 

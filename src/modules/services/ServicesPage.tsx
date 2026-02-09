@@ -103,7 +103,7 @@ export default function ServicesPage() {
   }, [page, totalPages])
 
   return (
-    <section className="min-h-screen bg-white py-20">
+    <section className="min-h-full bg-white py-20">
       <div className="container mx-auto px-6 md:px-20">
         <div className="text-center space-y-3">
           <p className="text-sm font-medium text-muted-foreground">Te ofrecemos</p>

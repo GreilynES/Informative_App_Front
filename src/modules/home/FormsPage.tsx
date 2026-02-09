@@ -9,7 +9,7 @@ export default function FormsPage() {
 
   return (
     <section
-      className="relative min-h-screen py-20 px-6 sm:px-10 lg:px-16 overflow-hidden"
+      className="relative min-h-full py-20 px-6 sm:px-10 lg:px-16 overflow-hidden"
       style={{
         backgroundImage: `url(${bgUrl})`,
         backgroundSize: "cover",

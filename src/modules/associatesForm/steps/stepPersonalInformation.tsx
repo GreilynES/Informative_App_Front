@@ -1,25 +1,18 @@
-import { useMemo, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import type { FormLike } from "../../../shared/types/form-lite"
 import { ZodError } from "zod"
 import { associateApplySchema } from "../schemas/associateApply"
 import { NavigationButtons } from "../components/NavigationButtons"
 import { NucleoFamiliarSection } from "../components/FamilyNucleusSection"
-
-// ✅ Shadcn
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Calendar as CalendarIcon, Mail, UserRound, MapPin } from "lucide-react"
-import { es } from "date-fns/locale"
-
-// ✅ servicios
+import { Mail, UserRound, MapPin } from "lucide-react"
 import {
   existsCedula,
   lookupPersonaByCedulaForForms,
   validateSolicitudAsociado,
 } from "../services/associatesFormService"
+import { BirthDatePicker } from "@/components/ui/birthDatePicker"
 
 interface Step1Props {
   form: FormLike
@@ -43,6 +36,11 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
 
   const checkboxBase =
     "border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+
+  const values = (form as any).state?.values || {}
+
+  // 👉 Estado local para la fecha (para re-render inmediato aunque el form no notifique)
+  const [fechaNacimientoLocal, setFechaNacimientoLocal] = useState<string>(values.fechaNacimiento ?? "")
 
   const validateField = (name: string, value: any) => {
     try {
@@ -113,53 +111,6 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
     }
   }
 
-  // ===== Fecha nacimiento (18+) con mismo estilo que voluntarios =====
-  const parseISOToDate = (iso?: string) => {
-    if (!iso) return undefined
-    const [y, m, d] = iso.split("-").map(Number)
-    if (!y || !m || !d) return undefined
-    const dt = new Date(y, m - 1, d)
-    dt.setHours(0, 0, 0, 0)
-    return dt
-  }
-
-  const toISODate = (d: Date) => {
-    const yyyy = d.getFullYear()
-    const mm = String(d.getMonth() + 1).padStart(2, "0")
-    const dd = String(d.getDate()).padStart(2, "0")
-    return `${yyyy}-${mm}-${dd}`
-  }
-
-  const maxBirthDateObj = useMemo(() => {
-    const t = new Date()
-    t.setFullYear(t.getFullYear() - 18)
-    t.setHours(0, 0, 0, 0)
-    return t
-  }, [])
-
-  const values = (form as any).state?.values || {}
-
-  const birthDateDate = useMemo(
-    () => parseISOToDate(values.fechaNacimiento),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [values.fechaNacimiento]
-  )
-
-  const birthDateDisplay = useMemo(() => {
-    const d = birthDateDate
-    if (!d) return ""
-    return d.toLocaleDateString("es-CR", { day: "2-digit", month: "long", year: "numeric" })
-  }, [birthDateDate])
-
-  const disabledBirthDate = (date: Date) => {
-    const dt = new Date(date)
-    dt.setHours(0, 0, 0, 0)
-    return dt > maxBirthDateObj
-  }
-
-  const toYear = maxBirthDateObj.getFullYear()
-  const fromYear = 1950
-
   // ===== Precheck + Autofill =====
   const precheckAndAutofill = async (digits: string) => {
     if (!digits || digits.length < 9) return
@@ -182,7 +133,12 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
         const vi = r.volunteerIndividual ?? {}
         if (vi.phone != null) form.setFieldValue("telefono", String(vi.phone))
         if (vi.email != null) form.setFieldValue("email", String(vi.email))
-        if (vi.birthDate != null) form.setFieldValue("fechaNacimiento", String(vi.birthDate))
+        if (vi.birthDate != null) {
+          const b = String(vi.birthDate)
+          form.setFieldValue("fechaNacimiento", b)
+          // 👇 también el estado local, para que se vea de inmediato
+          setFechaNacimientoLocal(b)
+        }
         if (vi.address != null) form.setFieldValue("direccion", String(vi.address))
       }
 
@@ -214,7 +170,7 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
 
   const handleNext = async () => {
     setIntentoAvanzar(true)
-    const values = (form as any).state?.values || {}
+    const valuesNow = (form as any).state?.values || {}
     const errores: Record<string, string> = {}
 
     const camposObligatorios = [
@@ -230,7 +186,7 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
     ]
 
     for (const { name, label, minLength } of camposObligatorios) {
-      const valor = values[name]
+      const valor = valuesNow[name]
 
       if (!valor || (typeof valor === "string" && valor.trim().length === 0)) {
         errores[name] = `${label} es obligatorio`
@@ -242,12 +198,12 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
       }
     }
 
-    if (values.cedula && !errores.cedula) {
-      const errorCedula = await validarCedulaUnica(values.cedula)
+    if (valuesNow.cedula && !errores.cedula) {
+      const errorCedula = await validarCedulaUnica(valuesNow.cedula)
       if (errorCedula) errores.cedula = errorCedula
 
       if (!errores.cedula) {
-        const digits = String(values.cedula ?? "").replace(/\D/g, "")
+        const digits = String(valuesNow.cedula ?? "").replace(/\D/g, "")
         try {
           await validateSolicitudAsociado(digits)
         } catch (err: any) {
@@ -262,9 +218,9 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
       }
     }
 
-    const viveEnFinca = values.viveEnFinca ?? true
+    const viveEnFinca = valuesNow.viveEnFinca ?? true
     if (!viveEnFinca) {
-      const distancia = values.distanciaFinca
+      const distancia = valuesNow.distanciaFinca
       if (!distancia || distancia === "" || Number(distancia) <= 0) {
         errores["distanciaFinca"] = "La distancia debe ser mayor a 0"
       } else {
@@ -278,7 +234,7 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
     if (Object.keys(errores).length > 0) {
       const primerCampoError = Object.keys(errores)[0]
       const elemento = document.querySelector(`[name="${primerCampoError}"]`)
-      if (elemento) elemento.scrollIntoView({ behavior: "smooth", block: "center" })
+      if (elemento) (elemento as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" })
       return
     }
 
@@ -451,79 +407,32 @@ export function Step1({ form, lookup, onNext }: Step1Props) {
             </form.Field>
           </div>
 
-          {/* Fecha de nacimiento (Shadcn Calendar) */}
-          <form.Field
-            name="fechaNacimiento"
-            validators={{ onChange: ({ value }: any) => validateField("fechaNacimiento", value) }}
-          >
-            {(f: any) => (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento *</label>
+          {/* Fecha de nacimiento - FUERA DEL form.Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fecha de Nacimiento *
+            </label>
 
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={`w-full justify-between shadow-sm hover:bg-[#E6EDC8]/40 ${
-                        erroresValidacion["fechaNacimiento"] ? "border-[#9c1414]" : "border-[#DCD6C9]"
-                      }`}
-                    >
-                      <span className={f.state.value ? "text-[#4A4A4A]" : "text-gray-400"}>
-                        {f.state.value ? birthDateDisplay : "Seleccione una fecha"}
-                      </span>
-                      <CalendarIcon className="h-4 w-4 text-[#708C3E]" />
-                    </Button>
-                  </PopoverTrigger>
+            <BirthDatePicker
+              value={fechaNacimientoLocal}
+              onChange={(iso) => {
+                // Estado local para re-render inmediato
+                setFechaNacimientoLocal(iso)
+                // También persistimos en el form
+                form.setFieldValue("fechaNacimiento", iso)
 
-                  <PopoverContent className="w-auto p-3 rounded-xl border border-[#DCD6C9] shadow-md">
-                    <Calendar
-                      mode="single"
-                      selected={birthDateDate}
-                      onSelect={(d) => {
-                        if (!d) return
-                        if (disabledBirthDate(d)) return
-                        const iso = toISODate(d)
-                        f.handleChange(iso)
-
-                        if (intentoAvanzar) {
-                          setErroresValidacion((prev) => {
-                            const { fechaNacimiento, ...rest } = prev
-                            return rest
-                          })
-                        }
-                      }}
-                      locale={es}
-                      captionLayout="dropdown"
-                      fromYear={fromYear}
-                      toYear={toYear}
-                      disabled={disabledBirthDate}
-                      defaultMonth={birthDateDate ?? maxBirthDateObj}
-                      className="rounded-lg"
-                      classNames={{
-                        caption: "flex justify-center pt-1 relative items-center text-[#708C3E] font-semibold",
-                        head_cell: "text-[#708C3E] w-9 font-semibold text-[0.8rem]",
-                        day_selected:
-                          "bg-[#708C3E] text-white hover:bg-[#5d7334] hover:text-white focus:bg-[#708C3E] focus:text-white",
-                        day_today: "border border-[#A3853D]",
-                        day_disabled: "text-gray-300 opacity-50",
-                      }}
-                    />
-
-                    <p className="mt-2 text-xs text-gray-500">
-                      Debe ser mayor de <span className="font-medium text-[#6F8C1F]">18 años</span>.
-                    </p>
-                  </PopoverContent>
-                </Popover>
-
-                {(f.state.meta.errors?.length > 0 || erroresValidacion["fechaNacimiento"]) && (
-                  <p className="text-sm text-[#9c1414] mt-1">
-                    {erroresValidacion["fechaNacimiento"] || f.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
-            )}
-          </form.Field>
+                if (intentoAvanzar) {
+                  setErroresValidacion((prev) => {
+                    const { fechaNacimiento, ...rest } = prev
+                    return rest
+                  })
+                }
+              }}
+              minAge={18}
+              placeholder="Seleccione una fecha"
+              error={erroresValidacion["fechaNacimiento"]}
+            />
+          </div>
         </div>
       </div>
 

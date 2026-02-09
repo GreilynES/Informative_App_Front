@@ -11,14 +11,14 @@ export default function PrincipalPage() {
 
   if (!principal) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-black text-xl">
+      <div className="min-h-full flex items-center justify-center text-black text-xl">
         Cargando información...
       </div>
     )
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-white pt-14">
+    <div className="relative min-h-full overflow-hidden text-white pt-14">
       {/* 🔔 FIRST VISIT NOTICE */}
       <FirstVisitNotice
         event={subastaEvent}
