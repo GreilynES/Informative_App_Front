@@ -19,10 +19,9 @@ export default function PrincipalPage() {
 
   return (
     <div className="relative min-h-full overflow-hidden text-white pt-14">
-      {/* 🔔 FIRST VISIT NOTICE */}
       <FirstVisitNotice
         event={subastaEvent}
-        durationMs={15000}
+        durationMs={12000}
         closeDelayMs={300}
         storage="session"
         onViewMore={() => {
@@ -32,7 +31,6 @@ export default function PrincipalPage() {
         }}
       />
 
-      {/* 🎥 VIDEO BACKGROUND */}
       <video
         className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
         src="https://res.cloudinary.com/dyigmavwq/video/upload/v1768080154/Video_Project2_fguidi.mp4"
@@ -43,7 +41,6 @@ export default function PrincipalPage() {
         aria-hidden="true"
       />
 
-      {/* ✅ Overlay + Gradiente (legibilidad pro) */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
         <div className="absolute inset-0 bg-[#0B0B0B]/55" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0B]/35 via-transparent to-[#0B0B0B]/55" />

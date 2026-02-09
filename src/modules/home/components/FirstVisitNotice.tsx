@@ -49,10 +49,15 @@ export function FirstVisitNotice({
   useEffect(() => {
     if (!event) return
 
+    // ✅ Modo edición: se queda abierto fijo
+    if (debug) {
+      setOpen(true)
+      setProgress(0)
+      return
+    }
+
     const store = getStore()
     const seen = store.getItem(storageKey)
-
-    if (debug) console.log("[Notice] seen?", seen, "event?", !!event)
 
     if (!seen) {
       setOpen(true)
@@ -60,11 +65,14 @@ export function FirstVisitNotice({
       store.setItem(storageKey, "true")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event])
+  }, [event, debug])
 
   // 2) Progreso y cierre cuando se llena + delay
   useEffect(() => {
     if (!open) return
+
+    // ✅ En debug no corre el timer (se queda fijo)
+    if (debug) return
 
     const start = performance.now()
 
@@ -91,7 +99,7 @@ export function FirstVisitNotice({
       rafRef.current = null
       closeDelayRef.current = null
     }
-  }, [open, durationMs, closeDelayMs])
+  }, [open, durationMs, closeDelayMs, debug])
 
   if (!open || !event) return null
 
@@ -102,44 +110,55 @@ export function FirstVisitNotice({
   })
 
   return (
-     <div className="fixed top-20 md:top-24 z-40 left-4 right-4 md:left-auto md:right-4 md:w-[560px]">
-    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-      <Item className="rounded-2xl border border-[#A7C4A0]/35 bg-[#2C3F18]/55 backdrop-blur-md text-[#FAFDF4] shadow-xl shadow-[#0B0B0B]/45">
-          {/* Icono con “chip” claro para que siempre se vea */}
+    <div className="fixed z-40 top-20 md:top-24 inset-x-3 sm:inset-x-4 md:left-auto md:right-4 md:w-[min(560px,calc(100vw-2rem))]">
+      <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+        <Item
+          className="
+            rounded-xl
+            border border-[#A7C4A0]/35
+            bg-[#2C3F18]/60
+            backdrop-blur-md
+            text-[#FAFDF4]
+            shadow-xl shadow-[#0B0B0B]/45
+            px-3 py-3 sm:px-4 sm:py-4
+          "
+        >
+          {/* Icono */}
           <ItemMedia
             variant="icon"
             className="
               flex items-center justify-center
-              rounded-xl
-              bg-[#FFFCE6]
-              text-[#1F3D2B]
+              rounded-lg
+              bg-[#1F3D2B]
+              text-[#FAFDF6]
               shadow-sm
-              ring-1 ring-[#A7C4A0]/50
+              h-9 w-9 sm:h-10 sm:w-10
+              shrink-0
+              self-start
             "
           >
-            <CalendarDays className="h-5 w-5" />
+            <CalendarDays className="h-6 w-6" />
           </ItemMedia>
 
+          {/* Contenido */}
           <ItemContent className="min-w-0">
-          <ItemTitle className="text-[#FAFDF4] text-lg">{label}</ItemTitle>
+            <span className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase tracking-wide text-[#D6E5C8]">
+              {label}
+            </span>
 
-          <ItemDescription className="text-[#FAFDF4]/90 min-w-0">
-            <span className="inline-flex items-center gap-2 max-w-full min-w-0">
-              <CalendarDays className="h-4 w-4 text-[#D6E5C8] shrink-0" />
-              <span className="font-semibold text-lg text-[#FFFCE6] truncate">
-                {dateText}
+            <ItemTitle className="mt-1 text-[#FFFCE6] text-base sm:text-lg font-semibold leading-tight">
+              {dateText}
+            </ItemTitle>
+
+            <ItemDescription className="mt-0.5 text-[#FAFDF4]/85 min-w-0">
+              <span className="block text-sm sm:text-base leading-snug break-words">
+                {event.description}<p>...</p>
               </span>
-            </span>
+            </ItemDescription>
+          </ItemContent>
 
-            <span className="mx-2 text-[#A7C4A0]">•</span>
-
-            <span className="text-[#FAFDF4]/85 break-words">
-              {event.title}
-            </span>
-          </ItemDescription>
-        </ItemContent>
-
-          <ItemActions className="flex items-center gap-2">
+          {/* Acciones */}
+          <ItemActions className="flex items-center gap-2 self-start sm:self-center">
             <Button
               size="sm"
               className="
@@ -149,6 +168,7 @@ export function FirstVisitNotice({
                 border border-[#A7C4A0]/45
                 hover:bg-[#162D20]
                 transition
+                h-8 px-3
               "
               onClick={onViewMore}
             >
@@ -162,6 +182,7 @@ export function FirstVisitNotice({
                 text-[#FAFDF4]/90
                 hover:bg-[#1F3D2B]/35
                 hover:text-[#FFFCE6]
+                h-8 w-8 p-0
               "
               onClick={() => setOpen(false)}
               aria-label="Cerrar aviso"
@@ -170,13 +191,15 @@ export function FirstVisitNotice({
             </Button>
           </ItemActions>
 
-          <ItemFooter>
+          {/* Progreso */}
+          <ItemFooter className="mt-2">
             <Progress
-              value={progress}
+              value={debug ? 0 : progress}
               className="
                 h-1.5
                 bg-[#1F3D2B]/55
                 [&>div]:bg-[#6D8B37]
+                rounded-full
               "
             />
           </ItemFooter>
