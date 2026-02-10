@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
-
+import { Card } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { EventData } from "./models/EventType"
 import { useEventsSubastaFirst } from "./hooks/useEvents"
 import { EventCard } from "./components/EventCard"
 import { Button } from "@/components/ui/button"
+import { PageState } from "@/shared/ui/PageState"
 
 function mod(n: number, m: number) {
   return ((n % m) + m) % m
@@ -21,7 +23,7 @@ const cardVariants = {
   center: {
     x: "0%",
     opacity: 1,
-    scale: 1.3,
+    scale: 1.15,
     rotateY: 0,
     zIndex: 10,
     transition: {
@@ -187,55 +189,62 @@ export default function EventsPage() {
     }
   }, [])
 
-  if (isLoading) {
-    return (
-      <div className="min-h-full bg-[#0B1208] text-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-full border-4 border-[#BFD76F] border-t-transparent animate-spin" />
-          <p className="text-lg font-medium text-white/80">Cargando eventos...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!hasEvents) {
-    return (
-      <div className="min-h-full bg-[#0B1208] text-white flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-xl font-medium text-white/80">No hay eventos disponibles.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const current = rtEvents[index]
-  const left = rtEvents[prevIndex]
-  const right = rtEvents[nextIndex]
-
-  return (
-    <div className="min-h-full justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/90">
-      <div className="relative min-h-full overflow-hidden">
-        <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-24 py-8 sm:py-10 md:py-12 lg:py-16">
-          <div className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-12 lg:mb-0">
-            {/* CHIP */}
-            <div className="mx-auto inline-flex items-center rounded-full border border-[#A7C4A0] bg-white/70 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#1F3D2B] backdrop-blur-sm shadow-lg">
-              <span className="relative flex h-2 w-2 mr-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8FAE5A] opacity-60"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2F5F0B]"></span>
-              </span>
-              <span>Eventos presenciales</span>
-            </div>
-
-            {/* TITLE */}
-            <h2 className="mt-3 sm:mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-semibold leading-tight px-2">
-              <span className="text-[#1F3D2B] drop-shadow-[0_1px_0_rgba(250,253,244,0.9)]">
-                Próximos eventos
-              </span>
-            </h2>
+return (
+  <div className="min-h-full justify-center text-[#1F3D2B] bg-gradient-to-b from-[#F5F7EC] via-[#DCECB8] to-[#9BAF6A]/70">
+    <div className="relative min-h-full overflow-hidden">
+      <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-24 py-8 md:py-10 lg:py-8">
+        {/* HEADER SIEMPRE */}
+        <div className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-12 lg:mb-0">
+          <div className="mx-auto inline-flex items-center rounded-full border border-[#A7C4A0] bg-white/50 px-3 sm:px-3 py-1.5 sm:py-1.5 text-xs sm:text-sm font-medium text-[#1F3D2B] backdrop-blur-sm shadow-lg">
+            <span className="relative flex h-2 w-2 mr-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#8FAE5A] opacity-60"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2F5F0B]"></span>
+            </span>
+            <span>Eventos presenciales</span>
           </div>
 
+          <h2 className="mt-3 sm:mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-semibold">
+            <span className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4">
+              Próximos eventos
+            </span>
+          </h2>
+        </div>
+
+
+        <PageState
+          isLoading={isLoading}
+          isEmpty={!isLoading && !hasEvents}
+          withContainer={false}
+          emptyTitle="No hay eventos disponibles"
+          emptyDescription="Cuando haya una subasta o evento, lo verás publicado aquí."
+          className="min-h-[520px] sm:min-h-[560px]"
+          skeleton={
+            <div className="relative mt-4 sm:mt-6 md:mt-8 lg:mt-0">
+              <div className="relative flex items-center justify-center px-3 sm:px-4 md:px-0">
+                <div className="relative w-full max-w-6xl lg:px-2">
+                  <div className="relative h-[540px] sm:h-[560px] md:h-[580px] lg:h-[580px] flex items-center justify-center">
+                    <Card className="w-[92%] sm:w-[86%] md:w-[75%] lg:w-[72%] p-6">
+                      <Skeleton className="h-[340px] sm:h-[380px] w-full rounded-2xl" />
+                      <div className="mt-5 space-y-3">
+                        <Skeleton className="h-6 w-2/3" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <Skeleton className="h-4 w-3/4" />
+                      </div>
+                    </Card>
+                  </div>
+
+                  <div className="mt-6 sm:mt-10 flex justify-center gap-2">
+                    <Skeleton className="h-2.5 w-10 rounded-full" />
+                    <Skeleton className="h-2.5 w-2.5 rounded-full" />
+                    <Skeleton className="h-2.5 w-2.5 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        >
           <div className="relative mt-4 sm:mt-6 md:mt-8 lg:mt-0">
-            {/* Flechas MOBILE - Posicionadas absolutamente */}
+            {/* Flechas MOBILE */}
             <div className="lg:hidden absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30">
               <Button
                 type="button"
@@ -262,12 +271,11 @@ export default function EventsPage() {
               </Button>
             </div>
 
-            {/* Contenedor del carrusel */}
-            <div className="relative flex items-center justify-center px-3 sm:px-4 md:px-0">
+            {/* Carrusel */}
+            <div className="relative flex items-start lg:items-center justify-center px-3 sm:px-2 md:px-0">
               <div className="relative w-full max-w-6xl lg:px-24">
-                <div className="relative h-[540px] sm:h-[560px] md:h-[580px] lg:h-[580px] flex items-center justify-center">
+<div className="relative min-h-[430px] sm:min-h-[500px] md:min-h-[520px] lg:min-h-[480px] flex items-center justify-center">
                   <AnimatePresence initial={false} custom={direction} mode="sync">
-                    {/* LEFT CARD */}
                     <motion.div
                       key={`left-${page - 1}`}
                       className="absolute hidden md:block w-[75%] md:w-[65%] lg:w-[60%] pointer-events-none"
@@ -279,11 +287,10 @@ export default function EventsPage() {
                       style={{ transformOrigin: "center center" }}
                     >
                       <div className="brightness-90 saturate-90 transition-all duration-300">
-                        <EventCard event={left} />
+                        <EventCard event={rtEvents[prevIndex]} />
                       </div>
                     </motion.div>
 
-                    {/* CENTER CARD */}
                     <motion.div
                       key={`center-${page}`}
                       className="absolute w-[92%] sm:w-[86%] md:w-[75%] lg:w-[72%] mx-auto"
@@ -295,12 +302,11 @@ export default function EventsPage() {
                       style={{ transformOrigin: "center center" }}
                     >
                       <EventCard
-                        event={current}
+                        event={rtEvents[index]}
                         onModalChange={(open: boolean) => setIsModalOpen(open)}
                       />
                     </motion.div>
 
-                    {/* RIGHT CARD */}
                     <motion.div
                       key={`right-${page + 1}`}
                       className="absolute hidden md:block w-[75%] md:w-[65%] lg:w-[60%] pointer-events-none"
@@ -312,22 +318,22 @@ export default function EventsPage() {
                       style={{ transformOrigin: "center center" }}
                     >
                       <div className="brightness-90 saturate-90 transition-all duration-300">
-                        <EventCard event={right} />
+                        <EventCard event={rtEvents[nextIndex]} />
                       </div>
                     </motion.div>
                   </AnimatePresence>
                 </div>
 
                 {/* dots */}
-                <div className="mt-6 sm:mt-15 md:mt-10 lg:mt-0 flex justify-center gap-1.5">
+                <div className="mt-8 sm:mt-6 md:mt-6 lg:mt-0.25 flex justify-center gap-1.5">
                   {rtEvents.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => {
                         if (isAnimatingRef.current) return
-                        
+
                         stopAuto()
-                        
+
                         const dir = i > index ? 1 : -1
                         setDirection(dir)
                         lockAnimation()
@@ -352,7 +358,7 @@ export default function EventsPage() {
               </div>
             </div>
 
-            {/* DESKTOP flechas */}
+            {/* Flechas DESKTOP */}
             <Button
               type="button"
               variant="ghost"
@@ -375,8 +381,10 @@ export default function EventsPage() {
               <ChevronRight className="h-6 w-6" />
             </Button>
           </div>
-        </div>
+        </PageState>
       </div>
     </div>
-  )
+  </div>
+)
+
 }

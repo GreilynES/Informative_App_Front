@@ -3,6 +3,10 @@ import { AboutUsCard } from "./components/AboutUsCard"
 import AboutUsBackground from "./components/AboutUsBackground"
 import { useAboutUs } from "./hooks/useAboutUs"
 
+import { PageState } from "@/shared/ui/PageState"
+import { Card } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+
 function normalize(s: string) {
   return s
     .normalize("NFD")
@@ -20,10 +24,6 @@ function matchesAnyTitle(title: string, needles: string[]) {
 export default function AboutUsPage() {
   const { data: aboutUs = [], isLoading } = useAboutUs()
 
-  if (isLoading && aboutUs.length === 0) {
-    return <p className="text-center text-muted-foreground py-20">Cargando...</p>
-  }
-
   const findSection = (needles: string[]) =>
     aboutUs.find((item) => matchesAnyTitle(item.title, needles))
 
@@ -35,15 +35,22 @@ export default function AboutUsPage() {
     "sobre nosotros",
   ])
 
-  const mision = findSection(["mision", "misión", "nuestra mision", "nuestro proposito"])
+  const mision = findSection([
+    "mision",
+    "misión",
+    "nuestra mision",
+    "nuestro proposito",
+  ])
   const vision = findSection(["vision", "visión", "nuestra vision"])
+
+  const isEmpty = !isLoading && aboutUs.length === 0
 
   return (
     <section className="relative">
       <AboutUsBackground />
 
       <div className="relative mx-auto w-full max-w-6xl px-4 py-16 md:py-24 space-y-10">
-        {/* Header */}
+        {/* Header SIEMPRE */}
         <div className="text-center space-y-3">
           <p className="text-sm font-medium text-muted-foreground">Conócenos</p>
           <h1 className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4">
@@ -51,43 +58,91 @@ export default function AboutUsPage() {
           </h1>
         </div>
 
-        {/* Si por alguna razón no llegó data útil, mostramos aviso (no deja la página “vacía”) */}
-        {!somos && !mision && !vision && (
-          <p className="text-center text-muted-foreground">
-            Aún no hay información publicada para esta sección.
-          </p>
-        )}
+        <PageState
+          isLoading={isLoading}
+          isEmpty={isEmpty}
+          withContainer={false}
+          emptyTitle="Aún no hay información publicada"
+          emptyDescription="Cuando publiquemos contenido, lo verás aquí."
+          skeleton={
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Izquierda (2 cards) */}
+              <div className="flex flex-col gap-6">
+                {[0, 1].map((i) => (
+                  <Card key={i} className="p-6">
+                    <div className="flex items-start gap-4">
+                      <Skeleton className="h-10 w-10 rounded-xl" />
+                      <div className="min-w-0 flex-1 space-y-3">
+                        <Skeleton className="h-6 w-1/2" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-11/12" />
+                        <Skeleton className="h-4 w-9/12" />
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
 
-        {/* Layout: izquierda Misión/Visión – derecha Quiénes Somos */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Izquierda */}
-          <div className="flex flex-col gap-6">
-            {mision && (
-              <AboutUsCard
-                icon={<Target className="h-5 w-5" />}
-                title={mision.title}
-                description={mision.description}
-              />
-            )}
+              {/* Derecha (1 card grande) */}
+              <Card className="p-6">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="h-10 w-10 rounded-xl" />
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <Skeleton className="h-6 w-2/3" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-11/12" />
+                    <Skeleton className="h-4 w-10/12" />
+                    <Skeleton className="h-4 w-9/12" />
+                  </div>
+                </div>
+              </Card>
+            </div>
+          }
+        >
+          {/* Si llegó data pero no matchea secciones, mostramos aviso “suave” */}
+          {!somos && !mision && !vision ? (
+            <div className="mx-auto max-w-3xl">
+              <Card className="p-6 sm:p-8">
+                <p className="text-base font-medium text-[#2E321B]">
+                  Aún no hay información publicada para esta sección
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  En cuanto esté disponible, aparecerá aquí.
+                </p>
+              </Card>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Izquierda */}
+              <div className="flex flex-col gap-6">
+                {mision && (
+                  <AboutUsCard
+                    icon={<Target className="h-5 w-5" />}
+                    title={mision.title}
+                    description={mision.description}
+                  />
+                )}
 
-            {vision && (
-              <AboutUsCard
-                icon={<Eye className="h-5 w-5" />}
-                title={vision.title}
-                description={vision.description}
-              />
-            )}
-          </div>
+                {vision && (
+                  <AboutUsCard
+                    icon={<Eye className="h-5 w-5" />}
+                    title={vision.title}
+                    description={vision.description}
+                  />
+                )}
+              </div>
 
-          {/* Derecha */}
-          {somos && (
-            <AboutUsCard
-              icon={<Users className="h-5 w-5" />}
-              title={somos.title}
-              description={somos.description}
-            />
+              {/* Derecha */}
+              {somos && (
+                <AboutUsCard
+                  icon={<Users className="h-5 w-5" />}
+                  title={somos.title}
+                  description={somos.description}
+                />
+              )}
+            </div>
           )}
-        </div>
+        </PageState>
       </div>
     </section>
   )

@@ -14,6 +14,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 
+import { PageState } from "@/shared/ui/PageState"
+import { Card } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+
 export default function ServicesPage() {
   const { services, isLoading, error } = useServices()
 
@@ -102,6 +106,8 @@ export default function ServicesPage() {
     return items
   }, [page, totalPages])
 
+  const showEmpty = !isLoading && !error && services.length === 0
+
   return (
     <section className="min-h-full bg-white py-20">
       <div className="container mx-auto px-6 md:px-20">
@@ -118,104 +124,152 @@ export default function ServicesPage() {
 
         <p className="text-center text-base md:text-lg text-gray-600 mb-16 max-w-3xl mx-auto"></p>
 
-        {/* Estados */}
-        {isLoading && (
-          <p className="text-center text-gray-500">Cargando servicios…</p>
-        )}
+        <PageState
+          isLoading={isLoading}
+          isEmpty={showEmpty}
+          withContainer={false}
+          emptyTitle="No hay servicios disponibles"
+          emptyDescription="Cuando publiquemos servicios, aparecerán aquí."
+          // Si querés CTA:
+          // actionLabel="Actualizar"
+          // onAction={() => window.location.reload()}
+          skeleton={
+            <div className="max-w-6xl mx-auto">
+              <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="p-5">
+                    <Skeleton className="h-44 w-full rounded-2xl" />
+                    <div className="mt-4 space-y-3">
+                      <Skeleton className="h-6 w-2/3" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <Skeleton className="h-4 w-4/6" />
+                      <Skeleton className="h-10 w-32 rounded-full" />
+                    </div>
+                  </Card>
+                ))}
+              </div>
 
-        {error && (
-          <p className="text-center text-red-500">Error al cargar los servicios.</p>
-        )}
-
-        {!isLoading && !error && services.length > 0 && (
-          <div className="max-w-6xl mx-auto">
-            <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {pagedServices.map((service) => (
-                <ServicesCard
-                  key={service.id}
-                  service={service}
-                  openModal={openModal}
-                />
-              ))}
-            </div>
-
-            {/* Paginación */}
-            {services.length > PAGE_SIZE && totalPages > 1 && (
+              {/* skeleton paginación */}
               <div className="mt-10 flex justify-center">
-            <Pagination>
-              <PaginationContent className="w-full justify-center">
-                {/* IZQUIERDA: Anterior (o placeholder invisible) */}
-                <PaginationItem className="w-[110px] flex justify-start">
-                  {page > 1 ? (
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        go(page - 1)
-                      }}
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-9 w-28 rounded-full" />
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <Skeleton className="h-9 w-28 rounded-full" />
+                </div>
+              </div>
+            </div>
+          }
+          className="mt-2"
+        >
+          {/* Error (se mantiene, pero uniforme) */}
+          {error ? (
+            <div className="max-w-3xl mx-auto">
+              <Card className="p-6 sm:p-8">
+                <p className="text-base font-medium text-[#2E321B]">
+                  No pudimos cargar los servicios
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Intenta nuevamente en unos minutos.
+                </p>
+              </Card>
+            </div>
+          ) : (
+            <>
+              <div className="max-w-6xl mx-auto">
+                <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {pagedServices.map((service) => (
+                    <ServicesCard
+                      key={service.id}
+                      service={service}
+                      openModal={openModal}
                     />
-                  ) : (
-                    <span className="invisible inline-flex items-center gap-1 px-3 py-2">
-                      <span>Previous</span>
-                    </span>
-                  )}
-                </PaginationItem>
-
-                {/* CENTRO: números */}
-                <div className="flex items-center gap-1">
-                  {pageItems.map((it) => {
-                    if (it.type === "ellipsis") {
-                      return (
-                        <PaginationItem key={it.key}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      )
-                    }
-
-                    const active = it.n === page
-                    return (
-                      <PaginationItem key={it.n}>
-                        <PaginationLink
-                          href="#"
-                          isActive={active}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            go(it.n)
-                          }}
-                        >
-                          {it.n}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  })}
+                  ))}
                 </div>
 
-                {/* DERECHA: Siguiente (o placeholder invisible) */}
-                <PaginationItem className="w-[110px] flex justify-end">
-                  {page < totalPages ? (
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        go(page + 1)
-                      }}
-                    />
-                  ) : (
-                    <span className="invisible inline-flex items-center gap-1 px-3 py-2">
-                      <span>Next</span>
-                    </span>
-                  )}
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+                {/* Paginación */}
+                {services.length > PAGE_SIZE && totalPages > 1 && (
+                  <div className="mt-10 flex justify-center">
+                    <Pagination>
+                      <PaginationContent className="w-full justify-center">
+                        {/* IZQUIERDA: Anterior (o placeholder invisible) */}
+                        <PaginationItem className="w-[110px] flex justify-start">
+                          {page > 1 ? (
+                            <PaginationPrevious
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                go(page - 1)
+                              }}
+                            />
+                          ) : (
+                            <span className="invisible inline-flex items-center gap-1 px-3 py-2">
+                              <span>Previous</span>
+                            </span>
+                          )}
+                        </PaginationItem>
 
+                        {/* CENTRO: números */}
+                        <div className="flex items-center gap-1">
+                          {pageItems.map((it) => {
+                            if (it.type === "ellipsis") {
+                              return (
+                                <PaginationItem key={it.key}>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )
+                            }
 
+                            const active = it.n === page
+                            return (
+                              <PaginationItem key={it.n}>
+                                <PaginationLink
+                                  href="#"
+                                  isActive={active}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    go(it.n)
+                                  }}
+                                >
+                                  {it.n}
+                                </PaginationLink>
+                              </PaginationItem>
+                            )
+                          })}
+                        </div>
+
+                        {/* DERECHA: Siguiente (o placeholder invisible) */}
+                        <PaginationItem className="w-[110px] flex justify-end">
+                          {page < totalPages ? (
+                            <PaginationNext
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                go(page + 1)
+                              }}
+                            />
+                          ) : (
+                            <span className="invisible inline-flex items-center gap-1 px-3 py-2">
+                              <span>Next</span>
+                            </span>
+                          )}
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
+
+              {isModalOpen && (
+                <ServicesModal content={modalContent} onClose={closeModal} />
+              )}
+            </>
+          )}
+        </PageState>
       </div>
 
+      {/* Modal afuera del PageState también funciona */}
       {isModalOpen && (
         <ServicesModal content={modalContent} onClose={closeModal} />
       )}

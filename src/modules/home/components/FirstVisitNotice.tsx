@@ -150,10 +150,16 @@ export function FirstVisitNotice({
               {dateText}
             </ItemTitle>
 
-            <ItemDescription className="mt-0.5 text-[#FAFDF4]/85 min-w-0">
-              <span className="block text-sm sm:text-base leading-snug break-words">
-                {event.description}<p>...</p>
-              </span>
+            <ItemDescription
+              className="
+                mt-0.5 text-[#FAFDF4]/85 min-w-0
+                overflow-hidden
+                [display:-webkit-box]
+                [-webkit-line-clamp:2]
+                [-webkit-box-orient:vertical]
+              "
+            >
+              {event.description}
             </ItemDescription>
           </ItemContent>
 
