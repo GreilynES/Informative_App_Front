@@ -15,42 +15,39 @@ function useIntersectionObserver({
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const element = ref.current
-    if (!element) return
+    const el = ref.current
+    if (!el) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const isElementIntersecting = entry.isIntersecting
+        const ok = entry.isIntersecting
 
-        if (isElementIntersecting && !hasTriggered) {
+        if (ok && !hasTriggered) {
           setIsIntersecting(true)
-          if (triggerOnce) {
-            setHasTriggered(true)
-          }
+          if (triggerOnce) setHasTriggered(true)
         } else if (!triggerOnce) {
-          setIsIntersecting(isElementIntersecting)
+          setIsIntersecting(ok)
         }
       },
-      {
-        threshold,
-        rootMargin,
-      },
+      { threshold, rootMargin },
     )
 
-    observer.observe(element)
-
-    return () => {
-      observer.unobserve(element)
-    }
+    observer.observe(el)
+    return () => observer.unobserve(el)
   }, [threshold, rootMargin, triggerOnce, hasTriggered])
 
   return { ref, isIntersecting: triggerOnce ? hasTriggered || isIntersecting : isIntersecting }
 }
 
-// Componente ScrollReveal
+function prefersReducedMotion() {
+  if (typeof window === "undefined") return false
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false
+}
+
+// Componente ScrollReveal estilo Apple
 interface ScrollRevealProps {
   children: ReactNode
-  direction?: "up" | "down" | "left" | "right" | "fade"
+  direction?: "up" | "left"
   delay?: number
   duration?: number
   distance?: number
@@ -61,44 +58,42 @@ export function ScrollReveal({
   children,
   direction = "up",
   delay = 0,
-  duration = 600,
-  distance = 50,
+  duration = 800,
+  distance = 30,
   className = "",
 }: ScrollRevealProps) {
+  const reduced = prefersReducedMotion()
   const { ref, isIntersecting } = useIntersectionObserver({
-    threshold: 0.1,
-    rootMargin: "0px 0px -50px 0px",
+    threshold: 0.2,
+    rootMargin: "0px 0px -10% 0px",
     triggerOnce: true,
   })
 
-  const getTransform = () => {
-    if (isIntersecting) return "translate3d(0, 0, 0)"
+  const active = reduced ? true : isIntersecting
 
-    switch (direction) {
-      case "up":
-        return `translate3d(0, ${distance}px, 0)`
-      case "down":
-        return `translate3d(0, -${distance}px, 0)`
-      case "left":
-        return `translate3d(${distance}px, 0, 0)`
-      case "right":
-        return `translate3d(-${distance}px, 0, 0)`
-      case "fade":
-        return "translate3d(0, 0, 0)"
-      default:
-        return `translate3d(0, ${distance}px, 0)`
-    }
-  }
+  // Easing suave estilo Apple
+  const easing = "cubic-bezier(0.28, 0.11, 0.32, 1)"
+
+  const initialTransform = direction === "left"
+    ? `translate3d(-${distance}px, 0, 0)`
+    : `translate3d(0, ${distance}px, 0)`
 
   return (
     <div
       ref={ref}
       className={className}
       style={{
-        opacity: isIntersecting ? 1 : 0,
-        transform: getTransform(),
-        transition: `all ${duration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}ms`,
-        willChange: "transform, opacity",
+        opacity: active ? 1 : 0,
+        transform: active 
+          ? "translate3d(0, 0, 0)" 
+          : initialTransform,
+        
+        transitionProperty: reduced ? "none" : "opacity, transform",
+        transitionDuration: reduced ? "0ms" : `${duration}ms`,
+        transitionTimingFunction: easing,
+        transitionDelay: reduced ? "0ms" : `${delay}ms`,
+
+        willChange: "opacity, transform",
       }}
     >
       {children}

@@ -18,6 +18,11 @@ export function FAQCard({ faqs }: FAQCardProps) {
         <AccordionItem
           key={faq.id ?? index}
           value={(faq.id ?? `item-${index + 1}`).toString()}
+          className="animate-in fade-in slide-in-from-left-5 duration-700"
+          style={{
+            animationDelay: `${index * 100}ms`,
+            animationFillMode: 'backwards'
+          }}
         >
           <AccordionTrigger className="text-lg sm:text-l font-medium text-[#2E321B]">
             {faq.question}

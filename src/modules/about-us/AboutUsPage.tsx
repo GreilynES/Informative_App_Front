@@ -6,6 +6,7 @@ import { useAboutUs } from "./hooks/useAboutUs"
 import { PageState } from "@/shared/ui/PageState"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollReveal } from "@/shared/animations/Scroll"
 
 function normalize(s: string) {
   return s
@@ -99,7 +100,7 @@ export default function AboutUsPage() {
             </div>
           }
         >
-          {/* Si llegó data pero no matchea secciones, mostramos aviso “suave” */}
+          {/* Si llegó data pero no matchea secciones, mostramos aviso "suave" */}
           {!somos && !mision && !vision ? (
             <div className="mx-auto max-w-3xl">
               <Card className="p-6 sm:p-8">
@@ -116,29 +117,35 @@ export default function AboutUsPage() {
               {/* Izquierda */}
               <div className="flex flex-col gap-6">
                 {mision && (
-                  <AboutUsCard
-                    icon={<Target className="h-5 w-5" />}
-                    title={mision.title}
-                    description={mision.description}
-                  />
+                  <ScrollReveal duration={800} distance={40} delay={100}>
+                    <AboutUsCard
+                      icon={<Target className="h-5 w-5" />}
+                      title={mision.title}
+                      description={mision.description}
+                    />
+                  </ScrollReveal>
                 )}
 
                 {vision && (
-                  <AboutUsCard
-                    icon={<Eye className="h-5 w-5" />}
-                    title={vision.title}
-                    description={vision.description}
-                  />
+                  <ScrollReveal duration={800} distance={40} delay={200}>
+                    <AboutUsCard
+                      icon={<Eye className="h-5 w-5" />}
+                      title={vision.title}
+                      description={vision.description}
+                    />
+                  </ScrollReveal>
                 )}
               </div>
 
               {/* Derecha */}
               {somos && (
-                <AboutUsCard
-                  icon={<Users className="h-5 w-5" />}
-                  title={somos.title}
-                  description={somos.description}
-                />
+                <ScrollReveal duration={800} distance={40} delay={150}>
+                  <AboutUsCard
+                    icon={<Users className="h-5 w-5" />}
+                    title={somos.title}
+                    description={somos.description}
+                  />
+                </ScrollReveal>
               )}
             </div>
           )}

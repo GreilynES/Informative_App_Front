@@ -10,7 +10,7 @@ import { useVolunteersPage } from "./hooks/useVolunteersPage"
 import { RequirementsSection } from "./components/RequerimentsSection"
 import { Steps } from "../volunteersForm/components/Steps"
 import { useNavigate } from "@tanstack/react-router"
-
+import { ChevronLeft } from "lucide-react"
 import { PageState } from "@/shared/ui/PageState"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -45,6 +45,18 @@ export default function VolunteersPage() {
     console.log(" Solicitud de organización enviada con éxito")
     nextStep()
   })
+
+  const goBackToForms = () => {
+  navigate({ to: "/", hash: "form" })
+
+  // Por si tu home no hace scroll automático con hash:
+  setTimeout(() => {
+    document.getElementById("formularios")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }, 50)
+}
 
   const { submitIndividual, isLoading: isSubmittingInd } =
     useVolunteerIndividual(() => {
@@ -135,6 +147,7 @@ export default function VolunteersPage() {
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
+      
       <PageState
         isLoading={loading}
         isEmpty={isEmpty}
@@ -142,6 +155,7 @@ export default function VolunteersPage() {
         emptyTitle="No hay información publicada"
         emptyDescription="Cuando publiquemos esta sección, aparecerá aquí."
         skeleton={
+          
           <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
             {/* Header skeleton */}
             <Card className="p-6 sm:p-8">
@@ -205,10 +219,32 @@ export default function VolunteersPage() {
           </div>
         ) : (
           <>
+
+
             <HeaderSection
               title={data?.headerTitle ?? ""}
               description={data?.headerDescription ?? ""}
             />
+
+              {/* Botón volver */}
+              <div className="absolute left-4 top-20 sm:top-24 z-40">
+                <Button
+                  type="button"
+                  onClick={goBackToForms}
+                  aria-label="Volver a formularios"
+                  className="
+                    h-11 w-11 rounded-full p-0
+                    bg-[#6D8B37] text-white
+                    shadow-md
+                    hover:bg-[#2F5F0B]
+                    active:scale-95
+                    transition-all duration-300
+                  "
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+              </div>
+
 
             <div className="max-w-6xl mx-auto">
               <BenefitsSection items={benefits} />

@@ -6,11 +6,10 @@ import { useSubastaEvent } from "../events/hooks/useSubastaEvent"
 import { FirstVisitNotice } from "./components/FirstVisitNotice"
 
 import { PageState } from "@/shared/ui/PageState"
-import { Skeleton } from "@/components/ui/skeleton"
 
 export default function PrincipalPage() {
-const { data: principal, loading, error } = usePrincipalEdit()  
-const { subastaEvent } = useSubastaEvent()
+  const { data: principal, loading, error } = usePrincipalEdit()  
+  const { subastaEvent } = useSubastaEvent()
 
   return (
     <PageState
@@ -19,57 +18,6 @@ const { subastaEvent } = useSubastaEvent()
       withContainer={false}
       emptyTitle="No hay información para mostrar"
       emptyDescription="Aún no se ha publicado contenido para esta sección."
-      skeleton={
-        <div className="relative min-h-full overflow-hidden text-white pt-14">
-          {/* Fondo video (opcional en loading, pero mantiene el look) */}
-          <video
-            className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
-            src="https://res.cloudinary.com/dyigmavwq/video/upload/v1768080154/Video_Project2_fguidi.mp4"
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            aria-hidden="true"
-          />
-
-          <div className="absolute inset-0 -z-10" aria-hidden="true">
-            <div className="absolute inset-0 bg-[#0B0B0B]/55" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0B0B0B]/35 via-transparent to-[#0B0B0B]/55" />
-            <div className="absolute inset-0 [box-shadow:inset_0_0_120px_rgba(11,11,11,0.45)]" />
-          </div>
-
-          <main className="relative z-10">
-            <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-24">
-              <section className="py-12 sm:py-16 lg:py-24">
-                <div className="max-w-2xl">
-                  <Skeleton className="h-4 w-44" />
-                  <div className="mt-5 space-y-3">
-                    <Skeleton className="h-10 w-[90%]" />
-                    <Skeleton className="h-10 w-[80%]" />
-                    <Skeleton className="h-10 w-[70%]" />
-                  </div>
-
-                  <div className="mt-6 space-y-2">
-                    <Skeleton className="h-5 w-full" />
-                    <Skeleton className="h-5 w-11/12" />
-                    <Skeleton className="h-5 w-10/12" />
-                  </div>
-
-                  <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                    <Skeleton className="h-12 w-full sm:w-44 rounded-xl" />
-                    <Skeleton className="h-12 w-full sm:w-44 rounded-xl" />
-                  </div>
-
-                  <div className="mt-6 flex items-center gap-3">
-                    <Skeleton className="h-px w-10" />
-                    <Skeleton className="h-4 w-44" />
-                  </div>
-                </div>
-              </section>
-            </div>
-          </main>
-        </div>
-      }
     >
       {error ? (
         <div className="min-h-full flex items-center justify-center px-6 py-20">
@@ -112,11 +60,11 @@ const { subastaEvent } = useSubastaEvent()
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-24">
               <section className="py-12 sm:py-16 lg:py-24">
                 <div className="max-w-2xl">
-                  <div className="text-[11px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-[#FAFDF4]/80">
+                  <div className="text-[11px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-[#FAFDF4]/80 animate-in fade-in slide-in-from-left-4 duration-600 delay-100">
                     Eventos &amp; Subastas
                   </div>
 
-                  <h1 className="mt-4 text-4xl sm:text-5xl md:text-6xl lg:text-6xl text-[#FAFDF4] font-semibold leading-[0.95]">
+                  <h1 className="mt-4 text-4xl sm:text-5xl md:text-6xl lg:text-6xl text-[#FAFDF4] font-semibold leading-[0.95] animate-in fade-in slide-in-from-left-6 duration-700 delay-200">
                     ASOCIACIÓN CÁMARA
                     <br />
                     DE GANADEROS
@@ -124,11 +72,11 @@ const { subastaEvent } = useSubastaEvent()
                     HOJANCHA
                   </h1>
 
-                  <p className="mt-6 text-base sm:text-lg text-[#FAFDF4]/85 leading-relaxed">
+                  <p className="mt-6 text-base sm:text-lg text-[#FAFDF4]/85 leading-relaxed animate-in fade-in slide-in-from-left-5 duration-700 delay-300">
                     {principal.description}
                   </p>
 
-                  <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 animate-in fade-in slide-in-from-left-5 duration-700 delay-400">
                     <Button
                       asChild
                       size="lg"
@@ -176,7 +124,7 @@ const { subastaEvent } = useSubastaEvent()
                     </Button>
                   </div>
 
-                  <div className="mt-6 flex items-center gap-3 text-xs text-[#FAFDF4]/70">
+                  <div className="mt-6 flex items-center gap-3 text-xs text-[#FAFDF4]/70 animate-in fade-in slide-in-from-left-4 duration-700 delay-500">
                     <span className="h-px w-10 bg-[#FAFDF4]/35" />
                     <span>Al servicio de la comunidad</span>
                   </div>

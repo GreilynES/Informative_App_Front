@@ -88,10 +88,10 @@ export function EventCard({ event, onModalChange }: Props) {
 
   return (
     <>
-      <div className="overflow-hidden relative rounded-xl shadow-lg h-full min-h-full">
+      <div className="overflow-hidden relative rounded-xl shadow-lg h-full">
         <div className="grid lg:grid-cols-2 gap-0 h-full">
           {/* Image Section */}
-          <div className="relative h-44 sm:h-52 md:h-60 lg:h-full bg-gradient-to-br from-[#F2F7D8] to-[#DDE9BB] flex-shrink-0">
+          <div className="relative h-48 sm:h-56 md:h-64 lg:h-full bg-gradient-to-br from-[#F2F7D8] to-[#DDE9BB] flex-shrink-0">
             <img
               src={event.illustration || "/placeholder.svg"}
               alt={event.title}
@@ -100,7 +100,7 @@ export function EventCard({ event, onModalChange }: Props) {
           </div>
 
           {/* Content Section */}
-          <CardContent className="p-4 sm:p-5 md:p-6 lg:p-7 flex flex-col justify-between bg-white/95 backdrop-blur-sm min-h-[240px] sm:min-h-[280px]">
+          <CardContent className="p-4 sm:p-5 md:p-6 lg:p-7 flex flex-col justify-between bg-white/95 backdrop-blur-sm min-h-[240px] sm:min-h-[260px] md:min-h-[280px]">
             <div className="space-y-2 sm:space-y-3 flex-grow">
               <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#F2F7D8] rounded-lg border border-[#DDE9BB] w-fit">
                 <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#6F8C1F] flex-shrink-0" />

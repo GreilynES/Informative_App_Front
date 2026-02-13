@@ -3,6 +3,7 @@ import type { FAQ } from "./models/FAQType"
 import { useFaqRealtime } from "./hooks/faqHook"
 import { getFaqs } from "./services/faqService"
 import { FAQCard } from "./components/FAQCard"
+import { ScrollReveal } from "@/shared/animations/Scroll"
 
 import { PageState } from "@/shared/ui/PageState"
 import { Card } from "@/components/ui/card"
@@ -106,8 +107,19 @@ export default function FAQPage() {
               </Card>
             </div>
           ) : (
-            <div className="mx-auto max-w-3xl">
-              <FAQCard faqs={faqs} />
+            <div className="mx-auto max-w-3xl space-y-4">
+              {faqs.map((faq, index) => (
+                <ScrollReveal 
+                  key={faq.id ?? index}
+                  duration={700} 
+                  distance={40}
+                  delay={index * 50}
+                >
+                  <div>
+                    <FAQCard faqs={[faq]} />
+                  </div>
+                </ScrollReveal>
+              ))}
             </div>
           )}
         </PageState>

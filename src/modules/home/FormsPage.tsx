@@ -1,14 +1,35 @@
 import { ArrowRight, FileText, Heart } from "lucide-react"
 import { useRouter } from "@tanstack/react-router"
+import { useEffect, useRef, useState } from "react"
 
 export default function FormsPage() {
   const router = useRouter()
+  const [showCards, setShowCards] = useState(false)
+  const sectionRef = useRef<HTMLDivElement>(null)
 
   const bgUrl =
     "https://res.cloudinary.com/dyigmavwq/image/upload/v1768196080/unnamed_p0ymqu.jpg"
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowCards(true)
+        }
+      },
+      { threshold: 0.2 }
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section
+      ref={sectionRef}
       className="relative min-h-full py-20 px-6 sm:px-10 lg:px-16 overflow-hidden"
       style={{
         backgroundImage: `url(${bgUrl})`,
@@ -34,7 +55,14 @@ export default function FormsPage() {
         </div>
       </div>
 
-      <div className="relative z-10 grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-12">
+      <div 
+        className="relative z-10 grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mt-12"
+        style={{
+          transform: showCards ? 'translate3d(0, 0, 0)' : 'translate3d(0, 60px, 0)',
+          transition: 'transform 900ms cubic-bezier(0.28, 0.11, 0.32, 1)',
+          willChange: 'transform',
+        }}
+      >
         {/* ASOCIADOS CARD */}
         <div
           className="

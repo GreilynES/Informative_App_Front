@@ -17,6 +17,7 @@ import {
 import { PageState } from "@/shared/ui/PageState"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollReveal } from "@/shared/animations/Scroll"
 
 export default function ServicesPage() {
   const { services, isLoading, error } = useServices()
@@ -111,16 +112,18 @@ export default function ServicesPage() {
   return (
     <section className="min-h-full bg-white py-20">
       <div className="container mx-auto px-6 md:px-20">
-        <div className="text-center space-y-3">
-          <p className="text-sm font-medium text-muted-foreground">Te ofrecemos</p>
+        <ScrollReveal duration={800} distance={30}>
+          <div className="text-center space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">Te ofrecemos</p>
 
-          <h1
-            ref={servicesTopRef}
-            className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4"
-          >
-            Nuestros servicios
-          </h1>
-        </div>
+            <h1
+              ref={servicesTopRef}
+              className="text-4xl md:text-5xl font-semibold text-[#2E321B] text-center mb-4"
+            >
+              Nuestros servicios
+            </h1>
+          </div>
+        </ScrollReveal>
 
         <p className="text-center text-base md:text-lg text-gray-600 mb-16 max-w-3xl mx-auto"></p>
 
@@ -130,9 +133,6 @@ export default function ServicesPage() {
           withContainer={false}
           emptyTitle="No hay servicios disponibles"
           emptyDescription="Cuando publiquemos servicios, aparecerán aquí."
-          // Si querés CTA:
-          // actionLabel="Actualizar"
-          // onAction={() => window.location.reload()}
           skeleton={
             <div className="max-w-6xl mx-auto">
               <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -179,85 +179,93 @@ export default function ServicesPage() {
             <>
               <div className="max-w-6xl mx-auto">
                 <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {pagedServices.map((service) => (
-                    <ServicesCard
-                      key={service.id}
-                      service={service}
-                      openModal={openModal}
-                    />
+                  {pagedServices.map((service, index) => (
+                    <ScrollReveal 
+                      key={service.id} 
+                      duration={1400} 
+                      distance={50} 
+                      delay={index * 200}
+                    >
+                      <ServicesCard
+                        service={service}
+                        openModal={openModal}
+                      />
+                    </ScrollReveal>
                   ))}
                 </div>
 
-                {/* Paginación */}
+                {/* Paginación con animación */}
                 {services.length > PAGE_SIZE && totalPages > 1 && (
-                  <div className="mt-10 flex justify-center">
-                    <Pagination>
-                      <PaginationContent className="w-full justify-center">
-                        {/* IZQUIERDA: Anterior (o placeholder invisible) */}
-                        <PaginationItem className="w-[110px] flex justify-start">
-                          {page > 1 ? (
-                            <PaginationPrevious
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                go(page - 1)
-                              }}
-                            />
-                          ) : (
-                            <span className="invisible inline-flex items-center gap-1 px-3 py-2">
-                              <span>Previous</span>
-                            </span>
-                          )}
-                        </PaginationItem>
+                  <ScrollReveal duration={800} distance={30} delay={600}>
+                    <div className="mt-10 flex justify-center">
+                      <Pagination>
+                        <PaginationContent className="w-full justify-center">
+                          {/* IZQUIERDA: Anterior (o placeholder invisible) */}
+                          <PaginationItem className="w-[110px] flex justify-start">
+                            {page > 1 ? (
+                              <PaginationPrevious
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  go(page - 1)
+                                }}
+                              />
+                            ) : (
+                              <span className="invisible inline-flex items-center gap-1 px-3 py-2">
+                                <span>Previous</span>
+                              </span>
+                            )}
+                          </PaginationItem>
 
-                        {/* CENTRO: números */}
-                        <div className="flex items-center gap-1">
-                          {pageItems.map((it) => {
-                            if (it.type === "ellipsis") {
+                          {/* CENTRO: números */}
+                          <div className="flex items-center gap-1">
+                            {pageItems.map((it: any) => {
+                              if (it.type === "ellipsis") {
+                                return (
+                                  <PaginationItem key={it.key}>
+                                    <PaginationEllipsis />
+                                  </PaginationItem>
+                                )
+                              }
+
+                              const active = it.n === page
                               return (
-                                <PaginationItem key={it.key}>
-                                  <PaginationEllipsis />
+                                <PaginationItem key={it.n}>
+                                  <PaginationLink
+                                    href="#"
+                                    isActive={active}
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      go(it.n)
+                                    }}
+                                  >
+                                    {it.n}
+                                  </PaginationLink>
                                 </PaginationItem>
                               )
-                            }
+                            })}
+                          </div>
 
-                            const active = it.n === page
-                            return (
-                              <PaginationItem key={it.n}>
-                                <PaginationLink
-                                  href="#"
-                                  isActive={active}
-                                  onClick={(e) => {
-                                    e.preventDefault()
-                                    go(it.n)
-                                  }}
-                                >
-                                  {it.n}
-                                </PaginationLink>
-                              </PaginationItem>
-                            )
-                          })}
-                        </div>
-
-                        {/* DERECHA: Siguiente (o placeholder invisible) */}
-                        <PaginationItem className="w-[110px] flex justify-end">
-                          {page < totalPages ? (
-                            <PaginationNext
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault()
-                                go(page + 1)
-                              }}
-                            />
-                          ) : (
-                            <span className="invisible inline-flex items-center gap-1 px-3 py-2">
-                              <span>Next</span>
-                            </span>
-                          )}
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
+                          {/* DERECHA: Siguiente (o placeholder invisible) */}
+                          <PaginationItem className="w-[110px] flex justify-end">
+                            {page < totalPages ? (
+                              <PaginationNext
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  go(page + 1)
+                                }}
+                              />
+                            ) : (
+                              <span className="invisible inline-flex items-center gap-1 px-3 py-2">
+                                <span>Next</span>
+                              </span>
+                            )}
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  </ScrollReveal>
                 )}
               </div>
 
