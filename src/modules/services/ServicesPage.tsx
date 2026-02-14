@@ -135,7 +135,7 @@ export default function ServicesPage() {
           emptyDescription="Cuando publiquemos servicios, aparecerán aquí."
           skeleton={
             <div className="max-w-6xl mx-auto">
-              <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="p-5">
                     <Skeleton className="h-44 w-full rounded-2xl" />

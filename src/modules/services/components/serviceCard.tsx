@@ -53,6 +53,9 @@ export function ServicesCard({ service, openModal }: any) {
         ease-out
         hover:-translate-y-2
         hover:shadow-lg
+
+        /* ✅ ALTURA FIJA + RESPONSIVE (más bajita) */
+        h-[500px] sm:h-[520px] lg:h-[540px]
       "
     >
       {/* Línea superior reactiva */}
@@ -72,6 +75,7 @@ export function ServicesCard({ service, openModal }: any) {
         "
       />
 
+      {/* ✅ Mantiene layout fijo y empuja imagen al fondo */}
       <div className="flex flex-col p-8 h-full">
         {/* Icono */}
         <div
@@ -98,8 +102,8 @@ export function ServicesCard({ service, openModal }: any) {
           {service.title}
         </h3>
 
-        {/* Descripción */}
-        <p className="mt-4 text-base leading-relaxed text-gray-600 whitespace-pre-wrap">
+        {/* ✅ Descripción con límite para que no cambie el alto */}
+        <p className="mt-4 text-base leading-relaxed text-gray-600 whitespace-pre-wrap line-clamp-4 sm:line-clamp-5">
           {service.cardDescription}
         </p>
 
@@ -123,17 +127,17 @@ export function ServicesCard({ service, openModal }: any) {
           Más información →
         </button>
 
-        {/* Bloque inferior (imagen o placeholder) */}
-        <div className="mt-10 overflow-hidden rounded-2xl bg-gray-100">
+        {/* ✅ Empuja el bloque inferior al fondo SIEMPRE */}
+        <div className="mt-auto pt-6 overflow-hidden rounded-2xl bg-gray-100">
           {service.image ? (
             <img
               src={service.image}
               alt={service.title}
-              className="h-44 w-full object-cover"
+              className="h-36 sm:h-40 w-full object-cover"
               loading="lazy"
             />
           ) : (
-            <div className="h-44 w-full bg-gray-200" />
+            <div className="h-36 sm:h-40 w-full bg-gray-200" />
           )}
         </div>
       </div>
