@@ -18,20 +18,37 @@ export function FAQCard({ faqs }: FAQCardProps) {
         <AccordionItem
           key={faq.id ?? index}
           value={(faq.id ?? `item-${index + 1}`).toString()}
-          className="animate-in fade-in slide-in-from-left-5 duration-700"
+          className="
+            animate-in fade-in slide-in-from-left-5 duration-700
+            transition-all
+            data-[state=open]:border-[#3F4D24]/40
+          "
           style={{
             animationDelay: `${index * 100}ms`,
-            animationFillMode: 'backwards'
+            animationFillMode: "backwards",
           }}
         >
-          <AccordionTrigger className="text-lg sm:text-l font-medium text-[#2E321B]">
+          <AccordionTrigger
+            className="
+              text-lg sm:text-l font-medium
+              text-[#2E321B]
+              hover:text-[#577326]
+              data-[state=open]:text-[#577326]
+              transition-colors
+            "
+          >
             {faq.question}
           </AccordionTrigger>
 
-          <AccordionContent className="text-base sm:text-base leading-relaxed text-gray-700">
+          <AccordionContent
+            className="
+              text-base sm:text-base
+              leading-relaxed
+              text-[#566236]
+            "
+          >
             {faq.answer}
           </AccordionContent>
-
         </AccordionItem>
       ))}
     </Accordion>

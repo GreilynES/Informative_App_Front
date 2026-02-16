@@ -25,16 +25,25 @@ export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalContent, setModalContent] = useState<Service>(initialStateService)
 
-  // Paginado (6 por página)
-  const PAGE_SIZE = 6
+  // ✅ Page size responsive: 3 en teléfono, 6 en pantallas >= sm
+  const [pageSize, setPageSize] = useState(6)
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)")
+    const update = () => setPageSize(mq.matches ? 3 : 6)
+    update()
+    mq.addEventListener?.("change", update)
+    return () => mq.removeEventListener?.("change", update)
+  }, [])
+
   const [page, setPage] = useState(1)
 
-  // Ref para volver al inicio de "Nuestros servicios"
+  // ✅ Ref para volver al inicio del título SOLO cuando el usuario pagina
   const servicesTopRef = useRef<HTMLHeadingElement | null>(null)
+  const shouldScrollRef = useRef(false)
 
   const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(services.length / PAGE_SIZE))
-  }, [services.length])
+    return Math.max(1, Math.ceil(services.length / pageSize))
+  }, [services.length, pageSize])
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages)
@@ -42,17 +51,27 @@ export default function ServicesPage() {
   }, [page, totalPages])
 
   const pagedServices = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE
-    return services.slice(start, start + PAGE_SIZE)
-  }, [services, page])
+    const start = (page - 1) * pageSize
+    return services.slice(start, start + pageSize)
+  }, [services, page, pageSize])
 
-  // Cada vez que cambia la página, volvemos al inicio del título
+  // ✅ Si cambia pageSize (resize/orientación), resetea a 1 PERO SIN SCROLL
   useEffect(() => {
+    setPage(1)
+    // no tocamos shouldScrollRef aquí
+  }, [pageSize])
+
+  // ✅ Scroll arriba SOLO si el usuario paginó (no en load, no en fetch)
+  useEffect(() => {
+    if (isLoading) return
+    if (!shouldScrollRef.current) return
+
+    shouldScrollRef.current = false
     servicesTopRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     })
-  }, [page])
+  }, [page, isLoading])
 
   const openModal = (
     id: number,
@@ -69,6 +88,8 @@ export default function ServicesPage() {
 
   const go = (n: number) => {
     const safe = Math.min(Math.max(1, n), totalPages)
+    // ✅ SOLO aquí activamos scroll (porque fue acción del usuario)
+    shouldScrollRef.current = true
     setPage(safe)
   }
 
@@ -84,7 +105,6 @@ export default function ServicesPage() {
     const addPage = (n: number) => items.push({ type: "page", n })
     const addEllipsis = (key: string) => items.push({ type: "ellipsis", key })
 
-    // Siempre mostrar primera
     addPage(1)
 
     if (totalPages === 2) {
@@ -96,12 +116,9 @@ export default function ServicesPage() {
     const right = Math.min(totalPages - 1, page + 1)
 
     if (left > 2) addEllipsis("left")
-
     for (let n = left; n <= right; n++) addPage(n)
-
     if (right < totalPages - 1) addEllipsis("right")
 
-    // Siempre mostrar última
     addPage(totalPages)
 
     return items
@@ -135,7 +152,7 @@ export default function ServicesPage() {
           emptyDescription="Cuando publiquemos servicios, aparecerán aquí."
           skeleton={
             <div className="max-w-6xl mx-auto">
-              <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch">
+               <div className="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-stretch">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="p-5">
                     <Skeleton className="h-44 w-full rounded-2xl" />
@@ -149,7 +166,6 @@ export default function ServicesPage() {
                 ))}
               </div>
 
-              {/* skeleton paginación */}
               <div className="mt-10 flex justify-center">
                 <div className="flex items-center gap-2">
                   <Skeleton className="h-9 w-28 rounded-full" />
@@ -163,7 +179,6 @@ export default function ServicesPage() {
           }
           className="mt-2"
         >
-          {/* Error (se mantiene, pero uniforme) */}
           {error ? (
             <div className="max-w-3xl mx-auto">
               <Card className="p-6 sm:p-8">
@@ -194,13 +209,12 @@ export default function ServicesPage() {
                   ))}
                 </div>
 
-                {/* Paginación con animación */}
-                {services.length > PAGE_SIZE && totalPages > 1 && (
+                {/* ✅ Paginación: usa pageSize (3 móvil / 6 desktop) */}
+                {services.length > pageSize && totalPages > 1 && (
                   <ScrollReveal duration={800} distance={30} delay={600}>
                     <div className="mt-10 flex justify-center">
                       <Pagination>
                         <PaginationContent className="w-full justify-center">
-                          {/* IZQUIERDA: Anterior (o placeholder invisible) */}
                           <PaginationItem className="w-[110px] flex justify-start">
                             {page > 1 ? (
                               <PaginationPrevious
@@ -217,7 +231,6 @@ export default function ServicesPage() {
                             )}
                           </PaginationItem>
 
-                          {/* CENTRO: números */}
                           <div className="flex items-center gap-1">
                             {pageItems.map((it: any) => {
                               if (it.type === "ellipsis") {
@@ -246,7 +259,6 @@ export default function ServicesPage() {
                             })}
                           </div>
 
-                          {/* DERECHA: Siguiente (o placeholder invisible) */}
                           <PaginationItem className="w-[110px] flex justify-end">
                             {page < totalPages ? (
                               <PaginationNext
@@ -276,11 +288,6 @@ export default function ServicesPage() {
           )}
         </PageState>
       </div>
-
-      {/* Modal afuera del PageState también funciona */}
-      {isModalOpen && (
-        <ServicesModal content={modalContent} onClose={closeModal} />
-      )}
     </section>
   )
 }

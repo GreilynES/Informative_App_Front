@@ -128,16 +128,16 @@ export function ServicesCard({ service, openModal }: any) {
         </button>
 
         {/* ✅ Empuja el bloque inferior al fondo SIEMPRE */}
-        <div className="mt-auto pt-6 overflow-hidden rounded-2xl bg-gray-100">
+        <div className="mt-10 overflow-hidden rounded-2xl bg-gray-100">
           {service.image ? (
             <img
               src={service.image}
               alt={service.title}
-              className="h-36 sm:h-40 w-full object-cover"
+              className="h-44 w-full object-cover"
               loading="lazy"
             />
           ) : (
-            <div className="h-36 sm:h-40 w-full bg-gray-200" />
+            <div className="h-44 w-full bg-gray-200" />
           )}
         </div>
       </div>

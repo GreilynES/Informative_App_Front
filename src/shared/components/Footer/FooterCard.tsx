@@ -22,7 +22,7 @@ type FooterSchedule = {
 }
 
 export const contact: FooterContact = {
-  phone: "83770589",
+  phone: "+506 8501 1152",
   email: "camaradeganaderos@gmail.com",
   facebook: {
     name: "Cámara de Ganaderos de Hojancha",
@@ -38,10 +38,11 @@ export const quickLinks: FooterLink[] = [
 ]
 
 export const schedule: FooterSchedule = {
-  title: "Administrativo",
-  location: "Hojancha: Lunes a Sábado",
-  days: "7:00 am - 5:00 pm",
-}
+    title: "Hojancha: Lunes a Viernes",
+    location: "7:00 am - 4:30 pm",
+    days: "Hojancha: Sábados",
+    hours: "7:30 am - 12:30 pm",
+  }
 
 export const footerIcons = {
   phone: Phone,

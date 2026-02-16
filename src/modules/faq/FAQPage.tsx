@@ -63,9 +63,17 @@ export default function FAQPage() {
 
   const isEmpty = !isLoading && !error && faqs.length === 0
 
-  return (
-    <div className="min-h-full bg-white">
-      <div className="mx-auto max-w-5xl px-4 py-30">
+ return (
+    <div
+      className="relative min-h-full bg-white"
+      style={{
+        WebkitMaskImage:
+          "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) calc(100% - 160px), rgba(0,0,0,0) 100%)",
+        maskImage:
+          "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) calc(100% - 160px), rgba(0,0,0,0) 100%)",
+      }}
+    >
+      <div className="mx-auto max-w-5xl px-4 py-30 pb-40">
         <header className="mb-20 text-center">
           <div className="text-center space-y-3">
             <p className="text-sm font-medium text-muted-foreground">
@@ -109,9 +117,9 @@ export default function FAQPage() {
           ) : (
             <div className="mx-auto max-w-3xl space-y-4">
               {faqs.map((faq, index) => (
-                <ScrollReveal 
+                <ScrollReveal
                   key={faq.id ?? index}
-                  duration={700} 
+                  duration={700}
                   distance={40}
                   delay={index * 50}
                 >

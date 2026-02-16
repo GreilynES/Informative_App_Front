@@ -24,6 +24,7 @@ type FirstVisitNoticeProps = {
   storage?: "session" | "local"
   debug?: boolean
   label?: string
+  visible?: boolean // ✅ NUEVO: controlar visibilidad desde el padre
 }
 
 export function FirstVisitNotice({
@@ -35,6 +36,7 @@ export function FirstVisitNotice({
   storage = "session",
   debug = false,
   label = "Próxima Subasta Ganadera",
+  visible = true, // ✅ NUEVO
 }: FirstVisitNoticeProps) {
   const [open, setOpen] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -101,7 +103,8 @@ export function FirstVisitNotice({
     }
   }, [open, durationMs, closeDelayMs, debug])
 
-  if (!open || !event) return null
+  // ✅ No renderizar si no es visible o no está abierto
+  if (!open || !event || !visible) return null
 
   const dateText = formatDateToWords(event.date, {
     locale: "es-CR",
@@ -123,7 +126,6 @@ export function FirstVisitNotice({
             px-3 py-3 sm:px-4 sm:py-4
           "
         >
-          {/* Icono */}
           <ItemMedia
             variant="icon"
             className="
@@ -140,7 +142,6 @@ export function FirstVisitNotice({
             <CalendarDays className="h-6 w-6" />
           </ItemMedia>
 
-          {/* Contenido */}
           <ItemContent className="min-w-0">
             <span className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase tracking-wide text-[#D6E5C8]">
               {label}
@@ -163,7 +164,6 @@ export function FirstVisitNotice({
             </ItemDescription>
           </ItemContent>
 
-          {/* Acciones */}
           <ItemActions className="flex items-center gap-2 self-start sm:self-center">
             <Button
               size="sm"
@@ -197,7 +197,6 @@ export function FirstVisitNotice({
             </Button>
           </ItemActions>
 
-          {/* Progreso */}
           <ItemFooter className="mt-2">
             <Progress
               value={debug ? 0 : progress}

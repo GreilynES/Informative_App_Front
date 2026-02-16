@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 
 import { usePrincipalEdit } from "./hooks/usePrincipal"
 import { useSubastaEvent } from "../events/hooks/useSubastaEvent"
@@ -10,6 +11,22 @@ import { PageState } from "@/shared/ui/PageState"
 export default function PrincipalPage() {
   const { data: principal, loading, error } = usePrincipalEdit()  
   const { subastaEvent } = useSubastaEvent()
+  const [showNotice, setShowNotice] = useState(true)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const principalSection = document.querySelector('[data-page="principal"]')
+      if (principalSection) {
+        const rect = principalSection.getBoundingClientRect()
+        // Mostrar solo si la página principal está visible en el viewport
+        setShowNotice(rect.top < window.innerHeight && rect.bottom > 0)
+      }
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <PageState
@@ -26,24 +43,36 @@ export default function PrincipalPage() {
           </p>
         </div>
       ) : principal ? (
-        <div className="relative min-h-full overflow-hidden text-white pt-14">
-          <FirstVisitNotice
-            event={subastaEvent}
-            durationMs={12000}
-            closeDelayMs={300}
-            storage="session"
-            onViewMore={() => {
-              document
-                .getElementById("EventsPage")
-                ?.scrollIntoView({ behavior: "smooth", block: "start" })
-            }}
-          />
+        <div 
+          data-page="principal"
+          className="relative min-h-full overflow-hidden text-white pt-14"
+        >
+          {/* ✅ Anuncio con visibilidad controlada */}
+          <div className="fixed top-20 left-0 right-0 z-30 pointer-events-none">
+            <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-24">
+              <div className="w-full max-w-[560px] pointer-events-auto">
+                <FirstVisitNotice
+                  event={subastaEvent}
+                  durationMs={12000}
+                  closeDelayMs={300}
+                  storage="session"
+                  visible={showNotice} // ✅ CLAVE: pasar visibilidad
+                  onViewMore={() => {
+                    document
+                      .getElementById("EventsPage")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }}
+                />
+              </div>
+            </div>
+          </div>
 
           <video
             className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
             src="https://res.cloudinary.com/dyigmavwq/video/upload/v1768080154/Video_Project2_fguidi.mp4"
             autoPlay
             muted
+            loop
             playsInline
             preload="auto"
             aria-hidden="true"
@@ -55,7 +84,6 @@ export default function PrincipalPage() {
             <div className="absolute inset-0 [box-shadow:inset_0_0_120px_rgba(11,11,11,0.45)]" />
           </div>
 
-          {/* HERO CONTENT */}
           <main className="relative z-10">
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-24">
               <section className="py-12 sm:py-16 lg:py-24">
