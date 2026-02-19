@@ -1,46 +1,30 @@
 import { ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
-
 import { usePrincipalEdit } from "./hooks/usePrincipal"
 import { useSubastaEvent } from "../events/hooks/useSubastaEvent"
 import { FirstVisitNotice } from "./components/FirstVisitNotice"
-
 import { PageState } from "@/shared/ui/PageState"
 import { useEffect, useState } from "react"
 
-export default function PrincipalPage() {
-  const { data: principal, loading, error } = usePrincipalEdit()  
+type Props = { noticeVisible?: boolean }
+
+export default function PrincipalPage({ noticeVisible = true }: Props) {
+  const { data: principal, loading, error } = usePrincipalEdit()
   const { subastaEvent } = useSubastaEvent()
+
   const [showVideo, setShowVideo] = useState(false)
 
-    useEffect(() => {
+  useEffect(() => {
     const isMobile = window.matchMedia("(max-width: 640px)").matches
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     setShowVideo(!isMobile && !reducedMotion)
   }, [])
 
- const poster =
-"https://res.cloudinary.com/dyigmavwq/video/upload/so_1,f_webp,q_auto,w_1920/v1771529238/vide5s_z8uetq.webp"
-  //"https://res.cloudinary.com/dyigmavwq/image/upload/so_1,f_webp,q_auto,w_1600/v1768109114/Screenshot_2026-01-10_232432_feoxzd.webp"
+  const poster =
+    "https://res.cloudinary.com/dyigmavwq/video/upload/so_1,f_webp,q_auto,w_1920/v1771529238/vide5s_z8uetq.webp"
 
-const videoSrc =
-"https://res.cloudinary.com/dyigmavwq/video/upload/q_auto:best,br_3000k,w_1920,f_mp4,vc_h264,fl_progressive/v1771529238/vide5s_z8uetq.mp4"  const [showNotice, setShowNotice] = useState(true)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const principalSection = document.querySelector('[data-page="principal"]')
-      if (principalSection) {
-        const rect = principalSection.getBoundingClientRect()
-        // Mostrar solo si la página principal está visible en el viewport
-        setShowNotice(rect.top < window.innerHeight && rect.bottom > 0)
-      }
-    }
-
-    handleScroll()
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const videoSrc =
+    "https://res.cloudinary.com/dyigmavwq/video/upload/q_auto:best,br_3000k,w_1920,f_mp4,vc_h264,fl_progressive/v1771529238/vide5s_z8uetq.mp4"
 
   return (
     <PageState
@@ -52,34 +36,23 @@ const videoSrc =
     >
       {error ? (
         <div className="min-h-full flex items-center justify-center px-6 py-20">
-          <p className="text-center text-muted-foreground">
-            No pudimos cargar la información.
-          </p>
+          <p className="text-center text-muted-foreground">No pudimos cargar la información.</p>
         </div>
       ) : principal ? (
-        <div 
+        <div
           data-page="principal"
           className="relative min-h-full overflow-hidden text-white pt-14"
         >
-          {/* ✅ Anuncio con visibilidad controlada */}
-          <div className="fixed top-20 left-0 right-0 z-30 pointer-events-none">
-            <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-24">
-              <div className="w-full max-w-[560px] pointer-events-auto">
-                <FirstVisitNotice
-                  event={subastaEvent}
-                  durationMs={12000}
-                  closeDelayMs={300}
-                  storage="session"
-                  visible={showNotice} // ✅ CLAVE: pasar visibilidad
-                  onViewMore={() => {
-                    document
-                      .getElementById("EventsPage")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          <FirstVisitNotice
+            event={subastaEvent}
+            durationMs={12000}
+            closeDelayMs={300}
+            storage="session"
+            visible={noticeVisible}  
+            onViewMore={() => {
+              document.getElementById("EventsPage")?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }}
+          />
 
           <img
             src={poster}
@@ -91,19 +64,19 @@ const videoSrc =
             decoding="async"
           />
 
-      {showVideo && (
-        <video
-          className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
-          autoPlay
-          muted
-          playsInline
-          preload="metadata"
-          poster={poster}
-          aria-hidden="true"
-        >
-          <source src={videoSrc} type="video/mp4" />
-        </video>
-      )}
+          {showVideo && (
+            <video
+              className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
+              autoPlay
+              muted
+              playsInline
+              preload="metadata"
+              poster={poster}
+              aria-hidden="true"
+            >
+              <source src={videoSrc} type="video/mp4" />
+            </video>
+          )}
 
           <div className="absolute inset-0 -z-10" aria-hidden="true">
             <div className="absolute inset-0 bg-[#0B0B0B]/55" />
@@ -132,47 +105,11 @@ const videoSrc =
                   </p>
 
                   <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 animate-in fade-in slide-in-from-left-5 duration-700 delay-400">
-                    <Button
-                      asChild
-                      size="lg"
-                      className="
-                        w-full sm:w-auto rounded-xl
-                        bg-[#1B2A10] text-[#FAFDF4]
-                        border border-[#A7C4A0]/25
-                        shadow-md shadow-[#0B0B0B]/35
-                        transition-all duration-200
-                        hover:bg-[#2C3F18]
-                        hover:-translate-y-0.5
-                        hover:shadow-xl hover:shadow-[#0B0B0B]/45
-                        active:translate-y-0 active:shadow-lg
-                        focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70
-                        focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30
-                      "
-                    >
+                    <Button asChild size="lg" className="w-full sm:w-auto rounded-xl bg-[#1B2A10] text-[#FAFDF4] border border-[#A7C4A0]/25 shadow-md shadow-[#0B0B0B]/35 transition-all duration-200 hover:bg-[#2C3F18] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#0B0B0B]/45 active:translate-y-0 active:shadow-lg focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30">
                       <a href="#Footer">Contáctanos</a>
                     </Button>
 
-                    <Button
-                      asChild
-                      variant="outline"
-                      size="lg"
-                      className="
-                        w-full sm:w-auto rounded-xl
-                        border border-[#A7C4A0]/45
-                        bg-[#F2ED9A]/15
-                        text-[#FAFDF4]
-                        backdrop-blur-md
-                        shadow-md shadow-[#0B0B0B]/20
-                        transition-all duration-200
-                        hover:bg-[#FAF7C6]/55
-                        hover:border-[#D6E5C8]/45
-                        hover:-translate-y-0.5
-                        hover:shadow-lg hover:shadow-[#0B0B0B]/30
-                        active:translate-y-0 active:shadow-md
-                        focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70
-                        focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30
-                      "
-                    >
+                    <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-xl border border-[#A7C4A0]/45 bg-[#F2ED9A]/15 text-[#FAFDF4] backdrop-blur-md shadow-md shadow-[#0B0B0B]/20 transition-all duration-200 hover:bg-[#FAF7C6]/55 hover:border-[#D6E5C8]/45 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0B0B0B]/30 active:translate-y-0 active:shadow-md focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30">
                       <a href="#AboutUsPage" className="inline-flex items-center gap-2">
                         Conocer más <ChevronRight className="h-4 w-4" />
                       </a>

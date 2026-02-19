@@ -7,11 +7,15 @@ import { ScrollReveal } from '../shared/animations/Scroll'
 import FAQPage from '../modules/faq/FAQPage'
 import { useAutoRefreshSection } from '../shared/hooks/useAutoRefreshSection'
 import { useSearch } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function HomePage() {
   const search = useSearch({ from: '/' });
   const [showPrincipal, setShowPrincipal] = useState(false);
+  
+  const principalRef = useRef<HTMLDivElement | null>(null)
+  const [isPrincipalInView, setIsPrincipalInView] = useState(true)
+
   useAutoRefreshSection()
 
   useEffect(() => {
@@ -19,33 +23,51 @@ export default function HomePage() {
     setShowPrincipal(true);
   }, []);
 
-  useEffect(() => {
-    if (!search.section || search.section === 'PrincipalPage') {
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      return;
+   useEffect(() => {
+    if (!principalRef.current) return
+
+    const el = principalRef.current
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        // true cuando el hero está visible en pantalla
+        setIsPrincipalInView(entry.isIntersecting)
+      },
+      {
+        threshold: 0.25,
+        rootMargin: "0px 0px -30% 0px",
+      }
+    )
+
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+    useEffect(() => {
+    if (!search.section || search.section === "PrincipalPage") {
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
+      return
     }
 
     setTimeout(() => {
-      const element = document.getElementById(search.section as string);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }, 100);
-  }, [search.section]);
+      const element = document.getElementById(search.section as string)
+      if (element) element.scrollIntoView({ behavior: "smooth", block: "start" })
+      else window.scrollTo({ top: 0, behavior: "smooth" })
+    }, 100)
+  }, [search.section])
 
   return (
     <>
-      <div 
+       <div
         id="PrincipalPage"
+        ref={principalRef}
         style={{
           opacity: showPrincipal ? 1 : 0,
-          transition: 'opacity 1000ms cubic-bezier(0.28, 0.11, 0.32, 1)',
-          willChange: 'opacity',
+          transition: "opacity 1000ms cubic-bezier(0.28, 0.11, 0.32, 1)",
+          willChange: "opacity",
         }}
       >
-        <PrincipalPage />
+        <PrincipalPage noticeVisible={isPrincipalInView} />
       </div>
 
       <div id="AboutUsPage">
