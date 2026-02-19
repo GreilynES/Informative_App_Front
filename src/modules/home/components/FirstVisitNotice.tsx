@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { CalendarDays } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { CalendarDays, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -41,67 +41,105 @@ export function FirstVisitNotice({
   const [open, setOpen] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  const rafRef = useRef<number | null>(null)
+  const timerRef = useRef<number | null>(null)
   const closeDelayRef = useRef<number | null>(null)
 
-  const getStore = () =>
-    storage === "local" ? window.localStorage : window.sessionStorage
+  const store = useMemo(() => {
+    if (typeof window === "undefined") return null
+    return storage === "local" ? window.localStorage : window.sessionStorage
+  }, [storage])
 
-  // 1) Decide si se muestra (solo una vez) PERO solo si existe event
+  const reducedMotion = useMemo(() => {
+    if (typeof window === "undefined") return false
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  }, [])
+
+  const markSeen = () => {
+    if (!store) return
+    try {
+      store.setItem(storageKey, "true")
+    } catch {
+      // ignore (modo incógnito / storage bloqueado)
+    }
+  }
+
+  const close = () => {
+    setOpen(false)
+    markSeen()
+  }
+
+  // 1) Decide si se muestra (solo si existe event)
   useEffect(() => {
-    if (!event) return
+    if (!event || !store) return
 
-    // ✅ Modo edición: se queda abierto fijo
     if (debug) {
       setOpen(true)
       setProgress(0)
       return
     }
 
-    const store = getStore()
-    const seen = store.getItem(storageKey)
+    let seen: string | null = null
+    try {
+      seen = store.getItem(storageKey)
+    } catch {
+      seen = null
+    }
 
     if (!seen) {
       setOpen(true)
       setProgress(0)
-      store.setItem(storageKey, "true")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event, debug])
+  }, [event, debug, store])
 
-  // 2) Progreso y cierre cuando se llena + delay
+  // 2) Timer/progreso (bajo costo). Si reduced motion, sin animación.
   useEffect(() => {
     if (!open) return
-
-    // ✅ En debug no corre el timer (se queda fijo)
     if (debug) return
 
-    const start = performance.now()
+    // limpia timers previos
+    if (timerRef.current) window.clearInterval(timerRef.current)
+    if (closeDelayRef.current) window.clearTimeout(closeDelayRef.current)
+    timerRef.current = null
+    closeDelayRef.current = null
 
-    const tick = (now: number) => {
-      const elapsed = now - start
+    const start = Date.now()
+
+    if (reducedMotion) {
+      // no animamos barra, solo cerramos al final
+      closeDelayRef.current = window.setTimeout(() => {
+        close()
+      }, durationMs + closeDelayMs)
+      return () => {
+        if (closeDelayRef.current) window.clearTimeout(closeDelayRef.current)
+        closeDelayRef.current = null
+      }
+    }
+
+    // actualiza cada 100ms (más que suficiente)
+    timerRef.current = window.setInterval(() => {
+      const elapsed = Date.now() - start
       const pct = Math.min(100, (elapsed / durationMs) * 100)
       setProgress(pct)
 
       if (pct >= 100) {
+        if (timerRef.current) window.clearInterval(timerRef.current)
+        timerRef.current = null
+
         closeDelayRef.current = window.setTimeout(() => {
-          setOpen(false)
+          close()
         }, closeDelayMs)
-        return
       }
-
-      rafRef.current = requestAnimationFrame(tick)
-    }
-
-    rafRef.current = requestAnimationFrame(tick)
+    }, 100)
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      if (timerRef.current) window.clearInterval(timerRef.current)
       if (closeDelayRef.current) window.clearTimeout(closeDelayRef.current)
-      rafRef.current = null
+      timerRef.current = null
       closeDelayRef.current = null
     }
-  }, [open, durationMs, closeDelayMs, debug])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, durationMs, closeDelayMs, debug, reducedMotion])
 
   // ✅ No renderizar si no es visible o no está abierto
   if (!open || !event || !visible) return null
@@ -116,6 +154,8 @@ export function FirstVisitNotice({
     <div className="fixed z-40 top-20 md:top-24 inset-x-3 sm:inset-x-4 md:left-auto md:right-4 md:w-[min(560px,calc(100vw-2rem))]">
       <div className="animate-in fade-in slide-in-from-top-2 duration-300">
         <Item
+          role="dialog"
+          aria-label={label}
           className="
             rounded-xl
             border border-[#A7C4A0]/35
@@ -167,6 +207,7 @@ export function FirstVisitNotice({
           <ItemActions className="flex items-center gap-2 self-start sm:self-center">
             <Button
               size="sm"
+              type="button"
               className="
                 rounded-full
                 bg-[#1F3D2B]
@@ -176,13 +217,17 @@ export function FirstVisitNotice({
                 transition
                 h-8 px-3
               "
-              onClick={onViewMore}
+              onClick={() => {
+                onViewMore?.()
+                close()
+              }}
             >
               Ver más
             </Button>
 
             <Button
               size="sm"
+              type="button"
               variant="ghost"
               className="
                 text-[#FAFDF4]/90
@@ -190,16 +235,16 @@ export function FirstVisitNotice({
                 hover:text-[#FFFCE6]
                 h-8 w-8 p-0
               "
-              onClick={() => setOpen(false)}
+              onClick={close}
               aria-label="Cerrar aviso"
             >
-              ✕
+              <X className="h-4 w-4" />
             </Button>
           </ItemActions>
 
           <ItemFooter className="mt-2">
             <Progress
-              value={debug ? 0 : progress}
+              value={debug || reducedMotion ? 0 : progress}
               className="
                 h-1.5
                 bg-[#1F3D2B]/55

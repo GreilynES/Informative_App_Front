@@ -7,11 +7,25 @@ import { useSubastaEvent } from "../events/hooks/useSubastaEvent"
 import { FirstVisitNotice } from "./components/FirstVisitNotice"
 
 import { PageState } from "@/shared/ui/PageState"
+import { useEffect, useState } from "react"
 
 export default function PrincipalPage() {
   const { data: principal, loading, error } = usePrincipalEdit()  
   const { subastaEvent } = useSubastaEvent()
-  const [showNotice, setShowNotice] = useState(true)
+  const [showVideo, setShowVideo] = useState(false)
+
+    useEffect(() => {
+    const isMobile = window.matchMedia("(max-width: 640px)").matches
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    setShowVideo(!isMobile && !reducedMotion)
+  }, [])
+
+ const poster =
+"https://res.cloudinary.com/dyigmavwq/video/upload/so_1,f_webp,q_auto,w_1920/v1771529238/vide5s_z8uetq.webp"
+  //"https://res.cloudinary.com/dyigmavwq/image/upload/so_1,f_webp,q_auto,w_1600/v1768109114/Screenshot_2026-01-10_232432_feoxzd.webp"
+
+const videoSrc =
+"https://res.cloudinary.com/dyigmavwq/video/upload/q_auto:best,br_3000k,w_1920,f_mp4,vc_h264,fl_progressive/v1771529238/vide5s_z8uetq.mp4"  const [showNotice, setShowNotice] = useState(true)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,16 +81,29 @@ export default function PrincipalPage() {
             </div>
           </div>
 
-          <video
-            className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
-            src="https://res.cloudinary.com/dyigmavwq/video/upload/v1768080154/Video_Project2_fguidi.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
+          <img
+            src={poster}
+            alt=""
             aria-hidden="true"
+            className="absolute inset-0 -z-20 h-full w-full object-cover"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
           />
+
+      {showVideo && (
+        <video
+          className="absolute inset-0 -z-20 h-full w-full object-cover pointer-events-none"
+          autoPlay
+          muted
+          playsInline
+          preload="metadata"
+          poster={poster}
+          aria-hidden="true"
+        >
+          <source src={videoSrc} type="video/mp4" />
+        </video>
+      )}
 
           <div className="absolute inset-0 -z-10" aria-hidden="true">
             <div className="absolute inset-0 bg-[#0B0B0B]/55" />
@@ -86,7 +113,7 @@ export default function PrincipalPage() {
 
           <main className="relative z-10">
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-24">
-              <section className="py-12 sm:py-16 lg:py-24">
+              <section className="py-12 sm:py-16 lg:py-16">
                 <div className="max-w-2xl">
                   <div className="text-[11px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-[#FAFDF4]/80 animate-in fade-in slide-in-from-left-4 duration-600 delay-100">
                     Eventos &amp; Subastas
