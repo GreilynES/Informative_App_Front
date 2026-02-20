@@ -98,6 +98,8 @@ export const DisponibilidadAreasSection = forwardRef<
     dias?: string
     horarios?: string
     areasInteres?: string
+    otraArea?: string
+    razonSocial?: string
   }>({})
 
   const [showErrors, setShowErrors] = useState(false)
@@ -111,6 +113,24 @@ export const DisponibilidadAreasSection = forwardRef<
   const areasInteresArraySchema =
     (orgShape.areasInteres as z.ZodOptional<any>).unwrap?.() ?? orgShape.areasInteres
 
+  // ✅ ya agregaste estos schemas: razonSocialItemSchema / razonesSocialesSchema
+  // Vamos a usarlos si en el schema de organizacion ya los estás usando,
+  // si no, igual funciona con el fallback actual.
+  const razonesSocialesArraySchema =
+    (orgShape.razonesSociales as z.ZodOptional<any>)?.unwrap?.() ?? orgShape.razonesSociales
+
+  // ✅ Validación específica para "Otro (especificar)"
+  // (lo hacemos local, independiente del schema principal, porque es un campo auxiliar)
+  const otraAreaSchema = useMemo(
+    () =>
+      z
+        .string()
+        .trim()
+        .min(3, 'Especifique el área (mínimo 3 caracteres)')
+        .max(60, 'Máximo 60 caracteres'),
+    []
+  )
+
   const buildDisponibilidadPayload = () => ({
     fechaInicio,
     fechaFin,
@@ -118,10 +138,13 @@ export const DisponibilidadAreasSection = forwardRef<
     horarios: horariosSeleccionados,
   })
 
+  // ✅ IMPORTANTE:
+  //  - NO filtramos por nombreArea (para que "Otro" vacío falle).
+  //  - Si se selecciona "Otro", nombreArea será otraArea.trim()
   const buildAreasPayload = () =>
-    areasSeleccionadas
-      .map((area) => ({ nombreArea: area === "Otro" ? otraArea : area }))
-      .filter((a) => a.nombreArea)
+    areasSeleccionadas.map((area) => ({
+      nombreArea: (area === "Otro" ? otraArea : area).trim(),
+    }))
 
   const getDisponibilidadErrors = (payload: {
     fechaInicio: string
@@ -146,21 +169,55 @@ export const DisponibilidadAreasSection = forwardRef<
 
   const getAreasErrors = (list: { nombreArea: string }[]) => {
     const res = (areasInteresArraySchema as z.ZodArray<any>).safeParse(list)
+
+    // ✅ Error específico para "Otro"
+    let otraAreaErr = ""
+    if (areasSeleccionadas.includes("Otro")) {
+      const r = otraAreaSchema.safeParse(otraArea)
+      otraAreaErr = r.success ? "" : r.error.issues?.[0]?.message || "Especifique el área"
+    }
+
     return {
-      areasInteres: res.success ? "" : res.error.issues[0]?.message || "Seleccione al menos un área de interés",
+      areasInteres: res.success
+        ? ""
+        : res.error.issues[0]?.message || "Seleccione al menos un área de interés",
+      otraArea: otraAreaErr,
+    }
+  }
+
+  const getRazonSocialErrors = (value: string) => {
+    if (tipoSolicitante !== "ORGANIZACION") return { razonSocial: "" }
+
+    const res = (razonesSocialesArraySchema as z.ZodArray<any>).safeParse([
+      { razonSocial: String(value ?? "").trim() },
+    ])
+
+    return {
+      razonSocial: res.success
+        ? ""
+        : res.error.issues?.[0]?.message || "La razón social es requerida",
     }
   }
 
   const isEmptyErrors = (e: typeof errors) =>
-    !e.fechaInicio && !e.fechaFin && !e.dias && !e.horarios && !e.areasInteres
+    !e.fechaInicio &&
+    !e.fechaFin &&
+    !e.dias &&
+    !e.horarios &&
+    !e.areasInteres &&
+    !e.otraArea &&
+    !e.razonSocial
 
   useImperativeHandle(ref, () => ({
     validateAndShowErrors: () => {
       const disp = buildDisponibilidadPayload()
       const areasPayload = buildAreasPayload()
+
       const e1 = getDisponibilidadErrors(disp)
       const e2 = getAreasErrors(areasPayload)
-      const merged = { ...e1, ...e2 }
+      const e3 = getRazonSocialErrors(razonSocial)
+
+      const merged = { ...e1, ...e2, ...e3 }
       setErrors(merged)
       setShowErrors(true)
       return isEmptyErrors(merged)
@@ -168,7 +225,11 @@ export const DisponibilidadAreasSection = forwardRef<
     isValid: () => {
       const disp = buildDisponibilidadPayload()
       const areasPayload = buildAreasPayload()
-      const merged = { ...getDisponibilidadErrors(disp), ...getAreasErrors(areasPayload) }
+      const merged = {
+        ...getDisponibilidadErrors(disp),
+        ...getAreasErrors(areasPayload),
+        ...getRazonSocialErrors(razonSocial),
+      }
       return isEmptyErrors(merged)
     },
     clearErrors: () => {
@@ -202,9 +263,11 @@ export const DisponibilidadAreasSection = forwardRef<
     if (tipoSolicitante === "ORGANIZACION" && formRef.current) {
       formRef.current.setFieldValue("organizacion.disponibilidades", [disponibilidad])
       formRef.current.setFieldValue("organizacion.areasInteres", areasPayload)
-      if (razonSocial.trim()) {
-        formRef.current.setFieldValue("organizacion.razonesSociales", [{ razonSocial }])
-      }
+
+      // ✅ Siempre seteamos razonesSociales (schema ahora lo exige)
+      formRef.current.setFieldValue("organizacion.razonesSociales", [
+        { razonSocial: razonSocial.trim() },
+      ])
     } else if (tipoSolicitante === "INDIVIDUAL" && handleRef.current) {
       handleRef.current("disponibilidades", [disponibilidad])
       handleRef.current("areasInteres", areasPayload)
@@ -213,14 +276,18 @@ export const DisponibilidadAreasSection = forwardRef<
     if (showErrors) {
       const e1 = getDisponibilidadErrors(disponibilidad)
       const e2 = getAreasErrors(areasPayload)
+      const e3 = getRazonSocialErrors(razonSocial)
+
       setErrors((prev) => {
-        const next = { ...e1, ...e2 }
+        const next = { ...e1, ...e2, ...e3 }
         const same =
           prev.fechaInicio === next.fechaInicio &&
           prev.fechaFin === next.fechaFin &&
           prev.dias === next.dias &&
           prev.horarios === next.horarios &&
-          prev.areasInteres === next.areasInteres
+          prev.areasInteres === next.areasInteres &&
+          prev.otraArea === next.otraArea &&
+          prev.razonSocial === next.razonSocial
         return same ? prev : next
       })
     }
@@ -241,7 +308,9 @@ export const DisponibilidadAreasSection = forwardRef<
   }
 
   const handleHorarioChange = (horario: string) => {
-    setHorariosSeleccionados((prev) => (prev.includes(horario) ? prev.filter((h) => h !== horario) : [...prev, horario]))
+    setHorariosSeleccionados((prev) =>
+      prev.includes(horario) ? prev.filter((h) => h !== horario) : [...prev, horario]
+    )
   }
 
   const handleAreaChange = (area: string) => {
@@ -295,6 +364,7 @@ export const DisponibilidadAreasSection = forwardRef<
             <CalendarIcon className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-lg font-semibold text-[#708C3E]">Disponibilidad</h3>
+          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios)</p>
         </div>
 
         <div className="p-6 space-y-4">
@@ -302,7 +372,7 @@ export const DisponibilidadAreasSection = forwardRef<
             {/* Fecha inicio */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Periodo de disponibilidad de inicio *
+                Periodo de disponibilidad de inicio
               </label>
 
               <Popover>
@@ -357,7 +427,7 @@ export const DisponibilidadAreasSection = forwardRef<
             {/* Fecha fin */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Periodo de disponibilidad fin *
+                Periodo de disponibilidad fin
               </label>
 
               <Popover>
@@ -474,10 +544,8 @@ export const DisponibilidadAreasSection = forwardRef<
           <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
             <Target className="w-5 h-5 text-white" />
           </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[#708C3E]">Áreas de interés</h3>
-            <p className="text-sm text-gray-500">Selección múltiple (mínimo 1)</p>
-          </div>
+          <h3 className="text-lg font-semibold text-[#708C3E]">Áreas de interés</h3>
+          <p className="mt-1 text-xs text-gray-500">Selección múltiple (mínimo 1)</p>
         </div>
 
         <div className="p-6 space-y-3">
@@ -514,16 +582,23 @@ export const DisponibilidadAreasSection = forwardRef<
               <Input
                 type="text"
                 value={otraArea}
+                maxLength={80}
                 onChange={(e) => setOtraArea(e.target.value)}
-                placeholder="Especifique el área de interés"
-                className={`${inputBase} bg-white`}
+                className={`${inputBase} bg-white ${showErrors && errors.otraArea ? "border-[#9c1414]" : ""}`}
               />
+              {showErrors && errors.otraArea && (
+                <p className="text-sm text-[#9c1414] mt-1">{errors.otraArea}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">Especifique el área de interés</p>
             </div>
           )}
 
           {showErrors && errors.areasInteres && (
             <p className="text-sm text-[#9c1414] mt-1">{errors.areasInteres}</p>
           )}
+          <p className="mt-1 text-xs text-gray-500">
+            Seleccione áreas de la organización que sean de su interés o agregue una nueva
+          </p>
         </div>
       </div>
 
@@ -535,20 +610,29 @@ export const DisponibilidadAreasSection = forwardRef<
               <Heart className="w-5 h-5 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-[#708C3E]">Razón Social / Objetivos</h3>
+            <p className="mt-1 text-xs text-gray-500">(Campo obligatorio)</p>
           </div>
 
           <div className="p-6 space-y-2">
             <label className="block text-sm font-medium text-gray-700">
-              Describa los objetivos o razón social de su organización *
+              Describa los objetivos o razón social de su organización
             </label>
 
             <Textarea
               value={razonSocial}
               onChange={(e) => setRazonSocial(e.target.value)}
-              rows={4}
-              placeholder="Ej: Promover la conservación del medio ambiente mediante educación y participación comunitaria..."
-              className={`${inputBase} resize-none bg-white`}
+              rows={3}
+              maxLength={255}
+              className={`${inputBase} resize-none bg-white ${showErrors && errors.razonSocial ? "border-[#9c1414]" : ""}`}
             />
+
+            {showErrors && errors.razonSocial && (
+              <p className="text-sm text-[#9c1414] mt-1">{errors.razonSocial}</p>
+            )}
+
+            <p className="mt-1 text-xs text-gray-500">
+              Ejemplo: Promover la conservación del medio ambiente mediante educación y participación comunitaria...
+            </p>
           </div>
         </div>
       )}
