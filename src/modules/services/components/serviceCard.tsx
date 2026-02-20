@@ -41,6 +41,7 @@ export function ServicesCard({ service, openModal }: any) {
         group
         relative
         flex
+        h-full
         flex-col
         overflow-hidden
         rounded-3xl
@@ -53,9 +54,6 @@ export function ServicesCard({ service, openModal }: any) {
         ease-out
         hover:-translate-y-2
         hover:shadow-lg
-
-        /* ✅ ALTURA FIJA + RESPONSIVE (más bajita) */
-        h-[500px] sm:h-[520px] lg:h-[540px]
       "
     >
       {/* Línea superior reactiva */}
@@ -75,8 +73,7 @@ export function ServicesCard({ service, openModal }: any) {
         "
       />
 
-      {/* ✅ Mantiene layout fijo y empuja imagen al fondo */}
-      <div className="flex flex-col p-8 h-full">
+      <div className="flex h-full flex-col p-8">
         {/* Icono */}
         <div
           className="
@@ -102,8 +99,8 @@ export function ServicesCard({ service, openModal }: any) {
           {service.title}
         </h3>
 
-        {/* ✅ Descripción con límite para que no cambie el alto */}
-        <p className="mt-4 text-base leading-relaxed text-gray-600 whitespace-pre-wrap line-clamp-4 sm:line-clamp-5">
+        {/* ✅ Descripción SIN clamp (ya no se corta) */}
+        <p className="mt-4 text-base leading-relaxed text-gray-600 whitespace-pre-wrap">
           {service.cardDescription}
         </p>
 

@@ -4,8 +4,7 @@ import { contact, quickLinks, schedule } from "./FooterCard"
 export default function FooterPage() {
   return (
     <footer className="bg-gradient-to-br from-[#2D2D2D] via-[#1C1C1C] to-black text-white">
-      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" />
-
+<div className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none" />
       <div className="relative z-10">
         <div
           id="Footer"
@@ -36,7 +35,12 @@ export default function FooterPage() {
 
             <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-200">
               <Mail className="w-4 h-4 text-[#6D8B37]" />
-              <span>{contact.email}</span>
+              <a
+                href={`mailto:${contact.email}?subject=Consulta desde el sitio web CGH`}                
+                className="hover:text-[#6D8B37] transition-colors"
+              >
+                {contact.email}
+              </a>
             </div>
 
             <a

@@ -39,7 +39,7 @@ export default function FormsPage() {
       }}
     >
       {/* Overlay */}
-      <div aria-hidden="true" className="absolute inset-0">
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-black/10" />
         <div className="absolute inset-0 bg-[radial-gradient(900px_520px_at_50%_38%,rgba(0,0,0,0.15),rgba(0,0,0,0.55))]" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-black/45" />

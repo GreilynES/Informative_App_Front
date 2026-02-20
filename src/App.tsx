@@ -11,7 +11,9 @@ export default function App() {
         <Outlet />
       </main>
       <FloatingWhatsapp />
-      <Footer />
+      <div id="Footer">
+        <Footer />
+      </div>
     </div>
   )
 }

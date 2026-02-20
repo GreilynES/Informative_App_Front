@@ -282,7 +282,7 @@ export default function ServicesPage() {
               </div>
 
               {isModalOpen && (
-                <ServicesModal content={modalContent} onClose={closeModal} />
+                <ServicesModal content={modalContent} onClose={closeModal}/>
               )}
             </>
           )}

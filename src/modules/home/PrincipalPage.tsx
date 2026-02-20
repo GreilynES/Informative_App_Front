@@ -105,16 +105,40 @@ export default function PrincipalPage({ noticeVisible = true }: Props) {
                   </p>
 
                   <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 animate-in fade-in slide-in-from-left-5 duration-700 delay-400">
-                    <Button asChild size="lg" className="w-full sm:w-auto rounded-xl bg-[#1B2A10] text-[#FAFDF4] border border-[#A7C4A0]/25 shadow-md shadow-[#0B0B0B]/35 transition-all duration-200 hover:bg-[#2C3F18] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#0B0B0B]/45 active:translate-y-0 active:shadow-lg focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30">
-                      <a href="#Footer">Contáctanos</a>
-                    </Button>
+  <Button
+    asChild
+    size="lg"
+    className="w-full sm:w-auto rounded-xl bg-[#1B2A10] text-[#FAFDF4] border border-[#A7C4A0]/25 shadow-md shadow-[#0B0B0B]/35 transition-all duration-200 hover:bg-[#2C3F18] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#0B0B0B]/45 active:translate-y-0 active:shadow-lg focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30"
+  >
+    <a
+      href="#Footer"
+      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault()
+        document.getElementById("Footer")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }}
+    >
+      Contáctanos
+    </a>
+  </Button>
 
-                    <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-xl border border-[#A7C4A0]/45 bg-[#F2ED9A]/15 text-[#FAFDF4] backdrop-blur-md shadow-md shadow-[#0B0B0B]/20 transition-all duration-200 hover:bg-[#FAF7C6]/55 hover:border-[#D6E5C8]/45 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0B0B0B]/30 active:translate-y-0 active:shadow-md focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30">
-                      <a href="#AboutUsPage" className="inline-flex items-center gap-2">
-                        Conocer más <ChevronRight className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
+  <Button
+    asChild
+    variant="outline"
+    size="lg"
+    className="w-full sm:w-auto rounded-xl border border-[#A7C4A0]/45 bg-[#F2ED9A]/15 text-[#FAFDF4] backdrop-blur-md shadow-md shadow-[#0B0B0B]/20 transition-all duration-200 hover:bg-[#FAF7C6]/55 hover:border-[#D6E5C8]/45 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#0B0B0B]/30 active:translate-y-0 active:shadow-md focus-visible:ring-2 focus-visible:ring-[#A7C4A0]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0B]/30"
+  >
+    <a
+      href="#AboutUsPage"
+      className="inline-flex items-center gap-2"
+      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault()
+        document.getElementById("AboutUsPage")?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }}
+    >
+      Conocer más <ChevronRight className="h-4 w-4" />
+    </a>
+  </Button>
+</div>
 
                   <div className="mt-6 flex items-center gap-3 text-xs text-[#FAFDF4]/70 animate-in fade-in slide-in-from-left-4 duration-700 delay-500">
                     <span className="h-px w-10 bg-[#FAFDF4]/35" />

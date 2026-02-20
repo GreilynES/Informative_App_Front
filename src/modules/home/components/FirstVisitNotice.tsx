@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { CalendarDays, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -40,6 +41,7 @@ export function FirstVisitNotice({
 }: FirstVisitNoticeProps) {
   const [open, setOpen] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [mounted, setMounted] = useState(false)
 
   const timerRef = useRef<number | null>(null)
   const closeDelayRef = useRef<number | null>(null)
@@ -68,6 +70,11 @@ export function FirstVisitNotice({
     setOpen(false)
     markSeen()
   }
+
+  // Garantiza que el portal solo se monta en el cliente
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!event || !store) return
@@ -146,7 +153,7 @@ export function FirstVisitNotice({
     }
   }, [open, durationMs, closeDelayMs, debug, reducedMotion, store, startKey])
 
-  if (!open || !event) return null
+  if (!mounted || !open || !event) return null
 
   const dateText = formatDateToWords(event.date, {
     locale: "es-CR",
@@ -154,10 +161,10 @@ export function FirstVisitNotice({
     commaBeforeYear: false,
   })
 
-  return (
+  return createPortal(
     <div
       className={[
-        "fixed z-40 top-20 md:top-24 inset-x-3 sm:inset-x-4 md:left-auto md:right-4 md:w-[min(560px,calc(100vw-2rem))]",
+        "fixed z-[9999] top-20 md:top-24 inset-x-3 sm:inset-x-4 md:left-auto md:right-4 md:w-[min(560px,calc(100vw-2rem))]",
         visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
         "transition-opacity duration-200",
       ].join(" ")}
@@ -254,6 +261,7 @@ export function FirstVisitNotice({
           </ItemFooter>
         </Item>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { useCedulaLookup } from "../../shared/hooks/IdApiHook"
 import { Stepper } from "../volunteersForm/components/Stepper"
 import { useVolunteersForm } from "../volunteersForm/hooks/useVolunteersForm"
@@ -15,6 +15,7 @@ import { PageState } from "@/shared/ui/PageState"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
+import { ScrollReveal } from "@/shared/animations/Scroll"
 
 export default function VolunteersPage() {
   const {
@@ -47,7 +48,7 @@ export default function VolunteersPage() {
   })
 
   const goBackToForms = () => {
-  navigate({ to: "/", hash: "form" })
+  navigate({ to: "/", hash: "FormPage" })
 
   // Por si tu home no hace scroll automático con hash:
   setTimeout(() => {
@@ -68,6 +69,10 @@ export default function VolunteersPage() {
     e.preventDefault()
     console.log("Form submitted:", formData)
   }
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }, [])
 
   const formToUse = tipoSolicitante === "ORGANIZACION" ? formOrganizacion : undefined
 
@@ -146,8 +151,26 @@ export default function VolunteersPage() {
   const isEmpty = !loading && !error && !data
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
+    <div className="page-transition min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
       
+      <div className="fixed left-4 top-20 sm:top-24 z-50">
+        <Button
+          type="button"
+          onClick={goBackToForms}
+          aria-label="Volver a formularios"
+          className="
+            h-11 w-11 rounded-full p-0
+            bg-[#6D8B37] text-white
+            shadow-md
+            hover:bg-[#2F5F0B]
+            active:scale-95
+            transition-all duration-300
+          "
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+      </div>
+
       <PageState
         isLoading={loading}
         isEmpty={isEmpty}
@@ -226,30 +249,15 @@ export default function VolunteersPage() {
               description={data?.headerDescription ?? ""}
             />
 
-              {/* Botón volver */}
-              <div className="absolute left-4 top-20 sm:top-24 z-40">
-                <Button
-                  type="button"
-                  onClick={goBackToForms}
-                  aria-label="Volver a formularios"
-                  className="
-                    h-11 w-11 rounded-full p-0
-                    bg-[#6D8B37] text-white
-                    shadow-md
-                    hover:bg-[#2F5F0B]
-                    active:scale-95
-                    transition-all duration-300
-                  "
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-              </div>
-
+             
 
             <div className="max-w-6xl mx-auto">
+             <ScrollReveal direction="up" delay={0} duration={700}>
               <BenefitsSection items={benefits} />
+            </ScrollReveal>
 
               <section id="requisitos">
+                <ScrollReveal direction="up" delay={80} duration={700}>
                 <RequirementsSection
                   requirements={requirements}
                   showForm={showForm}
@@ -259,6 +267,7 @@ export default function VolunteersPage() {
                   }}
                   setTipoSolicitante={setTipoSolicitante}
                 />
+                 </ScrollReveal>
               </section>
             </div>
 

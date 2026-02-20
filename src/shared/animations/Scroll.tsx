@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 // Hook de Intersection Observer integrado
 function useIntersectionObserver({
@@ -27,28 +27,32 @@ function useIntersectionObserver({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const ok = entry.isIntersecting
+      const ok = entry.isIntersecting
 
-        if (ok && !hasTriggered) {
-          setIsIntersecting(true)
-          if (triggerOnce) setHasTriggered(true)
-        } else if (!triggerOnce) {
-          setIsIntersecting(ok)
-        }
-      },
-      { threshold, rootMargin }
+      if (ok) {
+        setIsIntersecting(true)
+        if (triggerOnce) setHasTriggered(true)
+      } else if (!triggerOnce) {
+        setIsIntersecting(false)
+      }
+    }
     )
 
     observer.observe(el)
 
     // ✅ Cleanup correcto
     return () => observer.disconnect()
-  }, [threshold, rootMargin, triggerOnce, hasTriggered])
+  }, [threshold, rootMargin, triggerOnce])
 
   return {
     ref,
     isIntersecting: triggerOnce ? hasTriggered || isIntersecting : isIntersecting,
   }
+}
+
+function isMobileScreen() {
+  if (typeof window === "undefined") return false
+  return window.matchMedia?.("(max-width: 640px)")?.matches ?? false
 }
 
 function prefersReducedMotion() {
@@ -82,12 +86,13 @@ export function ScrollReveal({
   failsafeMs,
 }: ScrollRevealProps) {
   const reduced = prefersReducedMotion()
+  const mobile = useMemo(() => isMobileScreen(), [])
 
   const { ref, isIntersecting } = useIntersectionObserver({
-    threshold: 0.2,
-    rootMargin: "0px 0px -10% 0px",
-    triggerOnce: true,
-  })
+  threshold: mobile ? 0.08 : 0.2,
+  rootMargin: mobile ? "0px 0px 0px 0px" : "0px 0px -10% 0px",
+  triggerOnce: true,
+})
 
   // ✅ Si está disabled o reduced motion, se muestra sin animación
   const activeBase = disabled || reduced ? true : isIntersecting
@@ -105,10 +110,14 @@ export function ScrollReveal({
 
   const easing = "cubic-bezier(0.28, 0.11, 0.32, 1)"
 
+  const effectiveDelay = mobile ? 0 : delay
+const effectiveDuration = mobile ? Math.min(duration, 650) : duration
+const effectiveDistance = mobile ? Math.min(distance, 24) : distance
+
   const initialTransform =
-    direction === "left"
-      ? `translate3d(-${distance}px, 0, 0)`
-      : `translate3d(0, ${distance}px, 0)`
+  direction === "left"
+    ? `translate3d(-${effectiveDistance}px, 0, 0)`
+    : `translate3d(0, ${effectiveDistance}px, 0)`
 
   return (
     <div
@@ -117,13 +126,12 @@ export function ScrollReveal({
       style={{
         opacity: active ? 1 : 0,
         transform: active ? "translate3d(0, 0, 0)" : initialTransform,
-
+        pointerEvents: active ? "auto" : "none",
         transitionProperty: disabled || reduced ? "none" : "opacity, transform",
-        transitionDuration: disabled || reduced ? "0ms" : `${duration}ms`,
+        transitionDuration: disabled || reduced ? "0ms" : `${effectiveDuration}ms`,        
         transitionTimingFunction: easing,
-        transitionDelay: disabled || reduced ? "0ms" : `${delay}ms`,
-
-        willChange: "opacity, transform",
+        transitionDelay: disabled || reduced ? "0ms" : `${effectiveDelay}ms`,
+        willChange: active ? "auto" : "opacity, transform",
       }}
     >
       {children}

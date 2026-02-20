@@ -8,6 +8,7 @@ import FAQPage from '../modules/faq/FAQPage'
 import { useAutoRefreshSection } from '../shared/hooks/useAutoRefreshSection'
 import { useSearch } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
+import { Seo } from '@/shared/seo/Seo'
 
 export default function HomePage() {
   const search = useSearch({ from: '/' });
@@ -58,13 +59,20 @@ export default function HomePage() {
 
   return (
     <>
+      <Seo
+        title="Cámara de Ganaderos de Hojancha | Inicio"
+        description="Información, eventos, servicios y gestión de la Cámara de Ganaderos de Hojancha."
+        canonical="https://TU-DOMINIO.com/"
+        image="https://TU-DOMINIO.com/og/home.jpg"
+      />
+
        <div
         id="PrincipalPage"
         ref={principalRef}
         style={{
           opacity: showPrincipal ? 1 : 0,
           transition: "opacity 1000ms cubic-bezier(0.28, 0.11, 0.32, 1)",
-          willChange: "opacity",
+          willChange: showPrincipal ? "auto" : "opacity",
         }}
       >
         <PrincipalPage noticeVisible={isPrincipalInView} />

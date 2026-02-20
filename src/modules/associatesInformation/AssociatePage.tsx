@@ -1,7 +1,7 @@
 import { HeaderSection } from "./components/HeaderSection"
 import { RequirementsSection } from "./components/RequerimentsSection"
 import { Stepper } from "../associatesForm/components/Stepper"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAssociatesPage } from "./hooks/useAssociatesPage"
 import { BenefitsSection } from "./components/BenefitsSection"
 import { Steps } from "../associatesForm/components/Steps"
@@ -13,6 +13,7 @@ import { PageState } from "@/shared/ui/PageState"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
+import { ScrollReveal } from "@/shared/animations/Scroll"
 
 export default function AssociatesPage() {
   const navigate = useNavigate()
@@ -21,6 +22,10 @@ export default function AssociatesPage() {
 
   const [showForm, setShowForm] = useState(false)
   const [step, setStep] = useState(1)
+  
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }, [])
 
   const goBackToForms = () => {
   navigate({ to: "/", hash: "form" })
@@ -33,7 +38,6 @@ export default function AssociatesPage() {
     })
   }, 50)
 }
-
 
   const { form, mutation } = useAssociateApply(() => {
     setStep(1)
@@ -57,7 +61,26 @@ export default function AssociatesPage() {
   const isEmpty = !loading && !error && !data
 
   return (
-    <div className="min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
+  <div className="page-transition min-h-[calc(100vh-56px)] bg-[#FAF9F5] pt-14 relative">
+
+    <div className="fixed left-4 top-20 sm:top-24 z-50">
+            <Button
+              type="button"
+              onClick={goBackToForms}
+              aria-label="Volver a formularios"
+              className="
+                h-11 w-11 rounded-full p-0
+                bg-[#6D8B37] text-white
+                shadow-md
+                hover:bg-[#2F5F0B]
+                active:scale-95
+                transition-all duration-300
+              "
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          </div>
+
       <PageState
         isLoading={loading}
         isEmpty={isEmpty}
@@ -126,37 +149,23 @@ export default function AssociatesPage() {
           </div>
         ) : (
           <>
-            <HeaderSection
-              title={data?.headerTitle ?? ""}
-              description={data?.headerDescription ?? ""}
+           <HeaderSection
+             title={data?.headerTitle ?? ""}
+             description={data?.headerDescription ?? ""}
             />
-            {/* Botón volver */}
-              <div className="absolute left-4 top-20 sm:top-24 z-40">
-                <Button
-                  type="button"
-                  onClick={goBackToForms}
-                  aria-label="Volver a formularios"
-                  className="
-                    h-11 w-11 rounded-full p-0
-                    bg-[#6D8B37] text-white
-                    shadow-md
-                    hover:bg-[#2F5F0B]
-                    active:scale-95
-                    transition-all duration-300
-                  "
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-              </div>
 
             <div className="max-w-6xl mx-auto">
-              <BenefitsSection items={benefits} />
+              <ScrollReveal direction="up" delay={0} duration={700}>
+                           <BenefitsSection items={benefits} />
+                         </ScrollReveal>
 
+          <ScrollReveal direction="up" delay={80} duration={700}>
               <RequirementsSection
                 requirements={requirements}
                 showForm={showForm}
                 setShowForm={setShowForm}
               />
+              </ScrollReveal>
             </div>
 
             {showForm && (
