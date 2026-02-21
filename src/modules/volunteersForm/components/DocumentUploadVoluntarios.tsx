@@ -34,7 +34,7 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
         <div className="relative">
           <input
             type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept=".pdf"
             onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
             className="hidden"
             id={id}
@@ -90,7 +90,7 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
   const labels =
     tipo === "INDIVIDUAL"
       ? {
-          cedula: "Cédula (archivo)",
+          cedula: "Copia de Cédula/Pasaporte",
           cv: "Currículum Vitae (CV)",
           carta: "Carta de recomendación",
         }
@@ -118,11 +118,16 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
       </div>
 
       {tipo === "INDIVIDUAL" ? (
+        <>
         <div className="grid md:grid-cols-2 gap-6">
           {renderFileInput("ind-cedula", labels.cedula, "cedula", true)}
           {renderFileInput("ind-cv", labels.cv, "cv", true)}
-          {renderFileInput("ind-carta", labels.carta, "carta", true)}
         </div>
+        
+          <div className="grid grid-cols-1">
+          {renderFileInput("ind-carta", labels.carta, "carta", true)}
+          </div>
+        </>
       ) : (
         <>
           <div className="grid md:grid-cols-2 gap-6">

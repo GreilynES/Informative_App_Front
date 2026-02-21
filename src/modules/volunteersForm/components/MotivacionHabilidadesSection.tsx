@@ -14,7 +14,7 @@ export type MotivacionHabilidadesSectionHandle = {
   clearErrors: () => void
 }
 
-const MAX = 150
+const MAX = 255
 
 export const MotivacionHabilidadesSection = forwardRef<
   MotivacionHabilidadesSectionHandle,
@@ -94,8 +94,6 @@ export const MotivacionHabilidadesSection = forwardRef<
     "border-[#DCD6C9] bg-white shadow-sm resize-none " +
     "focus-visible:ring-2 focus-visible:ring-[#708C3E]/30 focus-visible:ring-offset-0"
 
-  const counterClass = (len: number) => (len >= MAX ? "text-[#9c1414]" : "text-gray-400")
-
   return (
     <div className="space-y-6">
       {/* ========== MOTIVACIÓN ========== */}
@@ -117,7 +115,6 @@ export const MotivacionHabilidadesSection = forwardRef<
             onChange={(e) => handleInputChange("motivation", e.target.value)}
             rows={5}
             maxLength={MAX}
-            placeholder="Comparte tus razones para querer ser parte de nuestro equipo de voluntarios..."
             className={[
               textareaBase,
               (showErrors && errors.motivation) || motivationLen >= MAX
@@ -130,13 +127,8 @@ export const MotivacionHabilidadesSection = forwardRef<
           {showErrors && errors.motivation && (
             <p className="text-sm text-[#9c1414] mt-1">{errors.motivation}</p>
           )}
+          <p className="text-xs text-gray-500">Comparte tus razones para querer ser parte de nuestro equipo de voluntarios...</p>
 
-          <div className="mt-1 flex justify-end">
-            <span className={`text-xs ${counterClass(motivationLen)}`}>
-              {motivationLen}/{MAX}
-              {motivationLen >= MAX ? " — Llegaste al máximo (150)" : ""}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -159,7 +151,6 @@ export const MotivacionHabilidadesSection = forwardRef<
             onChange={(e) => handleInputChange("volunteeringType", e.target.value)}
             rows={5}
             maxLength={MAX}
-            placeholder="Ej: Trabajo en equipo, comunicación, agricultura sostenible, manejo de redes sociales..."
             className={[
               textareaBase,
               (showErrors && errors.volunteeringType) || volunteeringLen >= MAX
@@ -171,13 +162,7 @@ export const MotivacionHabilidadesSection = forwardRef<
           {showErrors && errors.volunteeringType && (
             <p className="text-sm text-[#9c1414] mt-1">{errors.volunteeringType}</p>
           )}
-
-          <div className="mt-1 flex justify-end">
-            <span className={`text-xs ${counterClass(volunteeringLen)}`}>
-              {volunteeringLen}/{MAX}
-              {volunteeringLen >= MAX ? " — Llegaste al máximo (150)" : ""}
-            </span>
-          </div>
+          <p className="text-xs text-gray-500">Cuéntanos sobre tus habilidades, experiencias o conocimientos que podrían ser útiles para nuestras actividades de voluntariado...</p>
         </div>
       </div>
 
@@ -201,19 +186,12 @@ export const MotivacionHabilidadesSection = forwardRef<
             onChange={(e) => handleInputChange("previousExperience", e.target.value)}
             rows={5}
             maxLength={MAX}
-            placeholder="Si tienes experiencia previa como voluntario/a, cuéntanos sobre ella..."
             className={[
               textareaBase,
               experienceLen >= MAX ? "border-[#9c1414]" : "border-[#DCD6C9]",
             ].join(" ")}
           />
-
-          <div className="mt-1 flex justify-end">
-            <span className={`text-xs ${counterClass(experienceLen)}`}>
-              {experienceLen}/{MAX}
-              {experienceLen >= MAX ? " — Llegaste al máximo (150)" : ""}
-            </span>
-          </div>
+          <p className="text-xs text-gray-500">Comparte cualquier experiencia previa que hayas tenido como voluntario/a, ya sea en nuestra organización o en otras...</p>
         </div>
       </div>
     </div>

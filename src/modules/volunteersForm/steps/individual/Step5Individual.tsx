@@ -121,7 +121,7 @@ export function Step5Individual(props: {
             {files?.cedula ? (
               <span className="text-green-700">✓ {files.cedula.name}</span>
             ) : (
-              <span className="text-red-600">✗ No adjuntado</span>
+              <span className="text-[#9c1414]">✗ No adjuntado</span>
             )}
           </p>
 
@@ -130,7 +130,7 @@ export function Step5Individual(props: {
             {files?.cv ? (
               <span className="text-green-700">✓ {files.cv.name}</span>
             ) : (
-              <span className="text-red-600">✗ No adjuntado</span>
+              <span className="text-[#9c1414]">✗ No adjuntado</span>
             )}
           </p>
 
@@ -139,7 +139,7 @@ export function Step5Individual(props: {
             {files?.carta ? (
               <span className="text-green-700">✓ {files.carta.name}</span>
             ) : (
-              <span className="text-red-600">✗ No adjuntado</span>
+              <span className="text-[#9c1414]">✗ No adjuntado</span>
             )}
           </p>
         </div>
