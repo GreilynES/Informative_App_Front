@@ -67,8 +67,7 @@ export function useHatoForm(idFinca: number, onSuccess?: () => void) {
     onSuccess: () => {
       onSuccess?.();
     },
-    onError: (error: any) => {
-      console.error('[useHatoForm] Error:', error?.message || error);
+    onError: (_error: any) => {
     },
   });
 

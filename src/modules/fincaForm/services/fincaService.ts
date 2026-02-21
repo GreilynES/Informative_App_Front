@@ -42,7 +42,6 @@ export const fincaService = {
           geo.caserio === caserio
       ) || null;
     } catch (error) {
-      console.error("[FincaService] Error al buscar geografía:", error);
       return null;
     }
   },
@@ -56,11 +55,9 @@ export const fincaService = {
     );
 
     if (existing) {
-      console.log("[FincaService] Geografía ya existe:", existing.idGeografia);
       return existing.idGeografia;
     }
 
-    console.log("[FincaService] Creando nueva geografía...");
     const newGeografia = await this.createGeografia(data);
     return newGeografia.idGeografia;
   },
@@ -90,11 +87,9 @@ export const fincaService = {
     const existing = await this.findPropietarioByCedula(data.persona.cedula);
 
     if (existing) {
-      console.log("[FincaService] Propietario ya existe:", existing.idPropietario);
       return existing.idPropietario;
     }
 
-    console.log("[FincaService] Creando nuevo propietario...");
     const newPropietario = await this.createPropietario(data);
     return newPropietario.idPropietario;
   },

@@ -101,7 +101,6 @@ export function StepPersonalInformation({
 
       // 2) LOOKUP (DB primero, si no → TSE)
       const result = await lookup(cedula)
-      console.log("[lookup result]", result)
 
       if (result) {
         const nameVal = result.firstname || ""

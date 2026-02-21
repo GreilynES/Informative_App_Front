@@ -22,7 +22,6 @@ export function useServices() {
 
   useEffect(() => {
     const handler = (payload: ServicePayload) => {
-      console.log('🔥 service:updated recibido:', payload)
       
       const currentData = queryClient.getQueryData<Service[]>(queryKeys.services) || []
 

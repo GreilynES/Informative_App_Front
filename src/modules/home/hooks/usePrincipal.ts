@@ -37,7 +37,6 @@ export function usePrincipalEdit() {
 
   useEffect(() => {
     const handler = (payload: PrincipalRT) => {
-      console.log('🔥 principal:updated recibido:', payload)
       
       if (payload?.data) {
         queryClient.setQueryData(queryKeys.principal, payload.data)

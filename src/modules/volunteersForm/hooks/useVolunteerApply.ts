@@ -81,7 +81,6 @@ function mapToSolicitudPayload(values: any): CreateSolicitudVoluntarioDto {
     }
   }
 
-  console.log("[Hook Org] Payload final limpio:", JSON.stringify(payload, null, 2));
   return payload;
 }
 
@@ -94,7 +93,6 @@ export function useVolunteerApply(onSuccess?: () => void) {
       values: any;
       files?: { cv?: File; cedula?: File; carta?: File };
     }) => {
-      console.log("[Hook Org] Iniciando envío de solicitud...");
 
       const payload = mapToSolicitudPayload(values);
       const response = await createSolicitudVoluntario(payload);
@@ -107,9 +105,7 @@ export function useVolunteerApply(onSuccess?: () => void) {
       if (files && (files.cv || files.cedula || files.carta)) {
         try {
           await uploadVolunteerDocuments(solicitudId, files);
-          console.log("[Hook Org] ✅ Documentos subidos");
         } catch (uploadError) {
-          console.error("[Hook Org] ⚠️ Error al subir documentos:", uploadError);
           // No bloquea el flujo
         }
       }
@@ -117,12 +113,8 @@ export function useVolunteerApply(onSuccess?: () => void) {
       return response;
     },
     onSuccess: () => onSuccess?.(),
-    onError: (error: any) => {
-      console.error("[Hook Org] ❌ Error:", {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-      });
+    onError: (_error: any) => {
+
     },
   });
 

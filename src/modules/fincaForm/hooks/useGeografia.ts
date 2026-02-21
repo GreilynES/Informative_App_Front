@@ -30,7 +30,6 @@ export function useGeografia({ form }: UseGeografiaProps) {
         const data = await geografiaService.getProvincias();
         setProvincias(data);
       } catch (error) {
-        console.error('Error al cargar provincias:', error);
       } finally {
         setLoadingProvincias(false);
       }
@@ -67,7 +66,6 @@ export function useGeografia({ form }: UseGeografiaProps) {
       const data = await geografiaService.getCantones(provinciaId);
       setCantones(data);
     } catch (error) {
-      console.error('Error al cargar cantones:', error);
     } finally {
       setLoadingCantones(false);
     }
@@ -99,7 +97,6 @@ export function useGeografia({ form }: UseGeografiaProps) {
       const data = await geografiaService.getDistritos(selectedProvinciaId, cantonId);
       setDistritos(data);
     } catch (error) {
-      console.error('Error al cargar distritos:', error);
     } finally {
       setLoadingDistritos(false);
     }

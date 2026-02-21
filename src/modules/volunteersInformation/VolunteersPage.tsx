@@ -42,7 +42,6 @@ export default function VolunteersPage() {
     form: formOrganizacion,
     submitWithFiles: submitOrganizacion,
   } = useVolunteerApply(() => {
-    console.log(" Solicitud de organización enviada con éxito")
     nextStep()
   })
 
@@ -60,13 +59,11 @@ export default function VolunteersPage() {
 
   const { submitIndividual, isLoading: isSubmittingInd } =
     useVolunteerIndividual(() => {
-      console.log(" Solicitud individual enviada con éxito")
       nextStep()
     })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
   }
 
   const formToUse = tipoSolicitante === "ORGANIZACION" ? formOrganizacion : undefined
@@ -74,7 +71,6 @@ export default function VolunteersPage() {
   const handleSubmitIndividual =
     tipoSolicitante === "INDIVIDUAL"
       ? async (data: any) => {
-          console.log("[Page] Enviando individual con files:", files)
           await submitIndividual({
             formData: data,
             files: {
@@ -90,8 +86,6 @@ export default function VolunteersPage() {
     tipoSolicitante === "ORGANIZACION"
       ? async () => {
           const values = formOrganizacion.state.values
-          console.log("[Page] Enviando organización con files:", files)
-          console.log("[Page] Values:", values)
 
           try {
             await submitOrganizacion({
@@ -103,7 +97,6 @@ export default function VolunteersPage() {
               },
             })
           } catch (error) {
-            console.error("[Page] Error al enviar organización:", error)
           }
         }
       : undefined

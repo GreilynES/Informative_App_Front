@@ -55,7 +55,6 @@ export function useEventsSubastaFirst() {
 
   useEffect(() => {
     const applyRealtime = (payload: EventPayload<EventData>) => {
-      console.log('🔥 event realtime:', payload)
       
       const currentData = queryClient.getQueryData<EventData[]>(queryKeys.events) || []
       let newData = currentData

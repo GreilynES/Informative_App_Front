@@ -25,7 +25,6 @@ export async function createPrincipal(input: PrincipalUpdate): Promise<Principal
     );
     return data;
   } catch (err: any) {
-    console.error("POST /principal failed:", err?.response?.status, err?.response?.data);
     throw err;
   }
 }
@@ -42,7 +41,6 @@ export async function updatePrincipal(
     const { data } = await apiConfig.put<PrincipalEdition>(`/principal/${id}`, input);
     return data;
   } catch (err: any) {
-    console.error(`PUT /principal/${id} failed:`, err?.message);
     throw err;
   }
 }
@@ -56,7 +54,6 @@ export async function deletePrincipal(id: number): Promise<{ ok: true }> {
     const { data } = await apiConfig.delete<{ ok: true }>(`/principal/${id}`);
     return data;
   } catch (err: any) {
-    console.error(`DELETE /principal/${id} failed:`, err?.message);
     throw err;
   }
 }

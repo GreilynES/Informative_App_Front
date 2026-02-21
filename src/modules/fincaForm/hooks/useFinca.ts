@@ -39,7 +39,6 @@ export function useFinca(options: UseFincaOptions = {}) {
    */
   const processPropietario = async (formData: FincaFormPayload): Promise<number | undefined> => {
     if (formData.esPropietario) {
-      console.log("[useFinca] El asociado es el propietario");
       return undefined;
     }
 
@@ -86,11 +85,9 @@ export function useFinca(options: UseFincaOptions = {}) {
       }
 
       // 1. Procesar geografía
-      console.log("[useFinca] Procesando geografía...");
       const idGeografia = await processGeografia(formData);
 
       // 2. Procesar propietario (si no es el asociado)
-      console.log("[useFinca] Procesando propietario...");
       const idPropietario = await processPropietario(formData);
 
       // 3. Crear finca
@@ -103,15 +100,12 @@ export function useFinca(options: UseFincaOptions = {}) {
         idPropietario,
       };
 
-      console.log("[useFinca] Creando finca:", fincaData);
       const finca = await fincaService.createFinca(fincaData);
-      console.log("[useFinca] ✓ Finca creada:", finca.idFinca);
 
       options.onSuccess?.(finca.idFinca);
       return finca.idFinca;
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || "Error al crear la finca";
-      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       options.onError?.(err);
       return null;
@@ -120,9 +114,6 @@ export function useFinca(options: UseFincaOptions = {}) {
     }
   };
 
-  /**
-   * Obtiene las fincas de un asociado
-   */
   const getFincasByAsociado = async (idAsociado: number) => {
     setLoading(true);
     setError(null);
@@ -132,7 +123,6 @@ export function useFinca(options: UseFincaOptions = {}) {
       return fincas;
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || "Error al obtener las fincas";
-      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       return [];
     } finally {
@@ -149,11 +139,9 @@ export function useFinca(options: UseFincaOptions = {}) {
 
     try {
       const updatedFinca = await fincaService.updateFinca(idFinca, data);
-      console.log("[useFinca] ✓ Finca actualizada:", updatedFinca.idFinca);
       return updatedFinca;
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || "Error al actualizar la finca";
-      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       return null;
     } finally {
@@ -170,11 +158,9 @@ export function useFinca(options: UseFincaOptions = {}) {
 
     try {
       await fincaService.deleteFinca(idFinca);
-      console.log("[useFinca] ✓ Finca eliminada:", idFinca);
       return true;
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || err?.message || "Error al eliminar la finca";
-      console.error("[useFinca] Error:", errorMessage);
       setError(errorMessage);
       return false;
     } finally {

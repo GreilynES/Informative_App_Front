@@ -331,23 +331,18 @@ export function useAssociateApply(onSuccess?: () => void) {
 
       if (cedula || planoFinca) {
         await uploadDocuments(idSolicitud, { cedula, planoFinca });
-        console.log("[Hook] Documentos subidos exitosamente");
       } else {
-        console.log("[Hook] No hay archivos para subir");
       }
 
       return response;
     },
     onSuccess: (_data) => {
-      console.log("[Hook] Solicitud creada exitosamente:");
       onSuccess?.();
     },
-    onError: (error: any) => {
-      console.error("[Hook] Error al crear solicitud:", error);
-      console.error("[Hook] Detalles:", error?.response?.data);
+    onError: (_error: any) => {
+
     },
     onSettled: () => {
-      console.log("[Hook] Proceso finalizado");
     },
   });
 
@@ -437,10 +432,8 @@ export function useAssociateApply(onSuccess?: () => void) {
     onSubmit: async ({ value, formApi }) => {
       try {
         await mutation.mutateAsync(value as any);
-        console.log("[Hook] Submit exitoso, reseteando formulario...");
         formApi.reset();
       } catch (err) {
-        console.error("[Hook] Submit falló:", err);
       }
     },
   });

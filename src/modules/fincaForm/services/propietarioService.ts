@@ -67,11 +67,9 @@ export const propietarioService = {
     const existing = await this.findByCedula(data.persona.cedula);
 
     if (existing) {
-      console.log("[PropietarioService] Propietario ya existe:", existing.idPropietario);
       return existing.idPropietario;
     }
 
-    console.log("[PropietarioService] Creando nuevo propietario...");
     const newPropietario = await this.createPropietario(data);
     return newPropietario.idPropietario;
   },
