@@ -56,7 +56,7 @@ const lastCheckedCjRef = useRef<string>("")
           1
         </div>
         <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Organización</h3> 
-        <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios)</p>
+        <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
       </div>
 
       <div className="p-6 space-y-4">
@@ -344,7 +344,6 @@ const lastCheckedCjRef = useRef<string>("")
                   onBlur={field.handleBlur}
                   rows={3}
                   maxLength={255}
-                  placeholder="Dirección completa de la sede principal"
                   aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
                   className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white resize-none`}
                 />

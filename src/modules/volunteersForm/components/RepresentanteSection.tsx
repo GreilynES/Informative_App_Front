@@ -40,7 +40,6 @@ export function RepresentanteSection({
     return r.success ? undefined : r.error.issues?.[0]?.message || "Campo inválido"
   }
 
-  // ✅ Validadores comunes (onChange + onBlur + onSubmit)
   const commonPersonaValidators = (key: keyof typeof personaSchema.shape) => ({
     onChange: validatePersonaField(key),
     onBlur: validatePersonaField(key),
@@ -52,7 +51,6 @@ export function RepresentanteSection({
     onSubmit: validateCargo,
   }
 
-  // ✅ Helpers UI de errores
   const shouldShowFieldError = (field: any) =>
     showErrors && Array.isArray(field.state.meta.errors) && field.state.meta.errors.length > 0
 
@@ -82,10 +80,8 @@ export function RepresentanteSection({
     form?.setFieldValue?.(path, v)
   }
 
-  // ✅ bloquea Nombre/Apellidos mientras busca o si la cédula es inválida (ya asignada)
   const bloquearNombreApellidos = buscandoCedula || !!repErrorMsg
 
-  // ✅ valida contra /representantes/validate-cedula antes de hacer lookup/llenar
   const validateRepFirst = async (digits: string) => {
     try {
       const r = await validateRepresentanteCedula(digits)
@@ -99,13 +95,11 @@ export function RepresentanteSection({
       setRepValidation({ ok: true })
       return true
     } catch {
-      // si falla por red, no bloqueamos (y limpiamos)
       setRepValidation(null)
       return true
     }
   }
 
-  // ✅ lookup (DB->TSE), normaliza, y rellena (pero SOLO si pasa la validación)
   const lookupAndFill = async (cedulaRaw: string) => {
     const digits = String(cedulaRaw ?? "").replace(/\D/g, "")
     if (!digits || digits.length < 9) return
@@ -124,14 +118,12 @@ export function RepresentanteSection({
       const p = normalizeLookupToPersona(res)
       if (!p) return
 
-      // ✅ solo setear nombre/apellidos si el usuario NO los ha tocado
       if (!tocoNombres) {
         setIfDefined("organizacion.representante.persona.nombre", p.nombre)
         setIfDefined("organizacion.representante.persona.apellido1", p.apellido1)
         setIfDefined("organizacion.representante.persona.apellido2", p.apellido2)
       }
 
-      // si viene de DB: completa todo lo demás
       if (p.source === "DB") {
         setIfDefined("organizacion.representante.persona.telefono", p.telefono)
         setIfDefined("organizacion.representante.persona.email", p.email)
@@ -382,7 +374,7 @@ export function RepresentanteSection({
                 <Input
                   type="email"
                   value={field.state.value || ""}
-                  maxLength={80}
+                  maxLength={60}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   className={`${shouldShowFieldError(field) ? inputError : inputBase} bg-white`}
@@ -419,7 +411,7 @@ export function RepresentanteSection({
                   {shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 16 años.</p>
+                  <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 18 años.</p>
                 </>
               )}
             </form.Field>

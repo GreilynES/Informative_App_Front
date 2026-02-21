@@ -113,14 +113,9 @@ export const DisponibilidadAreasSection = forwardRef<
   const areasInteresArraySchema =
     (orgShape.areasInteres as z.ZodOptional<any>).unwrap?.() ?? orgShape.areasInteres
 
-  // ✅ ya agregaste estos schemas: razonSocialItemSchema / razonesSocialesSchema
-  // Vamos a usarlos si en el schema de organizacion ya los estás usando,
-  // si no, igual funciona con el fallback actual.
   const razonesSocialesArraySchema =
     (orgShape.razonesSociales as z.ZodOptional<any>)?.unwrap?.() ?? orgShape.razonesSociales
 
-  // ✅ Validación específica para "Otro (especificar)"
-  // (lo hacemos local, independiente del schema principal, porque es un campo auxiliar)
   const otraAreaSchema = useMemo(
     () =>
       z
@@ -138,9 +133,6 @@ export const DisponibilidadAreasSection = forwardRef<
     horarios: horariosSeleccionados,
   })
 
-  // ✅ IMPORTANTE:
-  //  - NO filtramos por nombreArea (para que "Otro" vacío falle).
-  //  - Si se selecciona "Otro", nombreArea será otraArea.trim()
   const buildAreasPayload = () =>
     areasSeleccionadas.map((area) => ({
       nombreArea: (area === "Otro" ? otraArea : area).trim(),
@@ -170,7 +162,6 @@ export const DisponibilidadAreasSection = forwardRef<
   const getAreasErrors = (list: { nombreArea: string }[]) => {
     const res = (areasInteresArraySchema as z.ZodArray<any>).safeParse(list)
 
-    // ✅ Error específico para "Otro"
     let otraAreaErr = ""
     if (areasSeleccionadas.includes("Otro")) {
       const r = otraAreaSchema.safeParse(otraArea)
@@ -264,7 +255,6 @@ export const DisponibilidadAreasSection = forwardRef<
       formRef.current.setFieldValue("organizacion.disponibilidades", [disponibilidad])
       formRef.current.setFieldValue("organizacion.areasInteres", areasPayload)
 
-      // ✅ Siempre seteamos razonesSociales (schema ahora lo exige)
       formRef.current.setFieldValue("organizacion.razonesSociales", [
         { razonSocial: razonSocial.trim() },
       ])
@@ -364,7 +354,7 @@ export const DisponibilidadAreasSection = forwardRef<
             <CalendarIcon className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-lg font-semibold text-[#708C3E]">Disponibilidad</h3>
-          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios)</p>
+          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
         </div>
 
         <div className="p-6 space-y-4">
