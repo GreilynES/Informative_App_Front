@@ -73,7 +73,7 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
                 <p className="text-sm text-gray-600 mb-1">Haz clic para subir o arrastra el archivo</p>
-                <p className="text-xs text-gray-500">PDF, JPG, PNG hasta 5MB</p>
+                <p className="text-xs text-gray-500">PDF hasta 5MB</p>
               </div>
             )}
           </label>
@@ -85,7 +85,7 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
   const infoText =
     tipo === "INDIVIDUAL"
       ? "Por favor recuerda adjuntar tu Cédula, Currículum Vitae y carta de recomendación."
-      : "Por favor recuerda adjuntar el documento legal, la carta de motivación y un documento adicional."
+      : "Por favor recuerda adjuntar el documento legal, la carta de motivación y un documento adicional (si aplica)."
 
   const labels =
     tipo === "INDIVIDUAL"
@@ -108,9 +108,12 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
         </span>
         <div>
           <p className="text-sm font-medium text-[#4A4A4A] leading-relaxed">{infoText}</p>
-          <p className="mt-2 text-xs text-[#4A4A4A]/70">
-            Formatos permitidos: PDF, JPG, PNG (máximo 5MB por archivo).
-          </p>
+          <li className="mt-2 text-xs text-[#4A4A4A]/70">
+            Formato permitido: PDF (máximo 5MB por archivo).
+          </li>
+          <li className="mt-2 text-xs text-[#4A4A4A]/70">
+            Campos marcados con asterisco son obligatorios. Asegúrate de que los archivos estén correctamente nombrados para facilitar su revisión.
+          </li>
         </div>
       </div>
 
@@ -128,7 +131,7 @@ export function DocumentUploadVoluntarios({ tipo, files, setFiles }: DocumentUpl
           </div>
 
           <div className="grid grid-cols-1">
-            {renderFileInput("org-adicional", labels.cv, "cv", true)}
+            {renderFileInput("org-adicional", labels.cv, "cv", false) }
           </div>
         </>
       )}

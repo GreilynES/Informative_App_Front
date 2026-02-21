@@ -82,7 +82,6 @@ export function StepPersonalInformation({
     }
   }
 
-  // ✅ PRECHECK + LOOKUP (DB/TSE)
   const precheckAndLookup = async (cedulaRaw: string) => {
     const cedula = (cedulaRaw ?? "").trim()
     if (!cedula || cedula.length < 9) return
@@ -124,7 +123,6 @@ export function StepPersonalInformation({
         const fromDB = result.source === "DB"
         setPersonaFromDB(fromDB)
 
-        // ✅ si viene de DB, autollenamos el resto también
         if (fromDB) {
           const vi = result.volunteerIndividual ?? {}
 
@@ -177,8 +175,6 @@ export function StepPersonalInformation({
       if (errors.idNumber) return
     }
 
-    // email único: si querés dejarlo, ok (pero ojo: si DB ya trae email, esto podría bloquear)
-    // vos antes estabas saltándote validaciones si viene de DB; lo mantenemos igual:
     if (!personaFromDB) {
       if (!errors.email && formData.email?.trim()) {
         const m = await validarEmailUnico(formData.email.trim())
@@ -206,6 +202,7 @@ export function StepPersonalInformation({
             <UserRound className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-lg font-semibold text-[#708C3E]">Información Personal</h3>
+          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
         </div>
 
         <div className="p-6 space-y-4">
@@ -213,22 +210,20 @@ export function StepPersonalInformation({
             {/* Cédula */}
             <div className="relative">
               <label htmlFor="idNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                Cédula o Pasaporte *
+                Cédula/ Número de pasaporte
               </label>
 
               <Input
                 id="idNumber"
                 type="text"
-                placeholder="Número de cédula"
                 value={formData.idNumber}
                 onChange={(e) => {
                   const value = e.target.value
                   handleInputChange("idNumber", value)
                   validateField("idNumber", value)
-                  updateLimitFlag("idNumber", value, 60)
+                  updateLimitFlag("idNumber", value, 50)
                   setErrors((prev) => ({ ...prev, idNumber: "" }))
 
-                  // ✅ debounce: cuando tenga 9+, validamos y luego lookup
                   if (value.trim().length >= 9) {
                     if (debounceRef.current) window.clearTimeout(debounceRef.current)
                     debounceRef.current = window.setTimeout(() => {
@@ -244,7 +239,7 @@ export function StepPersonalInformation({
                   if (ced.length >= 9) await precheckAndLookup(ced)
                 }}
                 required
-                maxLength={60}
+                maxLength={50}
                 className={`${errors.idNumber ? inputError : inputBase} pr-10 bg-white`}
               />
 
@@ -263,20 +258,20 @@ export function StepPersonalInformation({
 
               {errors.idNumber && <p className="text-sm text-[#9c1414] mt-1">{errors.idNumber}</p>}
               {limitReached["idNumber"] && (
-                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 50 caracteres.</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">Ejemplo: 504550789</p>
             </div>
 
             {/* Nombre */}
             <div>
               <label htmlFor="nameId" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre *
+                Nombre
               </label>
 
               <Input
                 id="nameId"
                 type="text"
-                placeholder="Tu nombre"
                 value={formData.name}
                 onChange={(e) => {
                   handleInputChange("name", e.target.value)
@@ -284,48 +279,48 @@ export function StepPersonalInformation({
                   updateLimitFlag("name", e.target.value, 60)
                 }}
                 required
-                maxLength={60}
+                maxLength={50}
                 className={`${errors.name ? inputError : inputBase} bg-[#ECECEC]`}
               />
 
               {errors.name && <p className="text-sm text-[#9c1414] mt-1">{errors.name}</p>}
               {limitReached["name"] && (
-                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 50 caracteres.</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">Tu nombre</p>
             </div>
           </div>
 
           {/* Apellidos */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Primer Apellido</label>
 
               <Input
                 type="text"
-                placeholder="Tu primer apellido"
                 value={formData.lastName1}
                 onChange={(e) => {
                   handleInputChange("lastName1", e.target.value)
                   validateField("lastName1", e.target.value)
-                  updateLimitFlag("lastName1", e.target.value, 60)
+                  updateLimitFlag("lastName1", e.target.value, 40)
                 }}
                 required
-                maxLength={60}
+                maxLength={40}
                 className={`${errors.lastName1 ? inputError : inputBase} bg-[#ECECEC]`}
               />
 
               {errors.lastName1 && <p className="text-sm text-[#9c1414] mt-1">{errors.lastName1}</p>}
               {limitReached["lastName1"] && (
-                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 40 caracteres.</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">Tu primer apellido</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Segundo Apellido</label>
 
               <Input
                 type="text"
-                placeholder="Tu segundo apellido"
                 value={formData.lastName2}
                 onChange={(e) => {
                   handleInputChange("lastName2", e.target.value)
@@ -333,21 +328,22 @@ export function StepPersonalInformation({
                   updateLimitFlag("lastName2", e.target.value, 60)
                 }}
                 required
-                maxLength={60}
+                maxLength={40}
                 className={`${errors.lastName2 ? inputError : inputBase} bg-[#ECECEC]`}
               />
 
               {errors.lastName2 && <p className="text-sm text-[#9c1414] mt-1">{errors.lastName2}</p>}
               {limitReached["lastName2"] && (
-                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
+                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 40 caracteres.</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">Tu segundo apellido</p>
             </div>
           </div>
 
           {/* Fecha de nacimiento */}
           <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de Nacimiento *
+            Fecha de Nacimiento
           </label>
 
           <BirthDatePicker
@@ -360,14 +356,15 @@ export function StepPersonalInformation({
             placeholder="Seleccione una fecha"
             error={errors.birthDate}
           />
+          <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 16 años.</p>
         </div>
 
           {/* Nacionalidad */}
           <div>
             <label htmlFor="nacionalidad" className="block text-sm font-medium text-gray-700 mb-1">
-              Nacionalidad
+              Nacionalidad (Opcional)
             </label>
-
+           
             <Input
               id="nacionalidad"
               type="text"
@@ -375,17 +372,17 @@ export function StepPersonalInformation({
               onChange={(e) => {
                 handleInputChange("nacionalidad" as any, e.target.value)
                 validateField("nacionalidad" as any, e.target.value)
-                updateLimitFlag("nacionalidad" as any, e.target.value, 60)
+                updateLimitFlag("nacionalidad" as any, e.target.value, 40)
               }}
-              placeholder="Ej: Costarricense"
-              maxLength={60}
+              maxLength={40}
               className={`${errors.nacionalidad ? inputError : inputBase} bg-white`}
             />
 
             {errors.nacionalidad && <p className="text-sm text-[#9c1414] mt-1">{errors.nacionalidad}</p>}
             {limitReached["nacionalidad"] && (
-              <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
+              <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 40 caracteres.</p>
             )}
+            <p className="mt-1 text-xs text-gray-500">Ejemplo: Costarricense</p>
           </div>
         </div>
       </div>
@@ -397,6 +394,7 @@ export function StepPersonalInformation({
             <Mail className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-lg font-semibold text-[#708C3E]">Información de Contacto</h3>
+          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
         </div>
 
         <div className="p-6 space-y-4">
@@ -404,13 +402,12 @@ export function StepPersonalInformation({
             {/* Teléfono */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                Teléfono *
+                Teléfono
               </label>
 
               <Input
                 id="phone"
                 type="tel"
-                placeholder="Número de teléfono"
                 value={formData.phone}
                 onChange={(e) => {
                   handleInputChange("phone", e.target.value)
@@ -419,26 +416,23 @@ export function StepPersonalInformation({
                 }}
                 required
                 minLength={8}
-                maxLength={12}
+                maxLength={20}
                 className={`${errors.phone ? inputError : inputBase} bg-white`}
               />
 
               {errors.phone && <p className="text-sm text-[#9c1414] mt-1">{errors.phone}</p>}
-              {limitReached["phone"] && (
-                <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 20 caracteres.</p>
-              )}
+              <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
             </div>
 
             {/* Email */}
             <div className="relative">
               <label htmlFor="email" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                Email *
+                Email
               </label>
 
               <Input
                 id="email"
                 type="email"
-                placeholder="correo@ejemplo.com"
                 value={formData.email}
                 onChange={(e) => {
                   handleInputChange("email", e.target.value)
@@ -447,7 +441,6 @@ export function StepPersonalInformation({
                   setErrors((prev) => ({ ...prev, email: "" }))
                 }}
                 onBlur={async (e) => {
-                  // ✅ si vino de DB, NO bloqueamos por existsEmail (para no chocar con el email ya registrado)
                   if (personaFromDB) return
 
                   const em = e.target.value.trim()
@@ -477,33 +470,31 @@ export function StepPersonalInformation({
               {limitReached["email"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
+              <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
             </div>
           </div>
 
           {/* Dirección */}
           <div>
             <label htmlFor="address" className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Dirección Completa
+              Dirección Completa (Opcional)
             </label>
 
             <Input
               id="address"
               type="text"
-              placeholder="Tu dirección completa"
               value={formData.address}
               onChange={(e) => {
                 handleInputChange("address", e.target.value)
                 validateField("address", e.target.value)
                 updateLimitFlag("address", e.target.value, 200)
               }}
-              maxLength={200}
+              maxLength={255}
               className={`${errors.address ? inputError : inputBase} bg-white`}
             />
 
             {errors.address && <p className="text-sm text-[#9c1414] mt-1">{errors.address}</p>}
-            {limitReached["address"] && (
-              <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 200 caracteres.</p>
-            )}
+            <p className="text-xs text-gray-500">Ejemplo: Provincia, Cantón, Distrito. Señas extra.</p>
           </div>
         </div>
       </div>

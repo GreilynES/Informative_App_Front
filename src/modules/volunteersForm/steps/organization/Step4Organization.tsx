@@ -116,7 +116,6 @@ export function Step4Organization(props: {
         )}
 
         {/* Documentos */}
-        {/* Documentos */}
         <section className="rounded-xl border border-[#DCD6C9] bg-white p-4">
           <h3 className="text-base font-semibold text-[#708C3E] mb-3">Documentos Adjuntos</h3>
 
@@ -126,7 +125,7 @@ export function Step4Organization(props: {
               {files?.cedula ? (
                 <span className="text-green-700">✓ {files.cedula.name}</span>
               ) : (
-                <span className="text-red-600">✗ No adjuntado</span>
+                <span className="text-[#9c1414]">✗ No adjuntado</span>
               )}
             </p>
 
@@ -135,7 +134,7 @@ export function Step4Organization(props: {
               {files?.carta ? (
                 <span className="text-green-700">✓ {files.carta.name}</span>
               ) : (
-                <span className="text-red-600">✗ No adjuntado</span>
+                <span className="text-[#9c1414]">✗ No adjuntado</span>
               )}
             </p>
 

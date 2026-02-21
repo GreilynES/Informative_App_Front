@@ -38,11 +38,9 @@ export function OrganizacionSection({ form, showErrors }: OrganizacionSectionPro
   const [verificandoEmail, setVerificandoEmail] = useState(false)
   const [emailDupError, setEmailDupError] = useState<string>("")
 
-  // ✅ nuevo: validar cédula jurídica contra /validate
   const [verificandoCJ, setVerificandoCJ] = useState(false)
   const [cjError, setCjError] = useState<string>("")
 
-  // ✅ mismos tokens de estilo que StepPersonalInformation
   const inputBase =
     "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
   const inputError =
@@ -57,13 +55,14 @@ const lastCheckedCjRef = useRef<string>("")
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center text-white font-bold text-sm">
           1
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Organización</h3>
+        <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Organización</h3> 
+        <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
       </div>
 
       <div className="p-6 space-y-4">
         {/* Cédula jurídica */}
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Cédula jurídica *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Cédula jurídica</label>
 
           <form.Field
             name="organizacion.cedulaJuridica"
@@ -79,12 +78,9 @@ const lastCheckedCjRef = useRef<string>("")
 
               const precheckCJ = async (cjRaw: string) => {
                 const cj = (cjRaw ?? "").trim()
-
-                // tu schema manda: si está malo, no llamamos backend
                 const localMsg = validateOrgField("cedulaJuridica")(cj)
                 if (localMsg) return
 
-                // si ya validamos exactamente ese cj, no repetimos
                 if (lastCheckedCjRef.current === cj) return
 
                 setVerificandoCJ(true)
@@ -105,7 +101,6 @@ const lastCheckedCjRef = useRef<string>("")
 
                   lastCheckedCjRef.current = cj
 
-                  // ✅ 409: mensaje claro (pendiente / ya activa)
                   if (status === 409) {
                     setCjError(msg)
                     return
@@ -129,11 +124,8 @@ const lastCheckedCjRef = useRef<string>("")
                       field.handleChange(value)
                       if (cjError) setCjError("") // limpia error al escribir
 
-                      // ✅ debounce igual al individual
                       const trimmed = value.trim()
 
-                      // ajustá este mínimo según tu CJ real
-                      // si tu schema ya valida largo, esto es solo para no llamar antes
                       if (trimmed.length >= 3) {
                         if (cjDebounceRef.current) window.clearTimeout(cjDebounceRef.current)
                         cjDebounceRef.current = window.setTimeout(() => {
@@ -146,16 +138,15 @@ const lastCheckedCjRef = useRef<string>("")
                     onBlur={async (e) => {
                       field.handleBlur()
 
-                      // en blur valida inmediato (sin esperar debounce)
                       const v = e.target.value.trim()
                       if (v.length >= 9) {
                         if (cjDebounceRef.current) window.clearTimeout(cjDebounceRef.current)
                         await precheckCJ(v)
                       }
                     }}
-                    placeholder="Ej: 312369"
                     aria-invalid={hasErr}
                     className={`${hasErr ? inputError : inputBase} pr-10 bg-white`}
+                    maxLength={20}
                   />
 
                   {verificandoCJ && (
@@ -176,6 +167,7 @@ const lastCheckedCjRef = useRef<string>("")
 
                   {/* luego error del backend */}
                   {cjError && <p className="text-sm text-[#9c1414] mt-1">{cjError}</p>}
+                  <p className="mt-1 text-xs text-gray-500">Ejemplo: 502120987-980</p>
                 </>
               )
             }}
@@ -185,7 +177,7 @@ const lastCheckedCjRef = useRef<string>("")
         {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre de la organización *
+            Nombre de la organización
           </label>
 
           <form.Field
@@ -203,14 +195,14 @@ const lastCheckedCjRef = useRef<string>("")
                   value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  placeholder="Ej: Fundación Amigos del Ambiente"
                   aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
                   className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white`}
+                  maxLength={100}
                 />
-
                 {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
+                <p className="mt-1 text-xs text-gray-500">Ejemplo: Fundación Amigos del Ambiente</p>
               </>
             )}
           </form.Field>
@@ -219,7 +211,7 @@ const lastCheckedCjRef = useRef<string>("")
         {/* Número de voluntarios */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Número estimado de voluntarios *
+            Número estimado de voluntarios
           </label>
 
           <form.Field
@@ -235,6 +227,7 @@ const lastCheckedCjRef = useRef<string>("")
                 <Input
                   type="number"
                   min={1}
+                  max={15}
                   value={field.state.value ?? ""}
                   onChange={(e) =>
                     field.handleChange(
@@ -248,10 +241,10 @@ const lastCheckedCjRef = useRef<string>("")
                   aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
                   className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white`}
                 />
-
                 {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
+                <p className="mt-1 text-xs text-gray-500">Mínimo 1 voluntario, máximo 15 voluntarios</p>
               </>
             )}
           </form.Field>
@@ -259,7 +252,7 @@ const lastCheckedCjRef = useRef<string>("")
 
         {/* Tipo de organización */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de organización *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de organización</label>
 
           <form.Field
             name="organizacion.tipoOrganizacion"
@@ -282,7 +275,7 @@ const lastCheckedCjRef = useRef<string>("")
                   <CustomSelect
                     value={(field.state.value ?? "") as string}
                     options={options}
-                    placeholder="Seleccione..."
+                    placeholder="Seleccione un tipo o agregue uno nuevo"
                     zIndex={50}
                     onChange={(val) => {
                       const valor = String(val || "")
@@ -299,7 +292,6 @@ const lastCheckedCjRef = useRef<string>("")
 
                   {/* truco para blur */}
                   <div tabIndex={0} onFocus={() => field.handleBlur()} className="sr-only" />
-
                   {hasError && (
                     <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                   )}
@@ -307,7 +299,7 @@ const lastCheckedCjRef = useRef<string>("")
                   {tipoOrg === "Otro" && (
                     <div className="mt-3">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Especifique el tipo de organización <span className="text-red-500">*</span>
+                        Especifique el tipo de organización
                       </label>
 
                       <Input
@@ -318,10 +310,10 @@ const lastCheckedCjRef = useRef<string>("")
                           setOtroTipo(v)
                           field.handleChange(v)
                         }}
-                        placeholder="Ej: Cooperativa agrícola"
                         maxLength={100}
                         className={`${inputBase} bg-white`}
                       />
+                      <p className="mt-1 text-xs text-gray-500">Ejemplo: Cooperativa agrícola</p>
                     </div>
                   )}
                 </>
@@ -333,7 +325,7 @@ const lastCheckedCjRef = useRef<string>("")
         {/* Dirección */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Dirección de la organización *
+            Dirección de la organización
           </label>
 
           <form.Field
@@ -351,7 +343,7 @@ const lastCheckedCjRef = useRef<string>("")
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   rows={3}
-                  placeholder="Dirección completa de la sede principal"
+                  maxLength={255}
                   aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
                   className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white resize-none`}
                 />
@@ -359,6 +351,7 @@ const lastCheckedCjRef = useRef<string>("")
                 {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
+                <p className="mt-1 text-xs text-gray-500">Ejemplo: Provincia, Cantón, Distrito. Señas extra.</p>
               </>
             )}
           </form.Field>
@@ -367,7 +360,7 @@ const lastCheckedCjRef = useRef<string>("")
         {/* Teléfono */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Teléfono de la organización *
+            Teléfono de la organización
           </label>
 
           <form.Field
@@ -385,15 +378,15 @@ const lastCheckedCjRef = useRef<string>("")
                   value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  maxLength={12}
-                  placeholder="Ej: 2222 3333"
+                  min={8}
+                  maxLength={15}
                   aria-invalid={!!(showErrors && field.state.meta.errors?.length > 0)}
                   className={`${showErrors && field.state.meta.errors?.length > 0 ? inputError : inputBase} bg-white`}
                 />
-
                 {showErrors && field.state.meta.errors?.length > 0 && (
                   <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>
                 )}
+                <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
               </>
             )}
           </form.Field>
@@ -402,7 +395,7 @@ const lastCheckedCjRef = useRef<string>("")
         {/* Email institucional */}
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Correo electrónico institucional *
+            Correo electrónico institucional
           </label>
 
           <form.Field
@@ -421,6 +414,7 @@ const lastCheckedCjRef = useRef<string>("")
                 <>
                   <Input
                     type="email"
+                    maxLength={80}
                     value={field.state.value ?? ""}
                     onChange={(e) => {
                       field.handleChange(e.target.value)
@@ -442,7 +436,6 @@ const lastCheckedCjRef = useRef<string>("")
                         setVerificandoEmail(false)
                       }
                     }}
-                    placeholder="Ej: contacto@organizacion.org"
                     aria-invalid={hasErr}
                     className={`${hasErr ? inputError : inputBase} pr-10 bg-white`}
                   />
@@ -462,6 +455,7 @@ const lastCheckedCjRef = useRef<string>("")
 
                   {zodErr && <p className="text-sm text-[#9c1414] mt-1">{field.state.meta.errors[0]}</p>}
                   {emailDupError && <p className="text-sm text-[#9c1414] mt-1">{emailDupError}</p>}
+                  <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
                 </>
               )
             }}

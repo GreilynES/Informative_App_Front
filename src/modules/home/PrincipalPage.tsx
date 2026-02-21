@@ -86,7 +86,7 @@ export default function PrincipalPage({ noticeVisible = true }: Props) {
 
           <main className="relative z-10">
             <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-24">
-              <section className="py-12 sm:py-16 lg:py-16">
+              <section className="py-12 sm:py-16 lg:py-24">
                 <div className="max-w-2xl">
                   <div className="text-[11px] sm:text-xs font-semibold tracking-[0.35em] uppercase text-[#FAFDF4]/80 animate-in fade-in slide-in-from-left-4 duration-600 delay-100">
                     Eventos &amp; Subastas
