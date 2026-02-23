@@ -37,7 +37,7 @@ export function TermsAndSubmit({
 
   const err =
     showError && !formData.acceptTerms
-      ? "Debes aceptar los términos y condiciones para continuar"
+      ? "Para continuar, debes aceptar los términos y condiciones."
       : ""
 
   const canSubmit = !!formData.acceptTerms && !uiSubmitting
@@ -49,41 +49,44 @@ export function TermsAndSubmit({
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
           <BadgeCheck className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Términos y condiciones</h3>
+        <div className="flex flex-col">
+          <h3 className="text-lg font-semibold text-[#708C3E]">Términos y condiciones</h3>
+          <p className="text-xs text-gray-500">
+            Antes de enviar tu solicitud, confirma tu consentimiento para el tratamiento de tus
+              datos personales con fines de registro y gestión del proceso.
+          </p>
+        </div>
       </div>
 
       <div className="p-6 space-y-5">
-        {/* Callout */}
-        <div className="rounded-xl border border-[#DCD6C9] bg-[#F3F1EA] px-4 py-3">
-          <div className="flex items-start gap-3">
-            <span className="inline-flex w-6 h-6 items-center justify-center rounded-full bg-[#708C3E] text-white text-xs font-bold">
-              i
-            </span>
-            <p className="text-sm text-[#4A4A4A]">
-              Para enviar tu solicitud, confirma tu consentimiento para el uso de datos en el
-              registro.
-            </p>
-          </div>
-        </div>
-
         {/* Checkbox */}
         <div className="space-y-2">
-          <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3">
+          <label
+            className={`flex items-start gap-3 rounded-xl border px-4 py-3 transition-colors ${
+              err ? "border-[#9c1414] bg-[#fff1f1]" : "border-[#DCD6C9] hover:bg-[#E6EDC8]/20"
+            }`}
+          >
             <Checkbox
               checked={!!formData.acceptTerms}
               onCheckedChange={(v) => {
                 handleInputChange("acceptTerms", Boolean(v))
                 if (Boolean(v)) setShowError(false)
               }}
-              className="mt-0.5 border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E]"
+              className="mt-0.5 data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E] data-[state=checked]:text-white border-[#DCD6C9]"
             />
-            <span className="text-sm text-[#4A4A4A] leading-relaxed">
-              Confirmo mi consentimiento para que mis datos personales sean utilizados para el
-              registro de mi solicitud.
-            </span>
+
+            <div className="space-y-1">
+              <span className="text-sm font-medium text-[#4A4A4A]">
+                Acepto los términos y condiciones
+              </span>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Autorizo el uso de mis datos personales para el registro, verificación y seguimiento
+                de esta solicitud, de conformidad con la normativa aplicable.
+              </p>
+            </div>
           </label>
 
-          {err && <p className="text-sm text-red-600">{err}</p>}
+          {err && <p className="text-sm text-[#9c1414]">{err}</p>}
         </div>
 
         {/* Botones */}
@@ -123,8 +126,9 @@ export function TermsAndSubmit({
                   },
                   {
                     loadingText: "Enviando solicitud...",
-                    successText: "¡Solicitud enviada correctamente!",
-                    errorText: "No se pudo enviar tu solicitud. Inténtalo de nuevo.",
+                    successText: "Solicitud enviada con éxito.",
+                    errorText:
+                      "No fue posible enviar tu solicitud. Por favor, inténtalo nuevamente.",
                   }
                 )
 

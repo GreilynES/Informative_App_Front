@@ -15,7 +15,6 @@ export function Step1Organization(props: {
 }) {
   const { form, lookup, showErrors, setShowErrors, onNext } = props
 
-  // ✅ MISMA IDEA QUE INDIVIDUAL: DB (DTO o ENTITY) -> si no, TSE
   const lookupCombined = useMemo(() => {
     return async (id: string) => {
       const ced = (id ?? "").trim()

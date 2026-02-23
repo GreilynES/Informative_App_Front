@@ -167,3 +167,15 @@ export const volunteerSchema = z.discriminatedUnion("tipoSolicitante", [
   volunteerIndividualSchema,
 ]);
 export type VolunteerFormValues = z.infer<typeof volunteerSchema>;
+
+export const razonSocialItemSchema = z.object({
+  razonSocial: z
+    .string()
+    .trim()
+    .min(50, "Describe la razón social en al menos 50 caracteres")
+    .max(255, "Máximo 255 caracteres"),
+})
+
+export const razonesSocialesSchema = z
+  .array(razonSocialItemSchema)
+  .min(1, "La razón social es requerida")
