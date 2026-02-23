@@ -393,27 +393,40 @@ export default function EventsPage() {
                 </div>
               </ScrollReveal>
 
-              {/* Flechas DESKTOP solamente con animación independiente */}
-              <ScrollReveal duration={800} distance={40} delay={200} direction="left" className="contents">
+              {/* Flecha IZQUIERDA */}
+              <ScrollReveal
+                duration={800}
+                distance={40}
+                delay={200}
+                direction="up"
+                className="contents pointer-events-none"
+              >
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={goPrev}
                   disabled={!hasEvents}
-                  className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-30 -translate-x-24 h-12 w-12 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
+                  className="pointer-events-auto hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-[60] -translate-x-24 h-12 w-12 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
                   aria-label="Anterior"
                 >
                   <ChevronLeft className="h-6 w-6" />
                 </Button>
               </ScrollReveal>
 
-              <ScrollReveal duration={800} distance={40} delay={200} direction="left" className="contents">
+              {/* Flecha DERECHA */}
+              <ScrollReveal
+                duration={800}
+                distance={40}
+                delay={200}
+                direction="up"
+                className="contents pointer-events-none"
+              >
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={goNext}
                   disabled={!hasEvents}
-                  className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-30 translate-x-24 h-12 w-12 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
+                  className="pointer-events-auto hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-[60] translate-x-24 h-12 w-12 rounded-full p-0 border-2 border-[#A7C4A0] bg-white/70 text-[#1F3D2B] hover:bg-[#D6E5C8] hover:border-[#8FAE5A] disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-110"
                   aria-label="Siguiente"
                 >
                   <ChevronRight className="h-6 w-6" />
