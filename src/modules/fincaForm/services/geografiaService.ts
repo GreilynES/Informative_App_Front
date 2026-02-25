@@ -25,7 +25,6 @@ export const geografiaService = {
         nombre: nombre as string
       }));
     } catch (error) {
-      console.error('[GeografiaService] Error al cargar provincias:', error);
       throw new Error('No se pudieron cargar las provincias');
     }
   },
@@ -43,7 +42,6 @@ export const geografiaService = {
         nombre: nombre as string
       }));
     } catch (error) {
-      console.error('[GeografiaService] Error al cargar cantones:', error);
       throw new Error('No se pudieron cargar los cantones');
     }
   },
@@ -63,7 +61,6 @@ export const geografiaService = {
         nombre: nombre as string
       }));
     } catch (error) {
-      console.error('[GeografiaService] Error al cargar distritos:', error);
       throw new Error('No se pudieron cargar los distritos');
     }
   },

@@ -21,9 +21,7 @@ export const useAboutUs = () => {
   })
 
   useEffect(() => {
-    const handler = (payload: AboutUsPayload) => {
-      console.log('🔥 aboutUs:updated recibido:', payload)
-      
+    const handler = (payload: AboutUsPayload) => {      
       const currentData = queryClient.getQueryData<AboutUsSection[]>(queryKeys.aboutUs) || []
 
       if (payload.action === "created" && payload.data) {

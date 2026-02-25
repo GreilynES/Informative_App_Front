@@ -47,7 +47,6 @@ export default function FAQPage() {
         const data = await getFaqs()
         if (isMounted) setFaqs(data)
       } catch (err) {
-        console.error("Error cargando FAQs:", err)
         if (isMounted) setError(err)
       } finally {
         if (isMounted) setIsLoading(false)

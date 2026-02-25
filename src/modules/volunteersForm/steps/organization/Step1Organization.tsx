@@ -24,7 +24,6 @@ export function Step1Organization(props: {
 
       // Caso 1: PersonaFormLookupDto
       if (db?.found) {
-        console.log("[lookupCombinedRepresentante] usando DB (DTO)")
         return {
           source: "DB",
           ...(db.legacy ?? {}),
@@ -37,7 +36,6 @@ export function Step1Organization(props: {
 
       // Caso 2: entity vieja
       if (db?.cedula && db?.nombre && db?.apellido1) {
-        console.log("[lookupCombinedRepresentante] usando DB (ENTITY)")
         return {
           source: "DB",
           firstname: db.nombre ?? "",

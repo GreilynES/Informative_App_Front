@@ -19,7 +19,6 @@ export function Step1Individual(props: {
 
   // Caso 1: backend devuelve PersonaFormLookupDto (nuevo)
   if (db?.found) {
-    console.log("[lookupCombined] usando DB (DTO)")
     return {
       source: "DB",
       ...(db.legacy ?? {}),
@@ -28,9 +27,7 @@ export function Step1Individual(props: {
     }
   }
 
-  // Caso 2: backend devuelve Persona entity (lo que te está pasando ahora)
   if (db?.cedula && db?.nombre && db?.apellido1) {
-    console.log("[lookupCombined] usando DB (ENTITY)")
     return {
       source: "DB",
       firstname: db.nombre ?? "",

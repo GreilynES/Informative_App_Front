@@ -72,20 +72,16 @@ export function useVolunteerIndividual(onSuccess?: () => void) {
         try {
           await uploadVolunteerDocuments(solicitudId, uploadFiles);
         } catch (uploadError) {
-          console.error("[Hook Individual] Error al subir documentos:", uploadError);
           // No lanzamos error para no bloquear el flujo
         }
       } else if (!solicitudId) {
-        console.error("[Hook Individual] No se pudo extraer el ID de la solicitud");
       }
       return response;
     },
     onSuccess: (_data) => {
-      console.log("[Hook Individual] Solicitud enviada:");
       onSuccess?.();
     },
-    onError: (error: any) => {
-      console.error("[Hook Individual] Detalles del error:", error?.response?.data);
+    onError: (_error: any) => {
     },
   });
 

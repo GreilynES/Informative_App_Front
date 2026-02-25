@@ -5,8 +5,8 @@ import { useRef, useState } from "react"
 import { volunteerOrganizacionSchema } from "../../schemas/volunteerSchema"
 import { existsEmail, validateSolicitudVoluntariado } from "../../services/volunteerFormService"
 import { Input } from "@/components/ui/input"
-import {  stopLoadingWithError } from "@/modules/utils/alerts"
 import { BirthDatePicker } from "@/components/ui/birthDatePicker"
+import { useCedulaLookupController } from "@/shared/hooks/useCedulaLookupController" // <-- ponelo donde lo guardés
 
 interface StepPersonalInformationProps {
   formData: VolunteersFormData
@@ -25,20 +25,14 @@ export function StepPersonalInformation({
 }: StepPersonalInformationProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [limitReached, setLimitReached] = useState<Record<string, boolean>>({})
-  const [verificandoCedula, setVerificandoCedula] = useState(false)
   const [verificandoEmail, setVerificandoEmail] = useState(false)
 
   const personaSchema = volunteerOrganizacionSchema.shape.organizacion.shape.representante.shape.persona
-  const [personaFromDB, setPersonaFromDB] = useState(false)
-  const debounceRef = useRef<number | null>(null)
-  const lastCheckedCedulaRef = useRef<string>("")
+  const debounceEmailRef = useRef<number | null>(null)
 
   const updateLimitFlag = (field: keyof VolunteersFormData, value: string, maxLen?: number) => {
     if (!maxLen) return
-    setLimitReached((prev) => ({
-      ...prev,
-      [field as string]: value.length >= maxLen,
-    }))
+    setLimitReached((prev) => ({ ...prev, [field as string]: value.length >= maxLen }))
   }
 
   const validateField = (field: keyof VolunteersFormData, value: any) => {
@@ -46,10 +40,7 @@ export function StepPersonalInformation({
     const single = personaSchema.pick({ [mapField(field)]: true } as any)
     const key = mapField(field)
     const result = single.safeParse({ [key]: (mapped as Record<string, any>)[key] })
-    setErrors((prev) => ({
-      ...prev,
-      [field]: result.success ? "" : result.error.issues[0]?.message || "",
-    }))
+    setErrors((prev) => ({ ...prev, [field]: result.success ? "" : result.error.issues[0]?.message || "" }))
   }
 
   const validateAll = () => {
@@ -82,99 +73,117 @@ export function StepPersonalInformation({
     }
   }
 
-  const precheckAndLookup = async (cedulaRaw: string) => {
-    const cedula = (cedulaRaw ?? "").trim()
-    if (!cedula || cedula.length < 9) return
+  // ✅ RESET: cuando cambia la cédula, limpiamos datos de persona anterior
+  const resetPersonaFields = () => {
+    const clear = (f: keyof VolunteersFormData) => handleInputChange(f, "")
 
-    // si ya validamos esta misma cédula, no repetimos
-    if (lastCheckedCedulaRef.current === cedula) return
+    clear("name")
+    clear("lastName1")
+    clear("lastName2")
+    clear("phone")
+    clear("email")
+    clear("birthDate")
+    clear("address")
+    handleInputChange("nacionalidad" as any, "")
 
-    setVerificandoCedula(true)
-    try {
-      // 1) PRECHECK (pendiente / ya activo)
-      await validateSolicitudVoluntariado({
-        tipoSolicitante: "INDIVIDUAL",
-        cedula,
-      })
+    // limpiamos errores relacionados (si querés, podés dejar idNumber intacto)
+    setErrors((prev) => ({
+      ...prev,
+      name: "",
+      lastName1: "",
+      lastName2: "",
+      phone: "",
+      email: "",
+      birthDate: "",
+      address: "",
+      nacionalidad: "",
+    }))
+  }
 
-      lastCheckedCedulaRef.current = cedula
+  // ✅ FILL: mapea el lookup a tus fields
+  const fillFromLookup = (result: any) => {
+    const nameVal = result.firstname || ""
+    const last1Val = result.lastname1 || ""
+    const last2Val = result.lastname2 || ""
 
-      // 2) LOOKUP (DB primero, si no → TSE)
-      const result = await lookup(cedula)
-      console.log("[lookup result]", result)
+    handleInputChange("name", nameVal)
+    handleInputChange("lastName1", last1Val)
+    handleInputChange("lastName2", last2Val)
 
-      if (result) {
-        const nameVal = result.firstname || ""
-        const last1Val = result.lastname1 || ""
-        const last2Val = result.lastname2 || ""
+    validateField("name", nameVal)
+    validateField("lastName1", last1Val)
+    validateField("lastName2", last2Val)
 
-        handleInputChange("name", nameVal)
-        handleInputChange("lastName1", last1Val)
-        handleInputChange("lastName2", last2Val)
+    updateLimitFlag("name", nameVal, 60)
+    updateLimitFlag("lastName1", last1Val, 60)
+    updateLimitFlag("lastName2", last2Val, 60)
 
-        validateField("name", nameVal)
-        validateField("lastName1", last1Val)
-        validateField("lastName2", last2Val)
+    if (result.source === "DB") {
+      const vi = result.volunteerIndividual ?? {}
 
-        updateLimitFlag("name", nameVal, 60)
-        updateLimitFlag("lastName1", last1Val, 60)
-        updateLimitFlag("lastName2", last2Val, 60)
-
-        const fromDB = result.source === "DB"
-        setPersonaFromDB(fromDB)
-
-        if (fromDB) {
-          const vi = result.volunteerIndividual ?? {}
-
-          const setIfDefined = (field: keyof VolunteersFormData, val: any, max?: number) => {
-            if (val === undefined || val === null) return
-            const v = String(val)
-            handleInputChange(field, v)
-            validateField(field, v)
-            if (max) updateLimitFlag(field, v, max)
-          }
-
-          setIfDefined("phone", vi.phone, 20)
-          setIfDefined("email", vi.email, 60)
-          setIfDefined("birthDate", vi.birthDate)
-          setIfDefined("address", vi.address, 200)
-        }
-      } else {
-        setPersonaFromDB(false)
+      const setIfDefined = (field: keyof VolunteersFormData, val: any, max?: number) => {
+        if (val === undefined || val === null) return
+        const v = String(val)
+        handleInputChange(field, v)
+        validateField(field, v)
+        if (max) updateLimitFlag(field, v, max)
       }
 
-      setErrors((prev) => ({ ...prev, idNumber: "" }))
-    } catch (err: any) {
-      // Si el backend dice 409, mostramos mensaje YA y no hacemos lookup
-      const status = err?.response?.status
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        "No se pudo validar la cédula."
-
-      if (status === 409) {
-        setErrors((prev) => ({ ...prev, idNumber: msg }))
-        return
-      }
-
-      // otros errores (500, red, etc.)
-      setErrors((prev) => ({ ...prev, idNumber: "No se pudo validar la cédula. Intenta de nuevo." }))
-      await stopLoadingWithError("No se pudo validar la cédula. Intenta de nuevo.")
-    } finally {
-      setVerificandoCedula(false)
+      setIfDefined("phone", vi.phone, 20)
+      setIfDefined("email", vi.email, 60)
+      setIfDefined("birthDate", vi.birthDate)
+      setIfDefined("address", vi.address, 200)
+      // nacionalidad si existe en DB:
+      // setIfDefined("nacionalidad" as any, vi.nacionalidad, 40)
     }
   }
+
+  // ✅ Hook reusable
+  const cedulaCtrl = useCedulaLookupController({
+    minLen: 9,
+    debounceMs: 350,
+    lookup,
+    isFromDB: (res) => res?.source === "DB",
+    onReset: resetPersonaFields,
+    onFill: fillFromLookup,
+    precheck: async (digits) => {
+      // PRECHECK: pendiente / ya activo
+      await validateSolicitudVoluntariado({
+        tipoSolicitante: "INDIVIDUAL",
+        cedula: digits,
+      })
+    },
+  })
+
+  // ✅ si el precheck devolvió error tipo 409, lo mostramos en idNumber y NO seguimos llenando
+  const precheckError = cedulaCtrl.error
+  const verificandoCedula = cedulaCtrl.loading
+  const personaFromDB = cedulaCtrl.fromDB
+
+  // Si querés “meter” el error en idNumber para UI (como antes):
+  // (esto es opcional; también podés leer directamente cedulaCtrl.error)
+  const idNumberError = errors.idNumber || precheckError
+
+  const inputBase =
+    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+  const inputError =
+    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+
+  // ✅ BLOQUEOS (igual patrón que querías)
+  const bloquearPorCedula = verificandoCedula || !!idNumberError
+  const bloquearNombreApellidos = bloquearPorCedula
+  const bloquearCamposDB = bloquearPorCedula || personaFromDB
+
+  const disabledBase = "bg-[#ECECEC] opacity-70 cursor-not-allowed"
 
   const handleNext = async () => {
     const ok = validateAll() && isStepValid()
     if (!ok) return
 
-    // Si aún no se hizo precheck para la cédula actual, lo hacemos aquí también
-    if (formData.idNumber?.trim() && formData.idNumber.trim().length >= 9) {
-      await precheckAndLookup(formData.idNumber.trim())
-      if (errors.idNumber) return
-    }
+    // si hay error en cédula, no avanzar
+    if (idNumberError) return
 
+    // si NO viene de DB, validamos email único
     if (!personaFromDB) {
       if (!errors.email && formData.email?.trim()) {
         const m = await validarEmailUnico(formData.email.trim())
@@ -188,21 +197,17 @@ export function StepPersonalInformation({
     onNextCombined()
   }
 
-  const inputBase =
-    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
-  const inputError =
-    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
-
   return (
     <div className="space-y-8">
-      {/* ───────── Tarjeta 1: Información Personal ───────── */}
       <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
         <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center gap-3">
           <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
             <UserRound className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-lg font-semibold text-[#708C3E]">Información Personal</h3>
-          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
+          <p className="mt-1 text-xs text-gray-500">
+            (Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional")
+          </p>
         </div>
 
         <div className="p-6 space-y-4">
@@ -222,25 +227,22 @@ export function StepPersonalInformation({
                   handleInputChange("idNumber", value)
                   validateField("idNumber", value)
                   updateLimitFlag("idNumber", value, 50)
-                  setErrors((prev) => ({ ...prev, idNumber: "" }))
 
-                  if (value.trim().length >= 9) {
-                    if (debounceRef.current) window.clearTimeout(debounceRef.current)
-                    debounceRef.current = window.setTimeout(() => {
-                      precheckAndLookup(value)
-                    }, 350)
-                  } else {
-                    setPersonaFromDB(false)
-                    lastCheckedCedulaRef.current = ""
-                  }
+                  // limpiamos error local + el del hook
+                  setErrors((prev) => ({ ...prev, idNumber: "" }))
+                  cedulaCtrl.setError("")
+
+                  // ✅ aquí está lo importante:
+                  // al cambiar, el hook resetea campos si cambió la cédula (para no mezclar personas)
+                  cedulaCtrl.onKeyChange(value)
                 }}
                 onBlur={async (e) => {
                   const ced = e.target.value.trim()
-                  if (ced.length >= 9) await precheckAndLookup(ced)
+                  await cedulaCtrl.onKeyBlur(ced)
                 }}
                 required
                 maxLength={50}
-                className={`${errors.idNumber ? inputError : inputBase} pr-10 bg-white`}
+                className={`${idNumberError ? inputError : inputBase} pr-10 bg-white`}
               />
 
               {verificandoCedula && (
@@ -256,7 +258,7 @@ export function StepPersonalInformation({
                 </div>
               )}
 
-              {errors.idNumber && <p className="text-sm text-[#9c1414] mt-1">{errors.idNumber}</p>}
+              {!!idNumberError && <p className="text-sm text-[#9c1414] mt-1">{idNumberError}</p>}
               {limitReached["idNumber"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 50 caracteres.</p>
               )}
@@ -273,21 +275,29 @@ export function StepPersonalInformation({
                 id="nameId"
                 type="text"
                 value={formData.name}
+                disabled={bloquearNombreApellidos}
                 onChange={(e) => {
+                  if (bloquearNombreApellidos) return
                   handleInputChange("name", e.target.value)
                   validateField("name", e.target.value)
                   updateLimitFlag("name", e.target.value, 60)
                 }}
                 required
                 maxLength={50}
-                className={`${errors.name ? inputError : inputBase} bg-[#ECECEC]`}
+                className={`${errors.name ? inputError : inputBase} ${
+                  bloquearNombreApellidos ? disabledBase : "bg-[#ECECEC]"
+                }`}
               />
 
               {errors.name && <p className="text-sm text-[#9c1414] mt-1">{errors.name}</p>}
               {limitReached["name"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 50 caracteres.</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">Tu nombre</p>
+              {personaFromDB ? (
+                <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">Tu nombre</p>
+              )}
             </div>
           </div>
 
@@ -299,21 +309,29 @@ export function StepPersonalInformation({
               <Input
                 type="text"
                 value={formData.lastName1}
+                disabled={bloquearNombreApellidos}
                 onChange={(e) => {
+                  if (bloquearNombreApellidos) return
                   handleInputChange("lastName1", e.target.value)
                   validateField("lastName1", e.target.value)
                   updateLimitFlag("lastName1", e.target.value, 40)
                 }}
                 required
                 maxLength={40}
-                className={`${errors.lastName1 ? inputError : inputBase} bg-[#ECECEC]`}
+                className={`${errors.lastName1 ? inputError : inputBase} ${
+                  bloquearNombreApellidos ? disabledBase : "bg-[#ECECEC]"
+                }`}
               />
 
               {errors.lastName1 && <p className="text-sm text-[#9c1414] mt-1">{errors.lastName1}</p>}
               {limitReached["lastName1"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 40 caracteres.</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">Tu primer apellido</p>
+              {personaFromDB ? (
+                <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">Tu primer apellido</p>
+              )}
             </div>
 
             <div>
@@ -322,79 +340,96 @@ export function StepPersonalInformation({
               <Input
                 type="text"
                 value={formData.lastName2}
+                disabled={bloquearNombreApellidos}
                 onChange={(e) => {
+                  if (bloquearNombreApellidos) return
                   handleInputChange("lastName2", e.target.value)
                   validateField("lastName2", e.target.value)
                   updateLimitFlag("lastName2", e.target.value, 60)
                 }}
                 required
                 maxLength={40}
-                className={`${errors.lastName2 ? inputError : inputBase} bg-[#ECECEC]`}
+                className={`${errors.lastName2 ? inputError : inputBase} ${
+                  bloquearNombreApellidos ? disabledBase : "bg-[#ECECEC]"
+                }`}
               />
 
               {errors.lastName2 && <p className="text-sm text-[#9c1414] mt-1">{errors.lastName2}</p>}
               {limitReached["lastName2"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 40 caracteres.</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">Tu segundo apellido</p>
+              {personaFromDB ? (
+                <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">Tu segundo apellido</p>
+              )}
             </div>
           </div>
 
           {/* Fecha de nacimiento */}
-          <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de Nacimiento
-          </label>
+          <div className={bloquearCamposDB ? "pointer-events-none opacity-70" : ""}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
 
-          <BirthDatePicker
-            value={formData.birthDate}
-            onChange={(iso) => {
-              handleInputChange("birthDate", iso)
-              validateField("birthDate", iso)
-            }}
-            minAge={16}
-            placeholder="Seleccione una fecha"
-            error={errors.birthDate}
-          />
-          <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 16 años.</p>
-        </div>
+            <BirthDatePicker
+              value={formData.birthDate}
+              onChange={(iso) => {
+                if (bloquearCamposDB) return
+                handleInputChange("birthDate", iso)
+                validateField("birthDate", iso)
+              }}
+              minAge={16}
+              placeholder="Seleccione una fecha"
+              error={errors.birthDate}
+            />
+
+            {personaFromDB ? (
+              <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 16 años.</p>
+            )}
+          </div>
 
           {/* Nacionalidad */}
           <div>
             <label htmlFor="nacionalidad" className="block text-sm font-medium text-gray-700 mb-1">
               Nacionalidad (Opcional)
             </label>
-           
+
             <Input
               id="nacionalidad"
               type="text"
               value={formData.nacionalidad || ""}
+              disabled={bloquearCamposDB}
               onChange={(e) => {
+                if (bloquearCamposDB) return
                 handleInputChange("nacionalidad" as any, e.target.value)
                 validateField("nacionalidad" as any, e.target.value)
                 updateLimitFlag("nacionalidad" as any, e.target.value, 40)
               }}
               maxLength={40}
-              className={`${errors.nacionalidad ? inputError : inputBase} bg-white`}
+              className={`${errors.nacionalidad ? inputError : inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
             />
 
             {errors.nacionalidad && <p className="text-sm text-[#9c1414] mt-1">{errors.nacionalidad}</p>}
-            {limitReached["nacionalidad"] && (
-              <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 40 caracteres.</p>
+            {personaFromDB ? (
+              <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">Tu nacionalidad. Ejemplo: Costarricense</p>
             )}
-            <p className="mt-1 text-xs text-gray-500">Ejemplo: Costarricense</p>
           </div>
         </div>
       </div>
 
-      {/* ───────── Tarjeta 2: Información de Contacto ───────── */}
+      {/* Contacto */}
       <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
         <div className="px-6 py-4 border-b border-[#DCD6C9] flex items-center gap-3">
           <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
             <Mail className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-lg font-semibold text-[#708C3E]">Información de Contacto</h3>
-          <p className="mt-1 text-xs text-gray-500">(Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional") </p>
+          <p className="mt-1 text-xs text-gray-500">
+            (Todos los campos son obligatorios a menos que contengan la etiqueta "Opcional")
+          </p>
         </div>
 
         <div className="p-6 space-y-4">
@@ -409,7 +444,9 @@ export function StepPersonalInformation({
                 id="phone"
                 type="tel"
                 value={formData.phone}
+                disabled={bloquearCamposDB}
                 onChange={(e) => {
+                  if (bloquearCamposDB) return
                   handleInputChange("phone", e.target.value)
                   validateField("phone", e.target.value)
                   updateLimitFlag("phone", e.target.value, 20)
@@ -417,11 +454,15 @@ export function StepPersonalInformation({
                 required
                 minLength={8}
                 maxLength={20}
-                className={`${errors.phone ? inputError : inputBase} bg-white`}
+                className={`${errors.phone ? inputError : inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
               />
 
               {errors.phone && <p className="text-sm text-[#9c1414] mt-1">{errors.phone}</p>}
-              <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
+              {personaFromDB ? (
+                <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
+              )}
             </div>
 
             {/* Email */}
@@ -434,15 +475,21 @@ export function StepPersonalInformation({
                 id="email"
                 type="email"
                 value={formData.email}
+                disabled={bloquearCamposDB}
                 onChange={(e) => {
+                  if (bloquearCamposDB) return
                   handleInputChange("email", e.target.value)
                   validateField("email", e.target.value)
                   updateLimitFlag("email", e.target.value, 60)
                   setErrors((prev) => ({ ...prev, email: "" }))
+
+                  // (opcional) debounce si querés no spamear el endpoint al escribir
+                  if (debounceEmailRef.current) window.clearTimeout(debounceEmailRef.current)
+                  debounceEmailRef.current = window.setTimeout(() => {}, 200)
                 }}
                 onBlur={async (e) => {
+                  if (bloquearCamposDB) return
                   if (personaFromDB) return
-
                   const em = e.target.value.trim()
                   if (!em) return
                   const msg = await validarEmailUnico(em)
@@ -450,18 +497,14 @@ export function StepPersonalInformation({
                 }}
                 required
                 maxLength={60}
-                className={`${errors.email ? inputError : inputBase} pr-10 bg-white`}
+                className={`${errors.email ? inputError : inputBase} pr-10 ${bloquearCamposDB ? disabledBase : "bg-white"}`}
               />
 
-              {verificandoEmail && (
+              {verificandoEmail && !bloquearCamposDB && (
                 <div className="absolute right-3 top-[34px]">
                   <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z"
-                    />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4z" />
                   </svg>
                 </div>
               )}
@@ -470,7 +513,12 @@ export function StepPersonalInformation({
               {limitReached["email"] && (
                 <p className="text-sm text-orange-600 mt-1">Has alcanzado el límite de 60 caracteres.</p>
               )}
-              <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
+
+              {personaFromDB ? (
+                <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
+              )}
             </div>
           </div>
 
@@ -484,22 +532,27 @@ export function StepPersonalInformation({
               id="address"
               type="text"
               value={formData.address}
+              disabled={bloquearCamposDB}
               onChange={(e) => {
+                if (bloquearCamposDB) return
                 handleInputChange("address", e.target.value)
                 validateField("address", e.target.value)
                 updateLimitFlag("address", e.target.value, 200)
               }}
               maxLength={255}
-              className={`${errors.address ? inputError : inputBase} bg-white`}
+              className={`${errors.address ? inputError : inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
             />
 
             {errors.address && <p className="text-sm text-[#9c1414] mt-1">{errors.address}</p>}
-            <p className="text-xs text-gray-500">Ejemplo: Provincia, Cantón, Distrito. Señas extra.</p>
+            {personaFromDB ? (
+              <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">Ejemplo: Provincia, Cantón, Distrito. Señas extra.</p>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ───────── Botón siguiente ───────── */}
       <div className="text-right">
         <NavigationButtons showPrev={false} onNext={handleNext} disableNext={!isStepValid()} />
       </div>

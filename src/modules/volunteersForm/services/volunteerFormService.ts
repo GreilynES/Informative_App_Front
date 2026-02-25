@@ -12,11 +12,7 @@ export async function createSolicitudVoluntario(
     );
     return response.data;
   } catch (err: any) {
-    console.error("[Service Solicitud] ❌ Error:", {
-      status: err?.response?.status,
-      data: err?.response?.data,
-      message: err?.message,
-    });
+
     throw err;
   }
 }
@@ -25,12 +21,6 @@ export async function uploadVolunteerDocuments(
   solicitudId: number,
   files: { cv?: File; cedula?: File; carta?: File }
 ) {
-  console.log("[Service Volunteers] uploadDocuments llamado con:", {
-    solicitudId,
-    cv: files.cv?.name,
-    cedula: files.cedula?.name,
-    carta: files.carta?.name,
-  });
 
   const formData = new FormData();
   if (files.cv) formData.append("cv", files.cv);
@@ -48,11 +38,7 @@ export async function uploadVolunteerDocuments(
     );
     return response.data;
   } catch (err: any) {
-    console.error("[Service Volunteers] ❌ Error al subir documentos:", {
-      status: err?.response?.status,
-      data: err?.response?.data,
-      message: err?.message,
-    });
+
     throw err;
   }
 }
@@ -68,7 +54,6 @@ export async function existsCedula(cedula: string): Promise<boolean> {
     const status = err?.response?.status;
     if (status === 404) return false;
 
-    console.warn("[existsCedula] ⚠️ Error al verificar cédula:", status, err?.message);
     return false;
   }
 }
@@ -84,7 +69,6 @@ export async function existsEmail(email: string): Promise<boolean> {
     const status = err?.response?.status;
     if (status === 404) return false;
 
-    console.warn("[existsEmail] ⚠️ Error al verificar email:", status, err?.message);
     return false;
   }
 }
@@ -95,11 +79,9 @@ export async function lookupPersonaByCedula(cedula: string) {
 
   try {
     const { data } = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
-    console.log("[lookupPersonaByCedula] ✅ 200", data);
     return data;
   } catch (err: any) {
     const status = err?.response?.status;
-    console.log("[lookupPersonaByCedula] ❌", status, err?.response?.data);
     if (status === 404) return null;
     throw err;
   }

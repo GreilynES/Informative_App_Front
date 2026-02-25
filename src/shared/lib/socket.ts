@@ -12,17 +12,14 @@ export const socket = io(`${API_URL}/rt`, {
 });
 
 socket.on('connect', () => {
-  console.log('✅ Socket conectado:', socket.id);
-  console.log('🔗 URL:', API_URL);
+
 });
 
 socket.on('disconnect', () => {
-  console.log('❌ Socket desconectado');
 });
 
-socket.on('connect_error', (error) => {
-  console.error('🔥 Error conexión socket:', error);
-  console.error('🔗 Intentando conectar a:', `${API_URL}/rt`);
+socket.on('connect_error', (_error) => {
+
 });
 
 if (typeof window !== 'undefined') {

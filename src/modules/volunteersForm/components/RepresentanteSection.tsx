@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { normalizeLookupToPersona } from "@/shared/utils/helpersForms"
 import { validateRepresentanteCedula } from "../services/volunteerFormService"
 import { BirthDatePicker } from "@/components/ui/birthDatePicker"
+import { useCedulaLookupController } from "@/shared/hooks/useCedulaLookupController" // ✅ tu hook shared
 
 export function RepresentanteSection({
   form,
@@ -64,14 +65,18 @@ export function RepresentanteSection({
   const inputError =
     "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
 
-  const [buscandoCedula, setBuscandoCedula] = useState(false)
-  const [tocoNombres, setTocoNombres] = useState(false)
+  const disabledBase = "bg-[#ECECEC] opacity-70 cursor-not-allowed"
 
+  const [tocoNombres, setTocoNombres] = useState(false)
+  const [repFromDB, setRepFromDB] = useState(false)
+
+  // ✅ mantiene estado de validación de "cedula ya registrada como representante"
   const [repValidation, setRepValidation] = useState<{ ok: boolean; message?: string } | null>(null)
   const repErrorMsg = repValidation && repValidation.ok === false ? repValidation.message : ""
 
-  const debounceRef = useRef<number | null>(null)
-  const lastLookupRef = useRef<string>("")
+  // ✅ para evitar pisar con lookup si ya el usuario tocó nombres,
+  //    pero además evita correr reset al primer render del campo
+  const lastKeyRef = useRef<string>("")
 
   const setIfDefined = (path: string, val: any) => {
     if (val === undefined || val === null) return
@@ -80,60 +85,78 @@ export function RepresentanteSection({
     form?.setFieldValue?.(path, v)
   }
 
-  const bloquearNombreApellidos = buscandoCedula || !!repErrorMsg
+  const clearPath = (path: string) => form?.setFieldValue?.(path, "")
 
-  const validateRepFirst = async (digits: string) => {
-    try {
+  // ✅ Reset completo del representante (excepto la cédula)
+  const resetRepresentanteFields = () => {
+    clearPath("organizacion.representante.persona.nombre")
+    clearPath("organizacion.representante.persona.apellido1")
+    clearPath("organizacion.representante.persona.apellido2")
+    clearPath("organizacion.representante.persona.telefono")
+    clearPath("organizacion.representante.persona.email")
+    clearPath("organizacion.representante.persona.fechaNacimiento")
+    clearPath("organizacion.representante.persona.direccion")
+
+    setRepFromDB(false)
+    setRepValidation(null)
+    setTocoNombres(false)
+  }
+
+  const fillRepresentanteFromLookup = (res: any) => {
+    const p = normalizeLookupToPersona(res)
+    if (!p) return
+
+    if (!tocoNombres) {
+      setIfDefined("organizacion.representante.persona.nombre", p.nombre)
+      setIfDefined("organizacion.representante.persona.apellido1", p.apellido1)
+      setIfDefined("organizacion.representante.persona.apellido2", p.apellido2)
+    }
+
+    if (p.source === "DB") {
+      setIfDefined("organizacion.representante.persona.telefono", p.telefono)
+      setIfDefined("organizacion.representante.persona.email", p.email)
+      setIfDefined("organizacion.representante.persona.fechaNacimiento", p.fechaNacimiento)
+      setIfDefined("organizacion.representante.persona.direccion", p.direccion)
+      setRepFromDB(true)
+    } else {
+      setRepFromDB(false)
+    }
+  }
+
+  // ✅ Hook reusable (ya lo tenés en shared)
+  const cedulaCtrl = useCedulaLookupController({
+    minLen: 9,
+    debounceMs: 350,
+    lookup: async (digits: string) => {
+      if (!lookup) return null
+      return lookup(digits)
+    },
+    isFromDB: (res: any) => {
+      const p = normalizeLookupToPersona(res)
+      return p?.source === "DB"
+    },
+    onReset: resetRepresentanteFields,
+    onFill: fillRepresentanteFromLookup,
+    precheck: async (digits: string) => {
+      // valida si ya existe como representante
       const r = await validateRepresentanteCedula(digits)
       if (r?.ok === false) {
+        // seteamos el estado para mostrar exactamente ese mensaje
         setRepValidation({
           ok: false,
           message: r.message || "Esta cédula ya está registrada como representante.",
         })
-        return false
+        // y lanzamos para que el hook registre error (y bloquee)
+        throw new Error(r.message || "Esta cédula ya está registrada como representante.")
       }
       setRepValidation({ ok: true })
-      return true
-    } catch {
-      setRepValidation(null)
-      return true
-    }
-  }
+    },
+  })
 
-  const lookupAndFill = async (cedulaRaw: string) => {
-    const digits = String(cedulaRaw ?? "").replace(/\D/g, "")
-    if (!digits || digits.length < 9) return
-    if (!lookup) return
-
-    const allowed = await validateRepFirst(digits)
-    if (!allowed) return
-
-    if (lastLookupRef.current === digits) return
-    lastLookupRef.current = digits
-
-    setBuscandoCedula(true)
-    try {
-      const res = await lookup(digits)
-
-      const p = normalizeLookupToPersona(res)
-      if (!p) return
-
-      if (!tocoNombres) {
-        setIfDefined("organizacion.representante.persona.nombre", p.nombre)
-        setIfDefined("organizacion.representante.persona.apellido1", p.apellido1)
-        setIfDefined("organizacion.representante.persona.apellido2", p.apellido2)
-      }
-
-      if (p.source === "DB") {
-        setIfDefined("organizacion.representante.persona.telefono", p.telefono)
-        setIfDefined("organizacion.representante.persona.email", p.email)
-        setIfDefined("organizacion.representante.persona.fechaNacimiento", p.fechaNacimiento)
-        setIfDefined("organizacion.representante.persona.direccion", p.direccion)
-      }
-    } finally {
-      setBuscandoCedula(false)
-    }
-  }
+  // ✅ Bloqueos
+  const bloquearPorCedula = cedulaCtrl.loading || !!cedulaCtrl.error
+  const bloquearNombreApellidos = bloquearPorCedula || !!repErrorMsg
+  const bloquearCamposDB = bloquearPorCedula || repFromDB
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
@@ -154,7 +177,9 @@ export function RepresentanteSection({
             validators={commonPersonaValidators("cedula")}
           >
             {(field: any) => {
-              const hasErr = !!repErrorMsg || shouldShowFieldError(field)
+              const hookErr = cedulaCtrl.error
+              const hasErr = !!repErrorMsg || !!hookErr || shouldShowFieldError(field)
+
               return (
                 <>
                   <Input
@@ -164,34 +189,29 @@ export function RepresentanteSection({
                     onChange={(e) => {
                       const raw = e.target.value
                       field.handleChange(raw)
-                      setTocoNombres(false)
 
+                      // ✅ si la key cambia, reseteamos datos previos (persona anterior)
                       const digits = raw.replace(/\D/g, "")
-
-                      if (digits.length < 9) {
-                        setRepValidation(null)
-                        lastLookupRef.current = ""
-                        if (debounceRef.current) window.clearTimeout(debounceRef.current)
-                        return
+                      if (lastKeyRef.current && digits !== lastKeyRef.current) {
+                        resetRepresentanteFields()
                       }
+                      lastKeyRef.current = digits
 
-                      if (debounceRef.current) window.clearTimeout(debounceRef.current)
-                      debounceRef.current = window.setTimeout(() => {
-                        lookupAndFill(digits)
-                      }, 350)
+                      // reset flags
+                      setTocoNombres(false)
+                      setRepValidation(null)
+
+                      // hook controla debounce + lookup + estados
+                      cedulaCtrl.onKeyChange(raw)
                     }}
                     onBlur={async (e) => {
                       field.handleBlur?.()
-                      const digits = e.target.value.trim().replace(/\D/g, "")
-                      if (digits.length >= 9) {
-                        if (debounceRef.current) window.clearTimeout(debounceRef.current)
-                        await lookupAndFill(digits)
-                      }
+                      await cedulaCtrl.onKeyBlur(e.target.value)
                     }}
                     className={`${hasErr ? inputError : inputBase} pr-10 bg-white`}
                   />
 
-                  {buscandoCedula && (
+                  {cedulaCtrl.loading && (
                     <div className="absolute right-3 top-[34px]">
                       <svg className="animate-spin h-5 w-5 text-gray-400" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -204,9 +224,11 @@ export function RepresentanteSection({
                     </div>
                   )}
 
-                  {!!repErrorMsg && <p className="text-sm text-[#9c1414] mt-1">{repErrorMsg}</p>}
+                  {!!hookErr && <p className="text-sm text-[#9c1414] mt-1">{hookErr}</p>}
 
-                  {!repErrorMsg && shouldShowFieldError(field) && (
+                  {!hookErr && !!repErrorMsg && <p className="text-sm text-[#9c1414] mt-1">{repErrorMsg}</p>}
+
+                  {!hookErr && !repErrorMsg && shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
 
@@ -233,18 +255,23 @@ export function RepresentanteSection({
                     maxLength={50}
                     disabled={bloquearNombreApellidos}
                     onChange={(e) => {
+                      if (bloquearNombreApellidos) return
                       setTocoNombres(true)
                       field.handleChange(e.target.value)
                     }}
                     onBlur={field.handleBlur}
                     className={`${
                       shouldShowFieldError(field) ? inputError : inputBase
-                    } ${bloquearNombreApellidos ? "bg-[#ECECEC] opacity-70 cursor-not-allowed" : "bg-white"}`}
+                    } ${bloquearNombreApellidos ? disabledBase : "bg-[#ECECEC]"}`}
                   />
                   {shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">Tu nombre</p>
+                  {repFromDB ? (
+                    <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">Tu nombre</p>
+                  )}
                 </>
               )}
             </form.Field>
@@ -264,18 +291,23 @@ export function RepresentanteSection({
                     maxLength={40}
                     disabled={bloquearNombreApellidos}
                     onChange={(e) => {
+                      if (bloquearNombreApellidos) return
                       setTocoNombres(true)
                       field.handleChange(e.target.value)
                     }}
                     onBlur={field.handleBlur}
                     className={`${
                       shouldShowFieldError(field) ? inputError : inputBase
-                    } ${bloquearNombreApellidos ? "bg-[#ECECEC] opacity-70 cursor-not-allowed" : "bg-white"}`}
+                    } ${bloquearNombreApellidos ? disabledBase : "bg-[#ECECEC]"}`}
                   />
                   {shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">Tu primer apellido</p>
+                  {repFromDB ? (
+                    <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">Tu primer apellido</p>
+                  )}
                 </>
               )}
             </form.Field>
@@ -295,18 +327,23 @@ export function RepresentanteSection({
                     maxLength={40}
                     disabled={bloquearNombreApellidos}
                     onChange={(e) => {
+                      if (bloquearNombreApellidos) return
                       setTocoNombres(true)
                       field.handleChange(e.target.value)
                     }}
                     onBlur={field.handleBlur}
                     className={`${
                       shouldShowFieldError(field) ? inputError : inputBase
-                    } ${bloquearNombreApellidos ? "bg-[#ECECEC] opacity-70 cursor-not-allowed" : "bg-white"}`}
+                    } ${bloquearNombreApellidos ? disabledBase : "bg-[#ECECEC]"}`}
                   />
                   {shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">Tu segundo apellido</p>
+                  {repFromDB ? (
+                    <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">Tu segundo apellido</p>
+                  )}
                 </>
               )}
             </form.Field>
@@ -349,14 +386,24 @@ export function RepresentanteSection({
                   type="tel"
                   value={field.state.value || ""}
                   maxLength={20}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  disabled={bloquearCamposDB}
+                  onChange={(e) => {
+                    if (bloquearCamposDB) return
+                    field.handleChange(e.target.value)
+                  }}
                   onBlur={field.handleBlur}
-                  className={`${shouldShowFieldError(field) ? inputError : inputBase} bg-white`}
+                  className={`${shouldShowFieldError(field) ? inputError : inputBase} ${
+                    bloquearCamposDB ? disabledBase : "bg-white"
+                  }`}
                 />
                 {shouldShowFieldError(field) && (
                   <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
+                {repFromDB ? (
+                  <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
+                )}
               </>
             )}
           </form.Field>
@@ -375,14 +422,24 @@ export function RepresentanteSection({
                   type="email"
                   value={field.state.value || ""}
                   maxLength={60}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  disabled={bloquearCamposDB}
+                  onChange={(e) => {
+                    if (bloquearCamposDB) return
+                    field.handleChange(e.target.value)
+                  }}
                   onBlur={field.handleBlur}
-                  className={`${shouldShowFieldError(field) ? inputError : inputBase} bg-white`}
+                  className={`${shouldShowFieldError(field) ? inputError : inputBase} ${
+                    bloquearCamposDB ? disabledBase : "bg-white"
+                  }`}
                 />
                 {shouldShowFieldError(field) && (
                   <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
+                {repFromDB ? (
+                  <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
+                )}
               </>
             )}
           </form.Field>
@@ -391,7 +448,7 @@ export function RepresentanteSection({
         {/* Información adicional */}
         <div className="space-y-4">
           {/* Fecha de nacimiento */}
-          <div>
+          <div className={bloquearCamposDB ? "pointer-events-none opacity-70" : ""}>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
 
             <form.Field
@@ -402,7 +459,10 @@ export function RepresentanteSection({
                 <>
                   <BirthDatePicker
                     value={field.state.value || ""}
-                    onChange={(iso) => field.handleChange(iso)}
+                    onChange={(iso) => {
+                      if (bloquearCamposDB) return
+                      field.handleChange(iso)
+                    }}
                     minAge={18}
                     placeholder="Seleccione una fecha"
                     error={showErrors ? field.state.meta.errors?.[0] : undefined}
@@ -411,7 +471,11 @@ export function RepresentanteSection({
                   {shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 18 años.</p>
+                  {repFromDB ? (
+                    <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 18 años.</p>
+                  )}
                 </>
               )}
             </form.Field>
@@ -430,16 +494,26 @@ export function RepresentanteSection({
                 <>
                   <Textarea
                     value={field.state.value || ""}
-                    onChange={(e) => field.handleChange(e.target.value)}
+                    disabled={bloquearCamposDB}
+                    onChange={(e) => {
+                      if (bloquearCamposDB) return
+                      field.handleChange(e.target.value)
+                    }}
                     onBlur={field.handleBlur}
                     rows={2}
                     maxLength={255}
-                    className={`${shouldShowFieldError(field) ? inputError : inputBase} bg-white resize-none`}
+                    className={`${shouldShowFieldError(field) ? inputError : inputBase} ${
+                      bloquearCamposDB ? disabledBase : "bg-white"
+                    } resize-none`}
                   />
                   {shouldShowFieldError(field) && (
                     <p className="text-sm text-[#9c1414] mt-1">{fieldErrorMsg(field)}</p>
                   )}
-                  <p className="text-xs text-gray-500">Ejemplo: Provincia, Cantón, Distrito. Señas extra.</p>
+                  {repFromDB ? (
+                    <p className="text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                  ) : (
+                    <p className="text-xs text-gray-500">Ejemplo: Provincia, Cantón, Distrito. Señas extra.</p>
+                  )}
                 </>
               )}
             </form.Field>

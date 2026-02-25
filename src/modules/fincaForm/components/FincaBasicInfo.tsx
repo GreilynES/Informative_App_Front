@@ -56,7 +56,13 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
           <Home className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Finca</h3>
+
+        <div className="flex flex-col">
+          <h3 className="text-lg font-semibold text-[#708C3E]">Información de la Finca</h3>
+          <p className="text-xs text-gray-500">
+            Todos los campos son obligatorios, a menos que indiquen <span className="font-medium">(Opcional)</span>.
+          </p>
+        </div>
       </div>
 
       <div className="p-6 space-y-4">
@@ -69,7 +75,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
             return (
               <div>
                 <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                  Nombre de la Finca *
+                  Nombre de la Finca
                 </label>
 
                 <Input
@@ -84,7 +90,6 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                     }
                   }}
                   onBlur={f.handleBlur}
-                  placeholder="Ej: Finca La Esperanza"
                   maxLength={100}
                   className={`${showError ? inputError : inputBase} bg-white`}
                 />
@@ -94,6 +99,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                     {localErrors.nombreFinca || f.state.meta.errors[0]}
                   </p>
                 )}
+                <p className="mt-1 text-xs text-gray-500">Ejemplo: Finca La Esperanza</p>
               </div>
             )
           }}
@@ -109,7 +115,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
               return (
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                    Área (Hectáreas) *
+                    Área (Hectáreas)
                   </label>
 
                   <Input
@@ -120,6 +126,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                       let v = e.target.value.replace(/\D/g, "")
                       if (v !== "" && (v.startsWith("0") || Number(v) === 0)) v = ""
                       f.handleChange(v)
+
                       if (localErrors.areaHa) {
                         setLocalErrors((prev) => {
                           const { areaHa, ...rest } = prev
@@ -128,7 +135,6 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                       }
                     }}
                     onBlur={f.handleBlur}
-                    placeholder="Ej: 25"
                     className={`${showError ? inputError : inputBase} bg-white`}
                   />
 
@@ -137,6 +143,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                       {localErrors.areaHa || f.state.meta.errors[0]}
                     </p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500">Ejemplo: 25</p>
                 </div>
               )
             }}
@@ -151,7 +158,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
               return (
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                    Número de Plano *
+                    Número de Plano
                   </label>
 
                   <Input
@@ -166,7 +173,6 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                       }
                     }}
                     onBlur={f.handleBlur}
-                    placeholder="Ej: P-2025-001"
                     maxLength={50}
                     className={`${showError ? inputError : inputBase} bg-white`}
                   />
@@ -176,6 +182,7 @@ export function FincaBasicInfo({ form, forceValidation = false }: FincaBasicInfo
                       {localErrors.numeroPlano || f.state.meta.errors[0]}
                     </p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500">Ejemplo: P-2025-001</p>
                 </div>
               )
             }}
