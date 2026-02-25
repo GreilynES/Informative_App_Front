@@ -77,20 +77,29 @@ export function GeografiaSection({ form, forceValidation = false, caserioRef }: 
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
           <MapPin className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Ubicación Geográfica</h3>
+
+        <div className="flex flex-col">
+          <h3 className="text-lg font-semibold text-[#708C3E]">Ubicación Geográfica</h3>
+          <p className="text-xs text-gray-500">
+            Todos los campos son obligatorios, a menos que indiquen <span className="font-medium">(Opcional)</span>.
+          </p>
+        </div>
       </div>
 
       <div className="p-6 space-y-4">
         <div className="grid md:grid-cols-2 gap-4">
-          <form.Field name="provincia" validators={{ onChange: ({ value }: any) => validateField("provincia", value) }}>
+          <form.Field
+            name="provincia"
+            validators={{ onChange: ({ value }: any) => validateField("provincia", value) }}
+          >
             {(f: any) => {
               const showError = (f.state.meta.errors?.length > 0 || !!localErrors.provincia) as boolean
 
               return (
                 <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Provincia *</label>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Provincia</label>
 
-                  <div className={showError ? "rounded-xl ring-1 ring-red-500" : ""}>
+                  <div className={showError ? "rounded-xl ring-1 ring-[#9c1414]" : ""}>
                     <CustomSelect
                       value={f.state.value ?? ""}
                       onChange={(val) => {
@@ -105,30 +114,33 @@ export function GeografiaSection({ form, forceValidation = false, caserioRef }: 
                         }
                       }}
                       options={provinciaOptions}
-                      placeholder="Seleccione una provincia"
                       disabled={loadingProvincias}
                       zIndex={60}
                     />
                   </div>
 
                   {showError && (
-                    <p className="text-sm text-red-600 mt-1">{localErrors.provincia || f.state.meta.errors[0]}</p>
+                    <p className="text-sm text-[#9c1414] mt-1">{localErrors.provincia || f.state.meta.errors[0]}</p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500">Seleccione la provincia donde se ubica la finca.</p>
                 </div>
               )
             }}
           </form.Field>
 
-          <form.Field name="canton" validators={{ onChange: ({ value }: any) => validateField("canton", value) }}>
+          <form.Field
+            name="canton"
+            validators={{ onChange: ({ value }: any) => validateField("canton", value) }}
+          >
             {(f: any) => {
               const provinciaValue = (form as any).state.values.provincia
               const showError = (f.state.meta.errors?.length > 0 || !!localErrors.canton) as boolean
 
               return (
                 <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cantón *</label>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Cantón</label>
 
-                  <div className={showError ? "rounded-xl ring-1 ring-red-500" : ""}>
+                  <div className={showError ? "rounded-xl ring-1 ring-[#9c1414]" : ""}>
                     <CustomSelect
                       value={f.state.value ?? ""}
                       onChange={(val) => {
@@ -143,15 +155,15 @@ export function GeografiaSection({ form, forceValidation = false, caserioRef }: 
                         }
                       }}
                       options={cantonOptions}
-                      placeholder="Seleccione un cantón"
                       disabled={!provinciaValue || loadingCantones}
                       zIndex={55}
                     />
                   </div>
 
                   {showError && (
-                    <p className="text-sm text-red-600 mt-1">{localErrors.canton || f.state.meta.errors[0]}</p>
+                    <p className="text-sm text-[#9c1414] mt-1">{localErrors.canton || f.state.meta.errors[0]}</p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500">Seleccione el cantón correspondiente.</p>
                 </div>
               )
             }}
@@ -159,16 +171,19 @@ export function GeografiaSection({ form, forceValidation = false, caserioRef }: 
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
-          <form.Field name="distrito" validators={{ onChange: ({ value }: any) => validateField("distrito", value) }}>
+          <form.Field
+            name="distrito"
+            validators={{ onChange: ({ value }: any) => validateField("distrito", value) }}
+          >
             {(f: any) => {
               const cantonValue = (form as any).state.values.canton
               const showError = (f.state.meta.errors?.length > 0 || !!localErrors.distrito) as boolean
 
               return (
                 <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Distrito *</label>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Distrito</label>
 
-                  <div className={showError ? "rounded-xl ring-1 ring-red-500" : ""}>
+                  <div className={showError ? "rounded-xl ring-1 ring-[#9c1414]" : ""}>
                     <CustomSelect
                       value={f.state.value ?? ""}
                       onChange={(val) => {
@@ -183,28 +198,31 @@ export function GeografiaSection({ form, forceValidation = false, caserioRef }: 
                         }
                       }}
                       options={distritoOptions}
-                      placeholder="Seleccione un distrito"
                       disabled={!cantonValue || loadingDistritos}
                       zIndex={50}
                     />
                   </div>
 
                   {showError && (
-                    <p className="text-sm text-red-600 mt-1">{localErrors.distrito || f.state.meta.errors[0]}</p>
+                    <p className="text-sm text-[#9c1414] mt-1">{localErrors.distrito || f.state.meta.errors[0]}</p>
                   )}
+                  <p className="mt-1 text-xs text-gray-500">Seleccione el distrito correspondiente.</p>
                 </div>
               )
             }}
           </form.Field>
 
-          <form.Field name="caserio" validators={{ onChange: ({ value }: any) => validateField("caserio", value) }}>
+          <form.Field
+            name="caserio"
+            validators={{ onChange: ({ value }: any) => validateField("caserio", value) }}
+          >
             {(f: any) => {
               const showError = (f.state.meta.errors?.length > 0 || !!localErrors.caserio) as boolean
 
               return (
                 <div ref={caserioRef} className="scroll-mt-28">
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                    Caserío (dirección exacta) *
+                    Caserío (dirección exacta)
                   </label>
 
                   <Input
@@ -219,14 +237,16 @@ export function GeografiaSection({ form, forceValidation = false, caserioRef }: 
                       }
                     }}
                     onBlur={f.handleBlur}
-                    placeholder="Nombre del caserío"
                     maxLength={100}
                     className={`${showError ? inputError : inputBase} bg-white`}
                   />
 
                   {showError && (
-                    <p className="text-sm text-red-600 mt-1">{localErrors.caserio || f.state.meta.errors[0]}</p>
+                    <p className="text-sm text-[#9c1414] mt-1">{localErrors.caserio || f.state.meta.errors[0]}</p>
                   )}
+                     <p className="mt-1 text-xs text-gray-500">
+                      Indique el caserío o señas exactas para ubicar la finca.
+                    </p>
                 </div>
               )
             }}
