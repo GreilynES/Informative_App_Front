@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
-import type { FormLike } from "../../../shared/types/form-lite";
-import { usePropietarioSection } from "../hooks/usePropietario";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Search, User } from "lucide-react";
-import { btn } from "@/shared/ui/buttonStyles";
-import { BirthDatePicker } from "@/components/ui/birthDatePicker";
+import { useEffect, useState } from "react"
+import type { FormLike } from "../../../shared/types/form-lite"
+import { usePropietarioSection } from "../hooks/usePropietario"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { User } from "lucide-react"
+import { BirthDatePicker } from "@/components/ui/birthDatePicker"
 
 interface PropietarioSectionProps {
-  form: FormLike;
+  form: FormLike
 }
 
 export function PropietarioSection({ form }: PropietarioSectionProps) {
@@ -17,31 +15,37 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
     isLoadingCedula,
     cedulaError,
     searchMessage,
-    handleCedulaLookup,
-  } = usePropietarioSection({ form });
+    personaFromDB,
+    bloquearCamposDB,
+    onCedulaChange,
+    onCedulaBlur,
+    resetPropietario,
+  } = usePropietarioSection({ form })
 
-  const [esPropietario, setEsPropietario] = useState(true);
+  const [esPropietario, setEsPropietario] = useState(true)
+  const [emailError, setEmailError] = useState<string>("")
 
   useEffect(() => {
-    const formValue = (form as any).state?.values?.esPropietario;
-    if (formValue !== undefined && formValue !== esPropietario) setEsPropietario(formValue);
-  }, [(form as any).state?.values?.esPropietario, esPropietario]);
-
-  const [emailError, setEmailError] = useState<string>("");
+    const formValue = (form as any).state?.values?.esPropietario
+    if (formValue !== undefined && formValue !== esPropietario) setEsPropietario(formValue)
+  }, [(form as any).state?.values?.esPropietario, esPropietario])
 
   const inputBase =
-    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0";
+    "border-[#DCD6C9] focus-visible:ring-[#708C3E]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
   const inputError =
-    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0";
+    "border-[#9c1414] focus-visible:ring-[#9c1414]/30 focus-visible:ring-2 focus-visible:ring-offset-0"
+  const disabledBase = "bg-[#ECECEC] opacity-70 cursor-not-allowed"
 
   const checkboxBase =
-    "border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E]";
+    "border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E]"
 
   function handleEmailChange(value: string) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (value && !emailRegex.test(value)) setEmailError("Por favor ingrese un email válido");
-    else setEmailError("");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (value && !emailRegex.test(value)) setEmailError("Por favor ingrese un email válido")
+    else setEmailError("")
   }
+
+  const cedulaValue = String((form as any).state?.values?.propietarioCedula ?? "").replace(/\D/g, "")
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-[#DCD6C9]">
@@ -49,7 +53,13 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
         <div className="w-8 h-8 bg-[#708C3E] rounded-full flex items-center justify-center">
           <User className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-[#708C3E]">Propietario de la Finca</h3>
+
+        <div className="flex flex-col">
+          <h3 className="text-lg font-semibold text-[#708C3E]">Propietario de la Finca</h3>
+          <p className="text-xs text-gray-500">
+            Todos los campos son obligatorios, a menos que indiquen <span className="font-medium">(Opcional)</span>.
+          </p>
+        </div>
       </div>
 
       <div className="p-6 space-y-4">
@@ -59,9 +69,12 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
               <Checkbox
                 checked={!!f.state.value}
                 onCheckedChange={(checked) => {
-                  const newValue = !!checked;
-                  f.handleChange(newValue);
-                  setEsPropietario(newValue);
+                  const newValue = !!checked
+                  f.handleChange(newValue)
+                  setEsPropietario(newValue)
+
+                  // si pasa a "sí soy", limpiamos propietario extra
+                  if (newValue) resetPropietario()
                 }}
                 className={checkboxBase}
               />
@@ -72,92 +85,85 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
 
         {esPropietario ? (
           <div className="rounded-xl border border-[#DCD6C9] bg-[#F3F1EA] px-4 py-3">
-            <p className="text-sm text-[#4A4A4A]">
-              Como usted es el propietario, se usarán sus datos personales.
-            </p>
+            <p className="text-sm text-[#4A4A4A]">Como usted es el propietario, se usarán sus datos personales.</p>
           </div>
         ) : (
           <div className="space-y-4 border-t border-[#DCD6C9] pt-4">
             <p className="text-sm font-semibold text-[#4A4A4A]">Datos del Propietario</p>
 
+            {/* Cédula */}
             <form.Field name="propietarioCedula">
               {(fprop: any) => (
                 <div>
                   <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                    Cédula del Propietario *
+                    Cédula del Propietario 
                   </label>
 
                   <div className="flex gap-2">
                     <Input
                       value={fprop.state.value ?? ""}
-                      onChange={(e) => fprop.handleChange(e.target.value.replace(/\D/g, ""))}
-                      onBlur={async (e) => {
-                        fprop.handleBlur();
-                        const ced = String(e.target.value ?? "").replace(/\D/g, "");
-                        if (ced.length >= 8) {
-                          await handleCedulaLookup(ced);
-                        }
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "")
+                        fprop.handleChange(raw)
+                        setEmailError("")
+
+                        onCedulaChange(raw)
                       }}
-                      placeholder="Número de cédula"
+                      onBlur={async (e) => {
+                        fprop.handleBlur()
+                        const ced = String(e.target.value ?? "").replace(/\D/g, "")
+                        await onCedulaBlur(ced)
+                      }}
                       maxLength={12}
                       className={`${cedulaError ? inputError : inputBase} bg-white`}
                     />
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() => handleCedulaLookup(String(fprop.state.value ?? "").replace(/\D/g, ""))}
-                      disabled={isLoadingCedula || !fprop.state.value}
-                      className={`${btn.primary} ${btn.disabledSoft} h-10 w-10 p-0`}
-                      aria-label="Buscar cédula"
-                      title="Buscar"
-                    >
-                      {isLoadingCedula ? (
+                      {isLoadingCedula && (
                         <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                      ) : (
-                        <Search className="size-5" />
                       )}
-                    </Button>
+
                   </div>
 
-                  {searchMessage && (
+                  {cedulaError ? (
+                    <p className="text-sm text-[#9c1414] mt-1">{cedulaError}</p>
+                  ) : searchMessage ? (
                     <p className={`text-sm mt-1 ${searchMessage.includes("✓") ? "text-[#708C3E]" : "text-gray-600"}`}>
                       {searchMessage}
                     </p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">Ejemplo: 504550789</p>
                   )}
-                  {cedulaError && <p className="text-sm text-[#9c1414] mt-1">{cedulaError}</p>}
                 </div>
               )}
             </form.Field>
 
+            {/* Nombre + Apellidos */}
             <div className="grid md:grid-cols-2 gap-4">
               <form.Field name="propietarioNombre">
                 {(fprop: any) => (
                   <div>
-                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Nombre *</label>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      Nombre 
+                    </label>
                     <Input
                       value={fprop.state.value ?? ""}
-                      onChange={(e) => fprop.handleChange(e.target.value)}
+                      disabled={bloquearCamposDB}
+                      onChange={(e) => {
+                        if (bloquearCamposDB) return
+                        fprop.handleChange(e.target.value)
+                      }}
                       onBlur={fprop.handleBlur}
-                      placeholder="Nombre del propietario"
                       maxLength={50}
-                      className={`${inputBase} bg-white`}
+                      className={`${inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
                     />
+                    {personaFromDB ? (
+                      <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Nombre del propietario.</p>
+                    )}
                   </div>
                 )}
               </form.Field>
@@ -165,15 +171,25 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
               <form.Field name="propietarioApellido1">
                 {(fprop: any) => (
                   <div>
-                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Primer Apellido *</label>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      Primer Apellido 
+                    </label>
                     <Input
                       value={fprop.state.value ?? ""}
-                      onChange={(e) => fprop.handleChange(e.target.value)}
+                      disabled={bloquearCamposDB}
+                      onChange={(e) => {
+                        if (bloquearCamposDB) return
+                        fprop.handleChange(e.target.value)
+                      }}
                       onBlur={fprop.handleBlur}
-                      placeholder="Primer apellido"
                       maxLength={50}
-                      className={`${inputBase} bg-white`}
+                      className={`${inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
                     />
+                    {personaFromDB ? (
+                      <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Primer apellido del propietario.</p>
+                    )}
                   </div>
                 )}
               </form.Field>
@@ -183,131 +199,161 @@ export function PropietarioSection({ form }: PropietarioSectionProps) {
               <form.Field name="propietarioApellido2">
                 {(fprop: any) => (
                   <div>
-                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Segundo Apellido *</label>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      Segundo Apellido 
+                    </label>
                     <Input
                       value={fprop.state.value ?? ""}
-                      onChange={(e) => fprop.handleChange(e.target.value)}
+                      disabled={bloquearCamposDB}
+                      onChange={(e) => {
+                        if (bloquearCamposDB) return
+                        fprop.handleChange(e.target.value)
+                      }}
                       onBlur={fprop.handleBlur}
-                      placeholder="Segundo apellido"
                       maxLength={50}
-                      className={`${inputBase} bg-white`}
+                      className={`${inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
                     />
+                    {personaFromDB ? (
+                      <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Segundo apellido del propietario.</p>
+                    )}
                   </div>
                 )}
               </form.Field>
 
+              {/* Teléfono */}
               <form.Field name="propietarioTelefono">
                 {(fprop: any) => {
-                  const hasError =
-                    (fprop.state.value && String(fprop.state.value).length > 0 && String(fprop.state.value).length < 8) ||
-                    false;
-
+                  const v = String(fprop.state.value ?? "")
+                  const hasError = v.length > 0 && v.length < 8
                   return (
                     <div>
-                      <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Teléfono *</label>
+                      <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                        Teléfono 
+                      </label>
                       <Input
                         value={fprop.state.value ?? ""}
-                        onChange={(e) => fprop.handleChange(e.target.value.replace(/\D/g, ""))}
+                        disabled={bloquearCamposDB}
+                        onChange={(e) => {
+                          if (bloquearCamposDB) return
+                          fprop.handleChange(e.target.value.replace(/\D/g, ""))
+                        }}
                         onBlur={fprop.handleBlur}
-                        placeholder="Teléfono (mínimo 8 dígitos)"
                         maxLength={12}
-                        className={`${hasError ? inputError : inputBase} bg-white`}
+                        className={`${hasError ? inputError : inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
                       />
-                      {hasError && (
-                        <p className="text-sm text-[#9c1414] mt-1">El teléfono debe tener al menos 8 dígitos</p>
+                      {hasError ? (
+                        <p className="text-sm text-[#9c1414] mt-1">El teléfono debe tener al menos 8 dígitos.</p>
+                      ) : personaFromDB ? (
+                        <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">Ejemplo: +506 2222-2222</p>
                       )}
                     </div>
-                  );
+                  )
                 }}
               </form.Field>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
+              {/* Email */}
               <form.Field name="propietarioEmail">
                 {(fprop: any) => (
                   <div>
-                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Email *</label>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      Email 
+                    </label>
                     <Input
                       type="email"
                       value={fprop.state.value ?? ""}
+                      disabled={bloquearCamposDB}
                       onChange={(e) => {
-                        fprop.handleChange(e.target.value);
-                        handleEmailChange(e.target.value);
+                        if (bloquearCamposDB) return
+                        fprop.handleChange(e.target.value)
+                        handleEmailChange(e.target.value)
                       }}
                       onBlur={fprop.handleBlur}
-                      placeholder="correo@ejemplo.com"
-                      className={`${emailError ? inputError : inputBase} bg-white`}
+                      className={`${emailError ? inputError : inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
                     />
-                    {emailError && <p className="text-sm text-[#9c1414] mt-1">{emailError}</p>}
+                    {emailError ? (
+                      <p className="text-sm text-[#9c1414] mt-1">{emailError}</p>
+                    ) : personaFromDB ? (
+                      <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Ejemplo: contacto@dominio.email</p>
+                    )}
                   </div>
                 )}
               </form.Field>
 
+              {/* Fecha Nacimiento */}
               <form.Field name="propietarioFechaNacimiento">
-                {(fprop: any) => {
-                  // Si deseas mantener un mensaje de error textual adicional cuando alguien intenta forzar una fecha inválida
-                  // (aunque BirthDatePicker ya la bloquea), puedes calcularlo así:
-                  let menorDeEdadMsg: string | undefined;
-                  if (fprop.state.value) {
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const minDate = new Date(
-                      today.getFullYear() - 18,
-                      today.getMonth(),
-                      today.getDate()
-                    );
-                    const picked = new Date(fprop.state.value);
-                    picked.setHours(0, 0, 0, 0);
-                    if (picked > minDate) {
-                      menorDeEdadMsg = "El propietario debe ser mayor de 18 años";
-                    }
-                  }
+                {(fprop: any) => (
+                  <div className={bloquearCamposDB ? "pointer-events-none opacity-70" : ""}>
+                    <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                      Fecha de Nacimiento
+                    </label>
 
-                  return (
-                    <div>
-                      <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-                        Fecha de Nacimiento *
-                      </label>
+                    <BirthDatePicker
+                      value={fprop.state.value ?? ""}
+                      onChange={(iso) => {
+                        if (bloquearCamposDB) return
+                        fprop.handleChange(iso)
+                      }}
+                      minAge={18}
+                      placeholder="Seleccione una fecha"
+                      error={undefined}
+                      className=""
+                    />
 
-                      <BirthDatePicker
-                        value={fprop.state.value ?? ""}
-                        onChange={(iso) => {
-                          fprop.handleChange(iso);
-                        }}
-                        minAge={18}
-                        placeholder="Seleccione una fecha"
-                        // Muestra error si calculaste el mensaje; si no, podrías pasar
-                        // validaciones del schema si las tienes:
-                        error={menorDeEdadMsg}
-                        className=""
-                      />
-
-                      {menorDeEdadMsg && (
-                        <p className="text-sm text-[#9c1414] mt-1">{menorDeEdadMsg}</p>
-                      )}
-                    </div>
-                  );
-                }}
+                    {personaFromDB ? (
+                      <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Debe ser mayor a 18 años.</p>
+                    )}
+                  </div>
+                )}
               </form.Field>
             </div>
 
+            {/* Dirección */}
             <form.Field name="propietarioDireccion">
               {(fprop: any) => (
                 <div>
-                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">Dirección (opcional)</label>
+                  <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
+                    Dirección <span className="text-xs text-gray-500 font-normal">(Opcional)</span>
+                  </label>
                   <Input
                     value={fprop.state.value ?? ""}
-                    onChange={(e) => fprop.handleChange(e.target.value)}
+                    disabled={bloquearCamposDB}
+                    onChange={(e) => {
+                      if (bloquearCamposDB) return
+                      fprop.handleChange(e.target.value)
+                    }}
                     onBlur={fprop.handleBlur}
-                    placeholder="Dirección completa"
-                    className={`${inputBase} bg-white`}
+                    className={`${inputBase} ${bloquearCamposDB ? disabledBase : "bg-white"}`}
                   />
+                  {personaFromDB ? (
+                    <p className="mt-1 text-xs text-gray-500">Este dato fue recuperado del sistema y no puede modificarse.</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">Provincia, cantón, distrito y señas.</p>
+                  )}
                 </div>
               )}
             </form.Field>
+
+            {/* hint si viene de DB */}
+            {personaFromDB && cedulaValue.length >= 9 && (
+              <div className="rounded-xl border border-[#DCD6C9] bg-[#F3F1EA] px-4 py-3">
+                <p className="text-sm text-[#4A4A4A]">
+                  Los datos fueron recuperados del sistema y no pueden modificarse.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }
